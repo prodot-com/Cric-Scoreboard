@@ -2,8 +2,8 @@ import React from 'react'
 
 const Header = () => {
   return (
-    <div className='text-4xl font-bold text-blue-800 
-    flex justify-center items-center p-6'>
+    <div className='sm:text-5xl text-5xl font-bold text-blue-800 
+    flex justify-center p-7 h-42 '>
       <h4>Cric Scoreboard</h4>
     </div>
   )
