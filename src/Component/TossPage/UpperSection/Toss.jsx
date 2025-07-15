@@ -1,7 +1,17 @@
 import React from 'react'
 import Title from '../../Title/Title'
+import { useNavigate } from 'react-router'
 
 const Toss = () => {
+
+    let navigate = useNavigate()
+    const routeChange = ()=>(
+        navigate('/admin')
+    )
+
+    const changehandaler = ()=>{}
+
+
   return (
     <div className="min-h-screen w-full relative">
   {/* Radial Gradient Background from Bottom */}
@@ -14,13 +24,14 @@ const Toss = () => {
      <div className='relative z-10 font-mono'>
       <div className='flex justify-around'>
         <Title text="TOSS" className="text-blue-800 text-5xl font-bold mt-0 pt-7"/>
-        <input type="text" className='bg-amber-400 mt-7 rounded-xl text-center' value='A' />
+        <input type="text" className='bg-amber-400 mt-7 rounded-xl text-center' value='A' onChange={changehandaler}/>
       </div>
       <div className='flex justify-around mt-7'>
             <button className='font-bold text-4xl bg-blue-700 rounded-xl p-1'>BAT</button>
             <button className='font-bold text-4xl bg-blue-700 rounded-xl p-1'>BOWL</button>
       </div>
-      <button className='mt-9 bg-blue-600 p-3 rounded-xl text-center font-bold'>Done</button>
+      <button className='mt-9 bg-blue-600 p-3 rounded-xl text-center 
+      font-bold cursor-pointer ' onClick={routeChange}>Done</button>
     </div>
 </div>
 
