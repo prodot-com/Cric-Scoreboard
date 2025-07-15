@@ -20,6 +20,7 @@ const Toss = () => {
             <button className='font-bold text-4xl bg-blue-700 rounded-xl p-1'>BAT</button>
             <button className='font-bold text-4xl bg-blue-700 rounded-xl p-1'>BOWL</button>
       </div>
+      <button className='mt-9 bg-blue-600 p-3 rounded-xl text-center font-bold'>Done</button>
     </div>
 </div>
 
