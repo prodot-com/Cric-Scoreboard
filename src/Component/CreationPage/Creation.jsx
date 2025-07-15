@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router';
 
 const Creation = () => {
   const [inputs, setInputs] = useState({});
 
+  let navigate = useNavigate(); 
+  const routeChange = () =>{ 
+    navigate('/toss');}
+
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log(inputs);
+    routeChange()
   };
 
   

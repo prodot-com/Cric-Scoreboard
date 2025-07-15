@@ -2,6 +2,7 @@ import React from 'react'
 import Index from './Component/FrontPage'
 import Creation from './Component/CreationPage/Creation'
 import { BrowserRouter, Routes, Route , Link} from 'react-router-dom'
+import Toss from './Component/TossPage/UpperSection/Toss'
 
 
 const App = () => {
@@ -10,6 +11,7 @@ const App = () => {
     <Routes>
         <Route path='/' element={<Index/>}/>
         <Route path='/creation' element={<Creation/>}/>
+        <Route path='/toss' element={<Toss/>}/>
     </Routes>
     </BrowserRouter>
   )

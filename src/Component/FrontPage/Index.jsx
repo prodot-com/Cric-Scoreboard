@@ -24,7 +24,7 @@ const Index = () => {
   <div className='relative z-10'>
     <Header/>
     <MatchCreate/>
-    <Title text={`Live Match Now`}/>
+    <Title text={`Live Match Now`} className='mt-7'/>
     <Matches team1='India' team2='England'/>
   </div>
 </div>
