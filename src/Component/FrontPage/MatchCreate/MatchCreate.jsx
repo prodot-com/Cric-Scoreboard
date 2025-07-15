@@ -4,7 +4,10 @@ import { useNavigate } from 'react-router'
 
 const MatchCreate = () => {
 
-  
+  let navigate = useNavigate(); 
+  const routeChange = () =>{ 
+    navigate('/creation');
+  }
 
   return (
     <>
