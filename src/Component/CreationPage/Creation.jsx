@@ -18,20 +18,11 @@ const Creation = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(input);
+    // console.log(input);
     addMatchDetails({input})
     routeChange()
-    // x()
   };
 
-  // const {matchDetails} = useCric()
-  //   const x = ()=>{
-    
-  //   console.log("contex match details",matchDetails)
-  // }
-
-  
-  
 
 
   

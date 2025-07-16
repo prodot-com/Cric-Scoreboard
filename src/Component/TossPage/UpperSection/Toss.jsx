@@ -6,12 +6,13 @@ import { useCric } from '../../../Context/CricContext'
 const Toss = () => {
 
   const {matchDetails}  = useCric()
-
+  // const local 
     let navigate = useNavigate()
-    const routeChange = ()=>(
+    const routeChange = ()=>{
       console.log(matchDetails)
-        // navigate('/admin')
-    )
+      const local = JSON.parse(localStorage.getItem('matchDetails'))
+      console.log('local', local)
+}
 
     // console.log(inputs)
 

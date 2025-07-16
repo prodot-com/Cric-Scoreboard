@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Index from './Component/FrontPage'
 import Creation from './Component/CreationPage/Creation'
 import { BrowserRouter, Routes, Route , Link} from 'react-router-dom'
@@ -9,11 +9,17 @@ import { CricContext, CricProvider, useCric } from './Context/CricContext'
 
 
 const App = () => {
-  const [matchDetails, setMatchDetails] = useState([])
+  const [matchDetails, setMatchDetails] = useState({})
 
   const addMatchDetails =(input)=>{
-    setMatchDetails(()=>[{...input}])
+    setMatchDetails(input)
   }
+
+  useEffect(()=>{
+    localStorage.setItem('matchDetails', JSON.stringify(matchDetails))
+  },[matchDetails])
+
+  
 
 
   return (
