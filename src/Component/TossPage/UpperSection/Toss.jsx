@@ -1,13 +1,19 @@
 import React from 'react'
 import Title from '../../Title/Title'
 import { useNavigate } from 'react-router'
+import { useCric } from '../../../Context/CricContext'
 
 const Toss = () => {
 
+  const {matchDetails}  = useCric()
+
     let navigate = useNavigate()
     const routeChange = ()=>(
-        navigate('/admin')
+      console.log(matchDetails)
+        // navigate('/admin')
     )
+
+    // console.log(inputs)
 
     const changehandaler = ()=>{}
 
@@ -31,7 +37,7 @@ const Toss = () => {
             <button className='font-bold text-4xl bg-blue-700 rounded-xl p-1'>BOWL</button>
       </div>
       <button className='mt-9 bg-blue-600 p-3 rounded-xl text-center 
-      font-bold cursor-pointer ' onClick={routeChange}>Done</button>
+      font-bold cursor-pointer ml-55' onClick={routeChange}>Done</button>
     </div>
 </div>
 

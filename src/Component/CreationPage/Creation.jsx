@@ -1,29 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
+import { CricProvider, useCric } from '../../Context/CricContext';
 
 const Creation = () => {
-  const [inputs, setInputs] = useState({});
+  const [input, setInput] = useState('');
+  // const { matchDetails, addMatchDetails } = useCric();
 
+    const {addMatchDetails } = useCric(); 
+
+  
   let navigate = useNavigate(); 
   const routeChange = () =>{ 
     navigate('/toss');}
 
+  
+
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(inputs);
+    console.log(input);
+    addMatchDetails({input})
     routeChange()
+    // x()
   };
 
+  // const {matchDetails} = useCric()
+  //   const x = ()=>{
+    
+  //   console.log("contex match details",matchDetails)
+  // }
+
   
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     console.log(inputs);
-  //   }, 5000);
+  
 
-  //   return () => clearInterval(interval);
-  // }, [inputs]);
 
+  
   return (
+    <>
     <div className="min-h-screen w-full bg-[#f9fafb] relative">
       {/* Background Grid */}
       <div
@@ -50,8 +63,8 @@ const Creation = () => {
               placeholder="Enter Your Name"
               className="bg-blue-400 rounded-xl"
               type="text"
-              value={inputs.name || ''}
-              onChange={(e) => setInputs({ ...inputs, name: e.target.value })}
+              value={input.name || ''}
+              onChange={(e) => setInput({ ...input, name: e.target.value })}
             />
           </label>
 
@@ -61,8 +74,8 @@ const Creation = () => {
             placeholder='Enter Team-1 name'
               className="bg-blue-400 rounded-xl"
               type="text"
-              value={inputs.team1 || ''}
-              onChange={(e) => setInputs({ ...inputs, team1: e.target.value })}
+              value={input.team1 || ''}
+              onChange={(e) => setInput({ ...input, team1: e.target.value })}
             />
           </label>
 
@@ -72,8 +85,8 @@ const Creation = () => {
             placeholder='Enter Team-2 name'
               className="bg-blue-400 rounded-xl"
               type="text"
-              value={inputs.team2 || ''}
-              onChange={(e) => setInputs({ ...inputs, team2: e.target.value })}
+              value={input.team2 || ''}
+              onChange={(e) => setInput({ ...input, team2: e.target.value })}
             />
           </label>
 
@@ -83,8 +96,8 @@ const Creation = () => {
             placeholder='Total over'
               className="bg-blue-400 rounded-xl"
               type="number"
-              value={inputs.over || ''}
-              onChange={(e) => setInputs({ ...inputs, over: e.target.value })}
+              value={input.over || ''}
+              onChange={(e) => setInput({ ...input, over: e.target.value })}
             />
           </label>
 
@@ -92,6 +105,7 @@ const Creation = () => {
         </form>
       </div>
     </div>
+    </>
   );
 };
 
