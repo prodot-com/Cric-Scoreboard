@@ -41,7 +41,9 @@ const AdminPage = () => {
 
       setBattingTeam(battingTeam)
 
-      
+      const bowlingTeam = match.team1 !== toss.tossWinner
+      ? match.team1 : match.team2
+      setBowlingTeam(bowlingTeam)
     }
 
 
