@@ -15,7 +15,8 @@ const Toss = () => {
     const routeChange = ()=>{
       // console.log(matchDetails.input)
       const local = JSON.parse(localStorage.getItem('matchDetails'))
-      console.log(local)
+      // console.log(local)
+      navigate('/admin')
   }
 
   const getElement = ()=>{
