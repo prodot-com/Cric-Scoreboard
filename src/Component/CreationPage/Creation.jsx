@@ -26,6 +26,7 @@ const Creation = () => {
 
     localStorage.setItem('matchDetails', JSON.stringify(input)); // Storing input
     navigate('/toss');
+    console.log(JSON.parse(localStorage.getItem('matchDetails')))
   };
 
   return (

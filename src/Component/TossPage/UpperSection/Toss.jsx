@@ -43,7 +43,7 @@ const Toss = () => {
       tossWinner,
       decision: choice
     }
-      localStorage.setItem('tossDetails', tossDetails)
+      localStorage.setItem('tossDetails', JSON.stringify(tossDetails))
       setDecision(choice)
       console.log(tossDetails)
   }
