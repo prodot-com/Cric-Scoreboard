@@ -6,8 +6,9 @@ import { useCric } from '../../../Context/CricContext'
 const Toss = () => {
 
 
-  const [tossOutput,setTossOutput] = useState('Game')
+  const [tossWinner,setTossWinner] = useState('Game')
   const [disable, setDisable] = useState(true)
+  const [decision, setDecision] = useState('')
 
  
     let navigate = useNavigate()
@@ -21,20 +22,29 @@ const Toss = () => {
     const local = JSON.parse(localStorage.getItem('matchDetails'))
     console.log(local)
     return [local?.team1, local?.team2]
-    
   }
 
   const randomPick=(str1, str2)=> {
   return Math.random() < 0.5 ? str1 : str2;
   }
 
-
   const toss = ()=>{
     const [team1, team2 ] = getElement()
-    const x = randomPick(team1, team2)
-    console.log(x)
-    setTossOutput(x)
+    const tossWinner = randomPick(team1, team2)
+    console.log(tossWinner)
+    setTossWinner(tossWinner)
     setDisable(false)
+    return tossWinner
+  }
+
+  const handleDecision = (choice)=>{
+    const tossDetails ={
+      tossWinner,
+      decision: choice
+    }
+      localStorage.setItem('tossDetails', tossDetails)
+      setDecision(choice)
+      console.log(tossDetails)
   }
 
 
@@ -57,14 +67,14 @@ const Toss = () => {
         <button onClick={toss} className='text-blue-800 text-5xl font-bold mt-0 pt-7 cursor-pointer'>
           Toss
         </button>
-        <input type="text" className='bg-amber-400 mt-7 rounded-xl text-center' value={tossOutput} onChange={changehandaler}/>
+        <input type="text" className='bg-amber-400 mt-7 rounded-xl text-center' value={tossWinner} onChange={changehandaler}/>
       </div>
       <div className='flex justify-around mt-7'>
             <button className={disable?' text-4xl text-gray-400 bg-blue-300 rounded-xl p-1'
-              :'font-bold text-4xl bg-blue-700 rounded-xl p-1'} disabled={true}>BAT</button>
+              :'font-bold text-4xl bg-blue-700 rounded-xl p-1'}  onClick={()=> handleDecision("BAT")}>BAT</button>
             
             <button className={disable?' text-4xl text-gray-400 bg-blue-300 rounded-xl p-1'
-              :'font-bold text-4xl bg-blue-700 rounded-xl p-1'} disabled={true}>BOWL</button>
+              :'font-bold text-4xl bg-blue-700 rounded-xl p-1'}  onClick={()=> handleDecision("BOWL")}>BOWL</button>
       </div>
       <button className='mt-9 bg-blue-600 p-3 rounded-xl text-center 
       font-bold cursor-pointer ml-55' onClick={routeChange}>Done</button>
