@@ -15,9 +15,7 @@ const App = () => {
     setMatchDetails(input)
   }
 
-  useEffect(()=>{
-    localStorage.setItem('matchDetails', JSON.stringify(matchDetails))
-  },[matchDetails])
+  
 
   
 

@@ -1,35 +1,35 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { CricProvider, useCric } from '../../Context/CricContext';
+import { useCric } from '../../Context/CricContext';
 
 const Creation = () => {
-  const [input, setInput] = useState('');
-  // const { matchDetails, addMatchDetails } = useCric();
+  const [input, setInput] = useState({
+    name: '',
+    team1: '',
+    team2: '',
+    over: ''
+  });
 
-    const {addMatchDetails } = useCric(); 
-
-  
-  let navigate = useNavigate(); 
-  const routeChange = () =>{ 
-    navigate('/toss');}
-
-  
-
+  const { addMatchDetails } = useCric(); 
+  const navigate = useNavigate(); 
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // console.log(input);
-    addMatchDetails({input})
-    routeChange()
+
+    // Basic validation
+    if (!input.name || !input.team1 || !input.team2 || !input.over) {
+      alert("Please fill out all fields.");
+      return;
+    }
+
+    addMatchDetails(input); // Passing input directly
+
+    localStorage.setItem('matchDetails', JSON.stringify(input)); // Storing input
+    navigate('/toss');
   };
 
-
-
-  
   return (
-    <>
     <div className="min-h-screen w-full bg-[#f9fafb] relative">
-      {/* Background Grid */}
       <div
         className="absolute inset-0 z-0"
         style={{
@@ -45,7 +45,6 @@ const Creation = () => {
         }}
       />
 
-      {/* Form */}
       <div className="relative z-10 text-2xl font-mono py-9">
         <form onSubmit={handleSubmit} className="flex flex-col justify-evenly items-center h-50">
           <label>
@@ -54,7 +53,7 @@ const Creation = () => {
               placeholder="Enter Your Name"
               className="bg-blue-400 rounded-xl"
               type="text"
-              value={input.name || ''}
+              value={input.name}
               onChange={(e) => setInput({ ...input, name: e.target.value })}
             />
           </label>
@@ -62,10 +61,10 @@ const Creation = () => {
           <label>
             Team-1 name:
             <input
-            placeholder='Enter Team-1 name'
+              placeholder="Enter Team-1 name"
               className="bg-blue-400 rounded-xl"
               type="text"
-              value={input.team1 || ''}
+              value={input.team1}
               onChange={(e) => setInput({ ...input, team1: e.target.value })}
             />
           </label>
@@ -73,10 +72,10 @@ const Creation = () => {
           <label>
             Team-2 name:
             <input
-            placeholder='Enter Team-2 name'
+              placeholder="Enter Team-2 name"
               className="bg-blue-400 rounded-xl"
               type="text"
-              value={input.team2 || ''}
+              value={input.team2}
               onChange={(e) => setInput({ ...input, team2: e.target.value })}
             />
           </label>
@@ -84,11 +83,11 @@ const Creation = () => {
           <label>
             Total Over:
             <input
-            placeholder='Total over'
+              placeholder="Total over"
               className="bg-blue-400 rounded-xl"
               type="number"
-              value={input.over || ''}
-              onChange={(e) => setInput({ ...input, over: e.target.value })}
+              value={input.over}
+              onChange={(e) => setInput({ ...input, over: Number(e.target.value) })}
             />
           </label>
 
@@ -96,7 +95,6 @@ const Creation = () => {
         </form>
       </div>
     </div>
-    </>
   );
 };
 

@@ -1,20 +1,42 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Title from '../../Title/Title'
 import { useNavigate } from 'react-router'
 import { useCric } from '../../../Context/CricContext'
 
 const Toss = () => {
 
-  const {matchDetails}  = useCric()
-  // const local 
+
+  const [tossOutput,setTossOutput] = useState('Game')
+  
+
+ 
     let navigate = useNavigate()
     const routeChange = ()=>{
-      console.log(matchDetails)
+      // console.log(matchDetails.input)
       const local = JSON.parse(localStorage.getItem('matchDetails'))
-      console.log('local', local)
-}
+      console.log(local)
+  }
 
-    // console.log(inputs)
+  const getElement = ()=>{
+    const local = JSON.parse(localStorage.getItem('matchDetails'))
+    console.log(local)
+    return [local?.team1, local?.team2]
+    
+  }
+
+  const randomPick=(str1, str2)=> {
+  return Math.random() < 0.5 ? str1 : str2;
+  }
+
+
+  const toss = ()=>{
+    const [team1, team2 ] = getElement()
+    const x = randomPick(team1, team2)
+    console.log(x)
+    setTossOutput(x)
+  }
+
+
 
     const changehandaler = ()=>{}
 
@@ -30,8 +52,11 @@ const Toss = () => {
   />
      <div className='relative z-10 font-mono'>
       <div className='flex justify-around'>
-        <Title text="TOSS" className="text-blue-800 text-5xl font-bold mt-0 pt-7"/>
-        <input type="text" className='bg-amber-400 mt-7 rounded-xl text-center' value='A' onChange={changehandaler}/>
+        {/* <Title text="TOSS" className="text-blue-800 text-5xl font-bold mt-0 pt-7 cursor-pointer" onClick={toss}/> */}
+        <button onClick={toss} className='text-blue-800 text-5xl font-bold mt-0 pt-7 cursor-pointer'>
+          Toss
+        </button>
+        <input type="text" className='bg-amber-400 mt-7 rounded-xl text-center' value={tossOutput} onChange={changehandaler}/>
       </div>
       <div className='flex justify-around mt-7'>
             <button className='font-bold text-4xl bg-blue-700 rounded-xl p-1'>BAT</button>
