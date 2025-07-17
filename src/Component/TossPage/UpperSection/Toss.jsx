@@ -1,148 +1,77 @@
-import React, { useState } from 'react';
-import Title from '../../Title/Title';
-import { useNavigate } from 'react-router';
+import React, { useEffect, useState } from 'react'
+import Title from '../../Title/Title'
+import { useNavigate } from 'react-router'
+import { useCric } from '../../../Context/CricContext'
 
 const Toss = () => {
-  const navigate = useNavigate();
 
-  // State hooks
-  const [userCall, setUserCall] = useState('Heads');
-  const [tossResult, setTossResult] = useState(null);
-  const [tossWinner, setTossWinner] = useState('');
-  const [choice, setChoice] = useState('');
 
-  // Get teams from localStorage
-  const getElement = () => {
-    const local = JSON.parse(localStorage.getItem('matchDetails'));
-    return [local?.team1, local?.team2];
-  };
+  const [tossOutput,setTossOutput] = useState('Game')
+  const [disable, setDisable] = useState(true)
 
-  // Toss simulation
-  const handleToss = () => {
-    const [team1, team2] = getElement();
+ 
+    let navigate = useNavigate()
+    const routeChange = ()=>{
+      // console.log(matchDetails.input)
+      const local = JSON.parse(localStorage.getItem('matchDetails'))
+      console.log(local)
+  }
 
-    if (!team1 || !team2) {
-      alert("Team names not found in localStorage.");
-      return;
-    }
+  const getElement = ()=>{
+    const local = JSON.parse(localStorage.getItem('matchDetails'))
+    console.log(local)
+    return [local?.team1, local?.team2]
+    
+  }
 
-    const coinFlip = Math.random() < 0.5 ? 'Heads' : 'Tails';
-    setTossResult(coinFlip);
+  const randomPick=(str1, str2)=> {
+  return Math.random() < 0.5 ? str1 : str2;
+  }
 
-    const winner = coinFlip === userCall ? team1 : team2;
-    setTossWinner(winner);
-  };
 
-  // Handle decision to bat or bowl
-  const handleChoice = (batOrBowl) => {
-    setChoice(batOrBowl);
+  const toss = ()=>{
+    const [team1, team2 ] = getElement()
+    const x = randomPick(team1, team2)
+    console.log(x)
+    setTossOutput(x)
+    setDisable(false)
+  }
 
-    const tossData = {
-      tossResult,
-      tossWinner,
-      decision: batOrBowl,
-    };
 
-    localStorage.setItem('tossDetails', JSON.stringify(tossData));
-    navigate('/match'); // Or your actual next route
-  };
+
+    const changehandaler = ()=>{}
+
 
   return (
     <div className="min-h-screen w-full relative">
-      {/* Background */}
-      <div
-        className="absolute inset-0 z-0"
-        style={{
-          background: "radial-gradient(125% 125% at 50% 90%, #fff 40%, #6366f1 100%)",
-        }}
-      />
-
-      {/* Content */}
-      <div className="relative z-10 font-mono px-4 py-8">
-        <div className="text-center mb-8">
-          <Title text="TOSS" className="text-blue-800 text-5xl font-bold" />
-        </div>
-
-        <div className="flex flex-col items-center space-y-4">
-          {/* Toss call selection */}
-          <div>
-            <label className="mr-4 text-lg">Call the Toss:</label>
-            <label className="mr-4">
-              <input
-                type="radio"
-                value="Heads"
-                checked={userCall === 'Heads'}
-                onChange={(e) => setUserCall(e.target.value)}
-              />
-              Heads
-            </label>
-            <label>
-              <input
-                type="radio"
-                value="Tails"
-                checked={userCall === 'Tails'}
-                onChange={(e) => setUserCall(e.target.value)}
-              />
-              Tails
-            </label>
-          </div>
-
-          {/* Toss button */}
-          <button
-            onClick={handleToss}
-            className="bg-green-500 px-6 py-2 rounded-xl text-white font-bold"
-          >
-            Toss
-          </button>
-
-          {/* Toss result display */}
-          {tossResult && (
-            <div className="text-center mt-4">
-              <p className="text-xl font-semibold">
-                Toss Result: <span className="text-blue-700">{tossResult}</span>
-              </p>
-              <p className="text-xl font-semibold">
-                {tossWinner} won the toss!
-              </p>
-            </div>
-          )}
-
-          {/* Bat/Bowl options if user wins toss */}
-          {tossWinner && tossWinner === getElement()[0] && (
-            <div className="flex space-x-4 mt-4">
-              <button
-                onClick={() => handleChoice('BAT')}
-                className="bg-blue-700 px-6 py-2 rounded-xl text-white text-xl"
-              >
-                BAT
-              </button>
-              <button
-                onClick={() => handleChoice('BOWL')}
-                className="bg-blue-700 px-6 py-2 rounded-xl text-white text-xl"
-              >
-                BOWL
-              </button>
-            </div>
-          )}
-
-          {/* If opponent wins toss, show message only */}
-          {tossWinner && tossWinner !== getElement()[0] && (
-            <div className="text-xl mt-4">
-              {tossWinner} will decide to bat or bowl.
-              <br />
-              (Simulate or handle this part in future)
-              <button
-                onClick={() => handleChoice('BOWL')} // Simulate opponent's choice
-                className="mt-4 bg-blue-600 px-4 py-2 rounded-xl text-white"
-              >
-                Continue
-              </button>
-            </div>
-          )}
-        </div>
+  {/* Radial Gradient Background from Bottom */}
+  <div
+    className="absolute inset-0 z-0"
+    style={{
+      background: "radial-gradient(125% 125% at 50% 90%, #fff 40%, #6366f1 100%)",
+    }}
+  />
+     <div className='relative z-10 font-mono'>
+      <div className='flex justify-around'>
+        {/* <Title text="TOSS" className="text-blue-800 text-5xl font-bold mt-0 pt-7 cursor-pointer" onClick={toss}/> */}
+        <button onClick={toss} className='text-blue-800 text-5xl font-bold mt-0 pt-7 cursor-pointer'>
+          Toss
+        </button>
+        <input type="text" className='bg-amber-400 mt-7 rounded-xl text-center' value={tossOutput} onChange={changehandaler}/>
       </div>
+      <div className='flex justify-around mt-7'>
+            <button className={disable?' text-4xl text-gray-400 bg-blue-300 rounded-xl p-1'
+              :'font-bold text-4xl bg-blue-700 rounded-xl p-1'} disabled={true}>BAT</button>
+            
+            <button className={disable?' text-4xl text-gray-400 bg-blue-300 rounded-xl p-1'
+              :'font-bold text-4xl bg-blue-700 rounded-xl p-1'} disabled={true}>BOWL</button>
+      </div>
+      <button className='mt-9 bg-blue-600 p-3 rounded-xl text-center 
+      font-bold cursor-pointer ml-55' onClick={routeChange}>Done</button>
     </div>
-  );
-};
+</div>
 
-export default Toss;
+  )
+}
+
+export default Toss
