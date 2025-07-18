@@ -19,10 +19,7 @@ const AdminPage = () => {
   // const tossDetails = ()=>{
   //   JSON.parse(localStorage.getItem("tossDetails"))
   // }
-  const endIninngs = ()=>{
-      setIningsOver(true)
-      console.log('innings Ended')
-    }
+  
 
   useEffect(()=>{
     const match = JSON.parse(localStorage.getItem('matchDetails'))
@@ -98,6 +95,27 @@ const AdminPage = () => {
 
   }
 
+  const endIninngs = ()=>{
+      setIningsOver(true)
+      console.log('innings Ended')
+
+      const firstInningsDetails = {
+        bowlingteam,
+        battingteam,
+        runs: currentRun,
+        balls: totalBalls,
+        wickets: currentWicket
+    }
+
+    localStorage.setItem("firstInningsDetails", JSON.stringify(firstInningsDetails))
+    navigate('/second-innings')
+
+    }
+
+  const routeChange = ()=>{
+    
+  }
+
   return (
     <div>
       <div className='text-3xl font-bold flex justify-around mt-7'>
@@ -119,7 +137,11 @@ const AdminPage = () => {
         
       </div>)
       :(
-        <Title text={`1st innings end`} className='mt-5'/>
+        <div>
+            <Title text={`1st innings end`} className='mt-5'/>
+            <Title text={`Target: ${currentRun+1}`}/>
+            <button className='bg-amber-400 p-1 rounded-xl ml-30 mt-7 cursor-pointer' onClick={routeChange}>Second Innings</button>
+        </div>
       )}
       
     </div>
