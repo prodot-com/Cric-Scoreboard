@@ -13,6 +13,8 @@ const AdminPage = () => {
   const [currentRun, setCurrentRun] = useState(0)
   const [currentWicket, setCurrentWicket] = useState(0)
   const [iningsOver, setIningsOver] = useState(false)
+  const [totalBalls, setTotalBalls] = useState(0)
+  const [Overs, setOvers]  = useState(0)
 
   // const tossDetails = ()=>{
   //   JSON.parse(localStorage.getItem("tossDetails"))
@@ -30,6 +32,7 @@ const AdminPage = () => {
     // console.log(toss)
     setMatchData(()=>match)
     setTossData(()=>toss)
+    
     // console.log(tossData)
 
     // console.log(matchData, tossData)
@@ -78,16 +81,35 @@ const AdminPage = () => {
       setIningsOver(true)
     }
 
+    if(value !== 'wide' || value !== "no"){
+      setTotalBalls(prev =>{
+        const newBalls = prev +1;
+        if(newBalls == (matchData.over)*6)endIninngs()
+          return newBalls
+      })
+    }
+
+    const calculateOver = ()=>{
+      let over = Math.floor((totalBalls)/6)
+      let balls = (totalBalls)%6
+      return `${over}.${balls}`
+    }
+    setOvers(calculateOver)
+
 
   }
 
   return (
     <div>
-      {!iningsOver? (<div><div className='text-3xl font-bold flex justify-around mt-7'>
+      <div className='text-3xl font-bold flex justify-around mt-7'>
           <div>{battingteam}</div>
           <div>{`${currentRun}/${currentWicket}`}</div>
+          <div>{`Balls: ${totalBalls}`}</div>
+          <div>{`Overs: ${Overs}`}</div>
       </div>
-      <Title text={`${bowlingteam} will bowl`} className='mt-5'/>
+
+      {!iningsOver ? (<div>
+        <Title text={`${bowlingteam} will bowl`} className='mt-5'/>
 
         <div className='flex justify-around mt-15 '>
           {[0,1,2,3,4,5,6,"wide","no"].map((value)=>(
@@ -95,13 +117,12 @@ const AdminPage = () => {
           ))}
         </div>
         <div className='flex justify-center mt-5 font-bold text-2xl text-red-600 rounded-xl cursor-pointer' onClick={()=>changeRun("W")}>Out</div>
-        </div>)
         
-        :''}
-
-        <div>
-          
-        </div>
+      </div>)
+      :(
+        <Title text={`1st innings end`} className='mt-5'/>
+      )}
+      
     </div>
   )
 }
