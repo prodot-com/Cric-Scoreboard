@@ -52,7 +52,8 @@ const AdminPage = () => {
   useEffect(() => {
   console.log('matchData:', matchData);
   console.log('battingTeam:', battingteam);
-}, [matchData, battingteam]);
+  console.log('BowlingTeam:',bowlingteam)
+}, [matchData, battingteam, bowlingteam]);
 
   const changeRun = ()=>{
 
