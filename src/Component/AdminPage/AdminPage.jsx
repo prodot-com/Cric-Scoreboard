@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import {  useNavigate } from 'react-router'
+import Title from '../Title/Title'
 
 
 const AdminPage = () => {
@@ -55,8 +56,12 @@ const AdminPage = () => {
   console.log('BowlingTeam:',bowlingteam)
 }, [matchData, battingteam, bowlingteam]);
 
-  const changeRun = ()=>{
-
+  const changeRun = (value)=>{
+    if(value === 'wide'){
+      setCurrentRun((prev)=>(
+        prev + 1
+      ))
+    }
   }
 
   return (
@@ -65,10 +70,11 @@ const AdminPage = () => {
           <div>{battingteam}</div>
           <div>{`${currentRun}/${currentWicket}`}</div>
       </div>
+      <Title text={`${bowlingteam} will bowl`} className='mt-5'/>
 
         <div className='flex justify-around mt-15 '>
           {[0,1,2,3,4,5,6,"wide","no"].map((value)=>(
-            <button key={value} className='bg-amber-400 p-1 rounded-xl h-10 w-10' onClick={()=>changeRun(value)}>{value}</button>
+            <button key={value} className='bg-amber-400 p-1 rounded-xl h-10 w-10 cursor-pointer' onClick={()=>changeRun(value)}>{value}</button>
           ))}
         </div>
         {/* <div className='flex justify-around mt-7 '>
