@@ -4,7 +4,7 @@ import Title from '../Title/Title'
 
 
 const AdminPage = () => {
-  const navigate = new useNavigate()
+  const navigate = useNavigate()
 
   const [matchData, setMatchData] =  useState({})
   const [tossData, setTossData] =  useState({})
@@ -14,7 +14,7 @@ const AdminPage = () => {
   const [currentWicket, setCurrentWicket] = useState(0)
   const [iningsOver, setIningsOver] = useState(false)
   const [totalBalls, setTotalBalls] = useState(0)
-  const [Overs, setOvers]  = useState(0)
+  const [Overs, setOvers]  = useState('0.0')
 
   // const tossDetails = ()=>{
   //   JSON.parse(localStorage.getItem("tossDetails"))
@@ -29,15 +29,9 @@ const AdminPage = () => {
     if(!match || !toss){
       navigate('/')
     }else{
-    // console.log(match)
-    // console.log(toss)
     setMatchData(()=>match)
     setTossData(()=>toss)
     
-    // console.log(tossData)
-
-    // console.log(matchData, tossData)
-
     const battingTeam = toss.decision === 'BAT'
     ? toss.tossWinner 
     : toss.tossWinner === match.team1
@@ -49,15 +43,16 @@ const AdminPage = () => {
 
       const bowlingTeam = match.team1 !== toss.tossWinner
       ? match.team1 : match.team2
+
       setBowlingTeam(bowlingTeam)
     }
   },[])
 
-  useEffect(() => {
-  console.log('matchData:', matchData);
-  console.log('battingTeam:', battingteam);
-  console.log('BowlingTeam:',bowlingteam)
-}, [matchData, battingteam, bowlingteam]);
+//   useEffect(() => {
+//   console.log('matchData:', matchData);
+//   console.log('battingTeam:', battingteam);
+//   console.log('BowlingTeam:',bowlingteam)
+// }, [matchData, battingteam, bowlingteam]);
 
   useEffect(()=>{
       const over = Math.floor((totalBalls)/6)
@@ -76,7 +71,7 @@ const AdminPage = () => {
     else if(value === "W"){
       setCurrentWicket(prev=>{
         const newWickets = prev+1;
-        if(newWickets === 10) endIninngs()
+        if(newWickets === 10) setIningsOver(true)
           return newWickets;
       })
     }
@@ -88,16 +83,28 @@ const AdminPage = () => {
     if(value !== 'wide' && value !== "no"){
       setTotalBalls(prev =>{
         const newBalls = prev +1;
-        if(newBalls == (matchData.over)*6)endIninngs()
+        if(newBalls == (matchData.over)*6)setIningsOver(true)
           return newBalls
       })
     }
 
-  }
+  };
 
-  const endIninngs = ()=>{
-      setIningsOver(true)
-      console.log('innings Ended')
+  useEffect(()=>{
+    if(iningsOver){
+
+      const firstInningsDetails = {
+      bowlingteam,
+      battingteam,
+      runs: currentRun,
+      balls: totalBalls,
+      wickets: currentWicket,
+    };
+    localStorage.setItem("firstInningsDetails", JSON.stringify(firstInningsDetails));
+    console.log("Saved first innings:", firstInningsDetails);
+    }
+
+  },[iningsOver])
 
       const firstInningsDetails = {
         bowlingteam,
@@ -108,12 +115,11 @@ const AdminPage = () => {
     }
 
     localStorage.setItem("firstInningsDetails", JSON.stringify(firstInningsDetails))
-    navigate('/second-innings')
 
-    }
+    
 
   const routeChange = ()=>{
-    
+    navigate('/second-innings')
   }
 
   return (

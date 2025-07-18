@@ -4,6 +4,7 @@ import Creation from './Component/CreationPage/Creation'
 import { BrowserRouter, Routes, Route , Link} from 'react-router-dom'
 import Toss from './Component/TossPage/UpperSection/Toss'
 import AdminPage from './Component/AdminPage/AdminPage'
+import SecondInnings from './Component/SecondInnings/SecondInnings'
 import { CricContext, CricProvider, useCric } from './Context/CricContext'
 
 
@@ -28,7 +29,7 @@ const App = () => {
         <Route path='/creation' element={<Creation/>}/>
         <Route path='/toss' element={<Toss/>}/>
         <Route path='/admin' element={<AdminPage/>}/>
-        <Route path='/second-innings' element={<Second-}/>
+        <Route path='/second-innings' element={<SecondInnings/>}/>
     </Routes>
     </BrowserRouter>
     </CricProvider>
