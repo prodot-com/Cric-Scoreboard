@@ -19,6 +19,10 @@ const AdminPage = () => {
   // const tossDetails = ()=>{
   //   JSON.parse(localStorage.getItem("tossDetails"))
   // }
+  const endIninngs = ()=>{
+      setIningsOver(true)
+      console.log('innings Ended')
+    }
 
   useEffect(()=>{
     const match = JSON.parse(localStorage.getItem('matchDetails'))
@@ -58,6 +62,12 @@ const AdminPage = () => {
   console.log('BowlingTeam:',bowlingteam)
 }, [matchData, battingteam, bowlingteam]);
 
+  useEffect(()=>{
+      const over = Math.floor((totalBalls)/6)
+      const balls = (totalBalls)%6
+      setOvers(`${over}.${balls}`)
+  },[totalBalls])
+
   const changeRun = (value)=>{
     if(iningsOver) return
 
@@ -77,25 +87,14 @@ const AdminPage = () => {
       setCurrentRun(prev => prev + value)
     }
 
-    const endIninngs = ()=>{
-      setIningsOver(true)
-    }
 
-    if(value !== 'wide' || value !== "no"){
+    if(value !== 'wide' && value !== "no"){
       setTotalBalls(prev =>{
         const newBalls = prev +1;
         if(newBalls == (matchData.over)*6)endIninngs()
           return newBalls
       })
     }
-
-    const calculateOver = ()=>{
-      let over = Math.floor((totalBalls)/6)
-      let balls = (totalBalls)%6
-      return `${over}.${balls}`
-    }
-    setOvers(calculateOver)
-
 
   }
 
