@@ -12,6 +12,7 @@ const AdminPage = () => {
   const [bowlingteam, setBowlingTeam] = useState('')
   const [currentRun, setCurrentRun] = useState(0)
   const [currentWicket, setCurrentWicket] = useState(0)
+  const [iningsOver, setIningsOver] = useState(false)
 
   // const tossDetails = ()=>{
   //   JSON.parse(localStorage.getItem("tossDetails"))
@@ -46,8 +47,6 @@ const AdminPage = () => {
       ? match.team1 : match.team2
       setBowlingTeam(bowlingTeam)
     }
-
-
   },[])
 
   useEffect(() => {
@@ -57,16 +56,34 @@ const AdminPage = () => {
 }, [matchData, battingteam, bowlingteam]);
 
   const changeRun = (value)=>{
+    if(iningsOver) return
+
     if(value === 'wide'){
-      setCurrentRun((prev)=>(
-        prev + 1
-      ))
+      setCurrentRun(prev=> prev + 1)
+    
+    }else if(value==='no'){setCurrentRun(prev=>prev+1)}
+    
+    else if(value === "W"){
+      setCurrentWicket(prev=>{
+        const newWickets = prev+1;
+        if(newWickets === 10) endIninngs()
+          return newWickets;
+      })
     }
+    else{
+      setCurrentRun(prev => prev + value)
+    }
+
+    const endIninngs = ()=>{
+      setIningsOver(true)
+    }
+
+
   }
 
   return (
     <div>
-      <div className='text-3xl font-bold flex justify-around mt-7'>
+      {!iningsOver? (<div><div className='text-3xl font-bold flex justify-around mt-7'>
           <div>{battingteam}</div>
           <div>{`${currentRun}/${currentWicket}`}</div>
       </div>
@@ -77,13 +94,14 @@ const AdminPage = () => {
             <button key={value} className='bg-amber-400 p-1 rounded-xl h-10 w-10 cursor-pointer' onClick={()=>changeRun(value)}>{value}</button>
           ))}
         </div>
-        {/* <div className='flex justify-around mt-7 '>
-            <button className='bg-amber-400 p-1 rounded-xl h-15 w-15'>Wide</button>
-            <button className='bg-amber-400 p-1 rounded-xl h-15 w-15'>No Ball</button>
+        <div className='flex justify-center mt-5 font-bold text-2xl text-red-600 rounded-xl cursor-pointer' onClick={()=>changeRun("W")}>Out</div>
+        </div>)
+        
+        :''}
+
+        <div>
+          
         </div>
-        <div className='flex justify-around mt-15 '>
-            <button className='bg-red-600 p-1 rounded-xl h-14 w-14'>OUT</button>
-        </div> */}
     </div>
   )
 }
