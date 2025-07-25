@@ -7,6 +7,7 @@ const AdminPage = () => {
   const navigate = useNavigate()
 
   const [matchData, setMatchData] =  useState({})
+  const [totalOver, setTotalOver] = useState(0)
   const [tossData, setTossData] =  useState({})
   const [battingteam, setBattingTeam] = useState('')
   const [bowlingteam, setBowlingTeam] = useState('')
@@ -31,6 +32,7 @@ const AdminPage = () => {
     }else{
     setMatchData(()=>match)
     setTossData(()=>toss)
+    setTotalOver(()=>match.over)
     
     const battingTeam = toss.decision === 'BAT'
     ? toss.tossWinner 
@@ -99,6 +101,7 @@ const AdminPage = () => {
       runs: currentRun,
       balls: totalBalls,
       wickets: currentWicket,
+      totalOver
     };
     localStorage.setItem("firstInningsDetails", JSON.stringify(firstInningsDetails));
     console.log("Saved first innings:", firstInningsDetails);
@@ -111,7 +114,8 @@ const AdminPage = () => {
         battingteam,
         runs: currentRun,
         balls: totalBalls,
-        wickets: currentWicket
+        wickets: currentWicket,
+        totalOver
     }
 
     localStorage.setItem("firstInningsDetails", JSON.stringify(firstInningsDetails))
