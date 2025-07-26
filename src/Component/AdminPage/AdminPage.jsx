@@ -109,16 +109,16 @@ const AdminPage = () => {
 
   },[iningsOver])
 
-      const firstInningsDetails = {
-        bowlingteam,
-        battingteam,
-        runs: currentRun,
-        balls: totalBalls,
-        wickets: currentWicket,
-        totalOver
-    }
+    //   const firstInningsDetails = {
+    //     bowlingteam,
+    //     battingteam,
+    //     runs: currentRun,
+    //     balls: totalBalls,
+    //     wickets: currentWicket,
+    //     totalOver
+    // }
 
-    localStorage.setItem("firstInningsDetails", JSON.stringify(firstInningsDetails))
+    // localStorage.setItem("firstInningsDetails", JSON.stringify(firstInningsDetails))
 
     
 

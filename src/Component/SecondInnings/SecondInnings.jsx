@@ -10,7 +10,7 @@ const SecondInnings = () => {
     const [target, setTarget] = useState(0)
     const [battingTeam, setBattingTeam] = useState('')
     const [iningsOver, setIningsOver] = useState(false)
-    const [currentRun, setcurrentRun]  = useState(35)
+    const [currentRun, setcurrentRun]  = useState(0)
     const [currentWicket, setcurrentWicket]  = useState(0)
     const [totalBalls, settotalBalls]  = useState(0)
     const [bowlingTeam, setBowlingTeam]  = useState('')
@@ -89,11 +89,11 @@ const SecondInnings = () => {
       </div>
 
       {(battingTeamWon) ? (<div>
-          <h3>Batting Team Won</h3>
+          <h3 className='flex justify-center text-4xl font-bold mt-12 text-indigo-700'>{`${battingTeam} Won`}</h3>
         </div>)
       :(bowlingTeamWon)?(
         <div>
-          <h3>Batting Team Won</h3>
+          <h3 className='flex justify-center text-4xl font-bold mt-12 text-indigo-700'>{`${bowlingTeam} Won`}</h3>
         </div>
       ):
       (
