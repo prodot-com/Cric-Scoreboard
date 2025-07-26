@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import Index from './Component/FrontPage'
+import Index from './Component/FrontPage/Index.jsx'
 import Creation from './Component/CreationPage/Creation'
 import { BrowserRouter, Routes, Route , Link} from 'react-router-dom'
 import Toss from './Component/TossPage/UpperSection/Toss'
