@@ -10,7 +10,7 @@ const httpServer = createServer(app)
 
 const io = new Server(httpServer, {
     cors:{
-        origin: "http://localhost:5173",
+        origin: "https://cric-scoreboard-1.onrender.com/",
         methods: ['GET', 'POST']
     }
 })
