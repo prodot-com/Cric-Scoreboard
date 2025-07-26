@@ -1,9 +1,12 @@
 import React from 'react'
+import { useNavigate } from 'react-router'
 
 const Matches = ({team1, team2}) => {
 
+  const navigate = useNavigate()
+
   const routeChange = ()=>{
-    
+    navigate('/live-first')
   }
 
   return (
