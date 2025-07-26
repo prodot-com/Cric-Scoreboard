@@ -2,6 +2,12 @@ import React, { useEffect, useState } from 'react'
 import {  useNavigate } from 'react-router'
 import Title from '../Title/Title'
 
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:9000");
+
+
+
 
 const AdminPage = () => {
   const navigate = useNavigate()
@@ -109,17 +115,20 @@ const AdminPage = () => {
 
   },[iningsOver])
 
-    //   const firstInningsDetails = {
-    //     bowlingteam,
-    //     battingteam,
-    //     runs: currentRun,
-    //     balls: totalBalls,
-    //     wickets: currentWicket,
-    //     totalOver
-    // }
+  useEffect(()=>{
+    const firstInnings = {
+      bowlingteam,
+      battingteam,
+      runs: currentRun,
+      balls: totalBalls,
+      wickets: currentWicket
+    }
+    console.log(firstInnings)
+    socket.emit('message', firstInnings)
 
-    // localStorage.setItem("firstInningsDetails", JSON.stringify(firstInningsDetails))
+  },[totalBalls, currentRun,currentWicket])
 
+    
     
 
   const routeChange = ()=>{

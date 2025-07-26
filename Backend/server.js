@@ -10,13 +10,18 @@ const httpServer = createServer(app)
 
 const io = new Server(httpServer, {
     cors:{
-        origin: "https://localhost:5173",
+        origin: "http://localhost:5173",
         methods: ['GET', 'POST']
     }
 })
 
 io.on('connection', (socket)=>{
     console.log('User Connected: ', socket.id)
+
+    socket.on('message', (data)=>{
+        console.log('Message received: ', data)
+        io.emit('message', data)
+    })
 })
 
 
