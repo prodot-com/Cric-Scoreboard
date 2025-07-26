@@ -1,34 +1,37 @@
-import express from 'express'
-import {createServer} from 'http'
-import { Server } from 'socket.io'
-import cors from 'cors'
+import express from "express";
+import { createServer } from "http";
+import { Server } from "socket.io";
 
-const app = express()
-app.use(cors())
+const app = express();
+const server = createServer(app);
 
-const httpServer = createServer(app)
+const io = new Server(server, {
+  cors: {
+    origin: "*", // For devtunnels testing; restrict later to your exact frontend URL
+    methods: ["GET", "POST"]
+  }
+});
 
-const io = new Server(httpServer, {
-    cors:{
-        origin: "http://localhost:5173",
-        methods: ['GET', 'POST']
-    }
-})
+let latestScore = null; // store the most recent data for reconnects
 
-io.on('connection', (socket)=>{
-    console.log('User Connected: ', socket.id)
+io.on("connection", (socket) => {
+  console.log("✅ Client connected:", socket.id);
 
-    socket.on('message', (data)=>{
-        console.log('Message received: ', data)
-        io.emit('message', data)
-    })
-})
+  // Send the last known score to newly connected clients
+  if (latestScore) {
+    socket.emit("message", latestScore);
+  }
 
+  socket.on("message", (data) => {
+    latestScore = data; // store for later
+    io.emit("message", data); // broadcast live updates
+  });
 
-app.get('/', (req, res)=>{
-    res.send("Socket.io backend running")
-})
+  socket.on("disconnect", () => {
+    console.log("❌ Client disconnected:", socket.id);
+  });
+});
 
-httpServer.listen(9000, ()=>{
-    console.log('server running on localhost:9000')
-})
+server.listen(9000, () => {
+  console.log("🚀 Socket.IO server running on port 9000");
+});
