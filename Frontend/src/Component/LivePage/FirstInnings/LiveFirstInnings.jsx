@@ -1,46 +1,63 @@
-import React from 'react'
-import {io} from 'socket.io-client'
-import { useEffect } from 'react'
-import { useSearchParams } from 'react-router'
-import { useState } from 'react'
+import React, { useEffect, useState } from 'react';
+import { io } from 'socket.io-client';
 
-const socket = io('http://localhost:9000')
+const socket = io("http://localhost:9000");
 
 const LiveFirstInnings = () => {
+  const [battingteam, setBattingTeam] = useState("Loading...");
+  const [bowlingteam, setBowlingTeam] = useState("Loading...");
+  const [currentRun, setCurrentRun] = useState(0);
+  const [currentWicket, setCurrentWicket] = useState(0);
+  const [totalBalls, setTotalBalls] = useState(0);
+  const [overs, setOvers] = useState("0.0");
 
-  const [firstInningsDetails, setFirstInningsDetails] = useState('')
-  const [battingteam, setBattingTeam] = useState('')
-    const [bowlingteam, setBowlingTeam] = useState('')
-    const [currentRun, setCurrentRun] = useState(0)
-    const [currentWicket, setCurrentWicket] = useState(0)
-    const [totalBalls, setTotalBalls] = useState(0)
-    const [Overs, setOvers]  = useState('0.0')
+useEffect(() => {
+  const handleMessage = (data) => {
+    setBattingTeam(data.battingteam || "N/A");
+    setBowlingTeam(data.bowlingteam || "N/A");
+    setCurrentRun(data.runs || 0);
+    setCurrentWicket(data.wickets || 0);
+    setTotalBalls(data.balls || 0);
+
+    // ✅ Save to localStorage
+    localStorage.setItem("firstInningsDetails", JSON.stringify(data));
+  };
+
+  socket.on("message", handleMessage);
+
+  return () => {
+    socket.off("message", handleMessage);
+  };
+}, []);
+
+useEffect(() => {
+  const savedData = localStorage.getItem("firstInningsDetails");
+  if (savedData) {
+    const parsed = JSON.parse(savedData);
+    setBattingTeam(parsed.battingteam || "N/A");
+    setBowlingTeam(parsed.bowlingteam || "N/A");
+    setCurrentRun(parsed.runs || 0);
+    setCurrentWicket(parsed.wickets || 0);
+    setTotalBalls(parsed.balls || 0);
+  }
+}, []);
+
+
 
   useEffect(() => {
-    socket.on('message',(data)=>{
-      console.log(data)
-      setFirstInningsDetails(data)
-    })
-  },[])
-
-    useEffect(()=>{
-      setBattingTeam(firstInningsDetails.battingteam),
-      setBowlingTeam(firstInningsDetails.bowlingteam),
-      setCurrentRun(firstInningsDetails.runs),
-      setCurrentWicket(firstInningsDetails.wickets),
-      setTotalBalls(firstInningsDetails.balls)
-    },[firstInningsDetails])
-
-    const print =()=>{
-      console.log(battingteam, bowlingteam , currentRun, currentWicket, totalBalls)
-    }
+    const over = Math.floor(totalBalls / 6);
+    const balls = totalBalls % 6;
+    setOvers(`${over}.${balls}`);
+  }, [totalBalls]);
 
   return (
-    <div>
-      <h3 className='flex justify-center text-4xl font-bold mt-12 text-indigo-700'>Live 1st Innings</h3>
-      <button onClick={print}>print</button>
-      </div>
-  )
-}
+    <div className='text-3xl font-bold flex flex-col items-center mt-7'>
+      <div>{battingteam}</div>
+      <div>{`${currentRun}/${currentWicket}`}</div>
+      <div>{`Balls: ${totalBalls}`}</div>
+      <div>{`Overs: ${overs}`}</div>
+    </div>
+  );
+};
 
-export default LiveFirstInnings
+export default LiveFirstInnings;
