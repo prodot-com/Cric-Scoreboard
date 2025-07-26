@@ -4,7 +4,8 @@ import Title from '../Title/Title'
 
 import { io } from "socket.io-client";
 
-const socket = io("https://cric-scoreboard.onrender.com");
+const socket = io("https://cric-scoreboard.onrender.com", { transports: ["websocket"] });
+
 
 
 

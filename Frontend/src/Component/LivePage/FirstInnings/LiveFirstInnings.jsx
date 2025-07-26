@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 
-const socket = io("https://cric-scoreboard.onrender.com");
+const socket = io("https://cric-scoreboard.onrender.com", { transports: ["websocket"] });
+
 
 const LiveFirstInnings = () => {
   const [battingteam, setBattingTeam] = useState("Loading...");
