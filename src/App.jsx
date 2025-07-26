@@ -6,6 +6,7 @@ import Toss from './Component/TossPage/UpperSection/Toss'
 import AdminPage from './Component/AdminPage/AdminPage'
 import SecondInnings from './Component/SecondInnings/SecondInnings'
 import { CricContext, CricProvider, useCric } from './Context/CricContext'
+import LiveFirstInnings from './Component/LivePage/FirstInnings/LiveFirstInnings'
 
 
 
@@ -30,6 +31,7 @@ const App = () => {
         <Route path='/toss' element={<Toss/>}/>
         <Route path='/admin' element={<AdminPage/>}/>
         <Route path='/second-innings' element={<SecondInnings/>}/>
+        <Route path='/live-first' element={<LiveFirstInnings/>}/>
     </Routes>
     </BrowserRouter>
     </CricProvider>
