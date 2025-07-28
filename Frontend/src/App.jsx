@@ -31,7 +31,7 @@ const App = () => {
         <Route path='/toss' element={<Toss/>}/>
         <Route path='/admin' element={<AdminPage/>}/>
         <Route path='/second-innings' element={<SecondInnings/>}/>
-        <Route path='/live-first' element={<LiveFirstInnings/>}/>
+        {/* <Route path='/live-first' element={<LiveFirstInnings/>}/> */}
     </Routes>
     </BrowserRouter>
     </CricProvider>
