@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 
-const socket = io("https://cric-scoreboard.onrender.com", { transports: ["websocket"] });
+const socket = io("http://localhost:9000");
 
 
 const LiveFirstInnings = () => {

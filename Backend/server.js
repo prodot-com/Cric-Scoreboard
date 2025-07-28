@@ -1,29 +1,34 @@
-import express from "express";
-import { createServer } from "http";
-import { Server } from "socket.io";
-import cors from "cors";
+import express from 'express'
+import {createServer} from 'http'
+import { Server } from 'socket.io'
+import cors from 'cors'
 
-const app = express();
-app.use(cors({
-  origin: "https://cric-scoreboard-1.onrender.com", // frontend URL
-  methods: ["GET", "POST"],
-  credentials: true
-}));
+const app = express()
+app.use(cors())
 
-const server = createServer(app);
+const httpServer = createServer(app)
 
-const io = new Server(server, {
-  cors: {
-    origin: "https://cric-scoreboard-1.onrender.com", // must match frontend domain
-    methods: ["GET", "POST"],
-    credentials: true
-  }
-});
+const io = new Server(httpServer, {
+    cors:{
+        origin: "http://localhost:5173",
+        methods: ['GET', 'POST']
+    }
+})
 
-io.on("connection", (socket) => {
-  console.log("Client connected", socket.id);
-});
+io.on('connection', (socket)=>{
+    console.log('User Connected: ', socket.id)
 
-server.listen(9000, () => {
-  console.log("Server running on port 9000");
-});
+    socket.on('message', (data)=>{
+        console.log('Message received: ', data)
+        io.emit('message', data)
+    })
+})
+
+
+app.get('/', (req, res)=>{
+    res.send("Socket.io backend running")
+})
+
+httpServer.listen(9000, ()=>{
+    console.log('server running on localhost:9000')
+})
