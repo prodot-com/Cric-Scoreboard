@@ -28,9 +28,14 @@ io.on('connection', (socket) => {
     console.log('User Connected: ', socket.id)
 
     socket.on('message', (data) => {
-        console.log('Message received: ', data)
+        console.log('Message received: ', data),
         io.emit('message', data)
     })
+
+    socket.on('newMessage', (data)=>[
+        console.log('New Message Recieved: ', data),
+        io.emit(data)
+    ])
 })
 
 app.get('/', (req, res) => {

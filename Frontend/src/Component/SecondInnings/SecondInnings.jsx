@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import Title from '../Title/Title'
+import { io } from "socket.io-client";
+
+const socket = io("https://cric-scoreboard.onrender.com/");
 
 const SecondInnings = () => {
     let navigate = useNavigate()
@@ -77,6 +80,20 @@ const SecondInnings = () => {
     useEffect(()=>
       console.log(battingTeamWon, bowlingTeamWon)
     ,[currentRun, currentWicket, totalBalls])
+
+    useEffect(()=>{
+        const SecondInnings = {
+          bowlingTeam,
+          battingTeam,
+          runs: currentRun,
+          balls: totalBalls,
+          wickets: currentWicket,
+          iningsOver
+        }
+        console.log(SecondInnings)
+        socket.emit('newMessage', SecondInnings)
+    
+      },[totalBalls, currentRun,currentWicket])
 
 
   return (
