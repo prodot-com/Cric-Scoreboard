@@ -54,9 +54,18 @@ useEffect(() => {
   }
 }, []);
 
-  const routeChange = ()=>{
-    
-  }
+  // const routeChange = ()=>{
+  //   navigate('/live-second')
+  // }
+
+  // if(setSecondInningsStart){
+  //   routeChange()
+  // }
+  useEffect(()=>{
+    if(secondInningsStart){
+      navigate('/live-second')
+    }
+  },[secondInningsStart])
 
 
 
