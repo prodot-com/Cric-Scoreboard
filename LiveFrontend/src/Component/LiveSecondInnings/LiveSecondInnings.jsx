@@ -41,6 +41,28 @@ const SecondInnings = () => {
       
     },[firstInningsDetails])
 
+    useEffect(() => {
+      const handleMessage = (data) => {
+        console.log(data)
+        setBattingTeam(data.battingteam || "N/A");
+        setBowlingTeam(data.bowlingteam || "N/A");
+        setcurrentRun(data.runs || 0);
+        setcurrentWicket(data.wickets || 0);
+        settotalBalls(data.balls || 0);
+        setIningsOver(data.iningsOver)
+        setSecondInningsStart(data.secondInningsStart)
+    
+    
+        localStorage.setItem("firstInningsDetails", JSON.stringify(data));
+      };
+    
+      socket.on("newMessage", handleMessage);
+    
+      return () => {
+        socket.off("newMessage", handleMessage);
+      };
+    }, []);
+
 
 
   return (

@@ -130,10 +130,23 @@ const AdminPage = () => {
     
     
 
-  const routeChange = ()=>{
-    setSecondInningsStart(true)
-    navigate('/second-innings')
+  const routeChange = () => {
+  // Mark second innings start
+  setSecondInningsStart(true);
+
+  // 🛑 Stop listening to "message" event
+  socket.off('message');
+
+  // 🔌 Disconnect socket connection
+  if (socket && socket.connected) {
+    socket.disconnect();
+    console.log('Socket disconnected on route change');
   }
+
+  // 🌐 Navigate to second innings
+  navigate('/second-innings');
+};
+
 
   return (
     <div>

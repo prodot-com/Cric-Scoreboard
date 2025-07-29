@@ -32,10 +32,14 @@ io.on('connection', (socket) => {
         io.emit('message', data)
     })
 
-    socket.on('newMessage', (data)=>[
+    socket.on('newMessage', (data)=>{
         console.log('New Message Recieved: ', data),
-        io.emit(data)
-    ])
+        io.emit('newMessage',data)
+    })
+
+    socket.on('disconnect', (reason)=>{
+        console.log(socket.id, reason)
+    })
 })
 
 app.get('/', (req, res) => {
