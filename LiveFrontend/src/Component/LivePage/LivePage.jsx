@@ -22,7 +22,6 @@ useEffect(() => {
     setTotalBalls(data.balls || 0);
     setIningsOver(data.iningsOver)
 
-    // ✅ Save to localStorage
     localStorage.setItem("firstInningsDetails", JSON.stringify(data));
   };
 
@@ -42,6 +41,7 @@ useEffect(() => {
     setCurrentRun(parsed.runs || 0);
     setCurrentWicket(parsed.wickets || 0);
     setTotalBalls(parsed.balls || 0);
+    setIningsOver(parsed.iningsOver)
   }
 }, []);
 
@@ -61,8 +61,10 @@ useEffect(() => {
       <div>{`Overs: ${overs}`}</div>
 
       {iningsOver && (
-        <div>
+        <div className='flex flex-col items-center mt-9 text-indigo-700'>
           <h3>Innings Over</h3>
+          <h2>{`Target: ${currentRun +1}`}</h2>
+          <h2>Second Innings will start soon</h2>
         </div>
       )}
     </div>
