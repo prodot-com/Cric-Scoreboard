@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { io } from 'socket.io-client';
 
 const socket = io("https://cric-scoreboard.onrender.com/");
+// const navigate = useNavigate()
 
 
 const LiveFirstInnings = () => {
+
+  const navigate = useNavigate()
+
   const [battingteam, setBattingTeam] = useState("Loading...");
   const [bowlingteam, setBowlingTeam] = useState("Loading...");
   const [currentRun, setCurrentRun] = useState(0);
@@ -12,15 +17,19 @@ const LiveFirstInnings = () => {
   const [totalBalls, setTotalBalls] = useState(0);
   const [overs, setOvers] = useState("0.0");
   const [iningsOver, setIningsOver] = useState(false)
+  const [secondInningsStart, setSecondInningsStart] = useState(false)
 
 useEffect(() => {
   const handleMessage = (data) => {
+    console.log(data)
     setBattingTeam(data.battingteam || "N/A");
     setBowlingTeam(data.bowlingteam || "N/A");
     setCurrentRun(data.runs || 0);
     setCurrentWicket(data.wickets || 0);
     setTotalBalls(data.balls || 0);
     setIningsOver(data.iningsOver)
+    setSecondInningsStart(data.secondInningsStart)
+
 
     localStorage.setItem("firstInningsDetails", JSON.stringify(data));
   };
@@ -45,6 +54,10 @@ useEffect(() => {
   }
 }, []);
 
+  const routeChange = ()=>{
+    
+  }
+
 
 
   useEffect(() => {
@@ -54,7 +67,7 @@ useEffect(() => {
   }, [totalBalls]);
 
   return (
-    <div className='text-3xl font-bold flex flex-col items-center mt-7'>
+      <div className='text-3xl font-bold flex flex-col items-center mt-7'>
       <div>{battingteam}</div>
       <div>{`${currentRun}/${currentWicket}`}</div>
       <div>{`Balls: ${totalBalls}`}</div>

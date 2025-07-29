@@ -23,6 +23,7 @@ const AdminPage = () => {
   const [iningsOver, setIningsOver] = useState(false)
   const [totalBalls, setTotalBalls] = useState(0)
   const [Overs, setOvers]  = useState('0.0')
+  const [secondInningsStart, setSecondInningsStart] = useState(false)
 
   // const tossDetails = ()=>{
   //   JSON.parse(localStorage.getItem("tossDetails"))
@@ -57,11 +58,6 @@ const AdminPage = () => {
     }
   },[])
 
-//   useEffect(() => {
-//   console.log('matchData:', matchData);
-//   console.log('battingTeam:', battingteam);
-//   console.log('BowlingTeam:',bowlingteam)
-// }, [matchData, battingteam, bowlingteam]);
 
   useEffect(()=>{
       const over = Math.floor((totalBalls)/6)
@@ -123,17 +119,19 @@ const AdminPage = () => {
       runs: currentRun,
       balls: totalBalls,
       wickets: currentWicket,
-      iningsOver
+      iningsOver,
+      secondInningsStart
     }
     console.log(firstInnings)
     socket.emit('message', firstInnings)
 
-  },[totalBalls, currentRun,currentWicket])
+  },[totalBalls, currentRun,currentWicket, secondInningsStart])
 
     
     
 
   const routeChange = ()=>{
+    setSecondInningsStart(true)
     navigate('/second-innings')
   }
 
