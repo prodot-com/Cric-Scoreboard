@@ -122,7 +122,8 @@ const AdminPage = () => {
       battingteam,
       runs: currentRun,
       balls: totalBalls,
-      wickets: currentWicket
+      wickets: currentWicket,
+      iningsOver
     }
     console.log(firstInnings)
     socket.emit('message', firstInnings)

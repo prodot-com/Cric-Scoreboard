@@ -6,7 +6,6 @@ import Toss from './Component/TossPage/UpperSection/Toss'
 import AdminPage from './Component/AdminPage/AdminPage'
 import SecondInnings from './Component/SecondInnings/SecondInnings'
 import { CricContext, CricProvider, useCric } from './Context/CricContext'
-import LiveFirstInnings from './Component/LivePage/FirstInnings/LiveFirstInnings'
 
 
 

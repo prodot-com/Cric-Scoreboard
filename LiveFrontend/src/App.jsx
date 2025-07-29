@@ -1,12 +1,16 @@
 import React from 'react'
 import LivePage from './Component/LivePage/LivePage'
+import Matches from './Component/Matches/Matches'
+import { BrowserRouter, Route, Routes } from 'react-router'
 
 const App = () => {
   return (
-    <>
-      <h3>Live Page</h3>
-      <LivePage/>
-    </>
+    <BrowserRouter>
+    <Routes>
+      <Route path='/' element={<Matches/>}/>
+      <Route path='/Live' element={<LivePage/>}/>
+    </Routes>
+    </BrowserRouter>
   )
 }
 

@@ -11,6 +11,7 @@ const LiveFirstInnings = () => {
   const [currentWicket, setCurrentWicket] = useState(0);
   const [totalBalls, setTotalBalls] = useState(0);
   const [overs, setOvers] = useState("0.0");
+  const [iningsOver, setIningsOver] = useState(false)
 
 useEffect(() => {
   const handleMessage = (data) => {
@@ -19,6 +20,7 @@ useEffect(() => {
     setCurrentRun(data.runs || 0);
     setCurrentWicket(data.wickets || 0);
     setTotalBalls(data.balls || 0);
+    setIningsOver(data.iningsOver)
 
     // ✅ Save to localStorage
     localStorage.setItem("firstInningsDetails", JSON.stringify(data));
@@ -57,6 +59,12 @@ useEffect(() => {
       <div>{`${currentRun}/${currentWicket}`}</div>
       <div>{`Balls: ${totalBalls}`}</div>
       <div>{`Overs: ${overs}`}</div>
+
+      {iningsOver && (
+        <div>
+          <h3>Innings Over</h3>
+        </div>
+      )}
     </div>
   );
 };
