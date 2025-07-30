@@ -91,6 +91,16 @@ const AdminPage = () => {
 
   };
 
+  // useEffect(()=>{
+  //   const data = JSON.parse(localStorage.getItem('liveFirstInningsData'))
+
+  //   setBattingTeam(data.battingteam)
+  //   setBowlingTeam(data.bowlingteam)
+  //   setCurrentRun(data.runs)
+
+
+  // },[])
+
   useEffect(()=>{
 
     const liveFirstInningsData = {
@@ -108,15 +118,7 @@ const AdminPage = () => {
 
   },[totalBalls,currentRun,currentWicket])
 
-  useEffect(()=>{
-    const data = JSON.parse(localStorage.getItem('liveFirstInningsData'))
 
-    setBattingTeam(data.battingteam)
-    setBowlingTeam(data.bowlingteam)
-    setCurrentRun(data.runs)
-
-
-  },[])
 
   useEffect(()=>{
     if(iningsOver){

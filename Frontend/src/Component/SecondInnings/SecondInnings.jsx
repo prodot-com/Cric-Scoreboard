@@ -77,9 +77,9 @@ const SecondInnings = () => {
 
     }
 
-    useEffect(()=>
-      console.log(battingTeamWon, bowlingTeamWon)
-    ,[currentRun, currentWicket, totalBalls])
+    // useEffect(()=>
+    //   console.log(battingTeamWon, bowlingTeamWon)
+    // ,[currentRun, currentWicket, totalBalls])
 
     useEffect(()=>{
         const SecondInnings = {
