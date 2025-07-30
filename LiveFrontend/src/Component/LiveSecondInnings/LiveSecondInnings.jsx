@@ -11,35 +11,17 @@ const SecondInnings = () => {
     const [firstInningsDetails, setFirstInningsDetails] = useState({})
     const [totalOver,setTotalOver] = useState(0)
     const [target, setTarget] = useState(0)
-    const [battingTeam, setBattingTeam] = useState('')
+    const [battingTeam, setBattingTeam] = useState('Loading')
     const [iningsOver, setIningsOver] = useState(false)
     const [currentRun, setcurrentRun]  = useState(0)
     const [currentWicket, setcurrentWicket]  = useState(0)
     const [totalBalls, settotalBalls]  = useState(0)
-    const [bowlingTeam, setBowlingTeam]  = useState('')
+    const [bowlingTeam, setBowlingTeam]  = useState('_')
     const [battingTeamWon, setBattingTeamWon] = useState(false)
     const [bowlingTeamWon, setBowlingTeamWon] = useState(false)
 
-    // useEffect(()=>{
 
-    //     const firstInningsDetails = JSON.parse(localStorage.getItem('firstInningsDetails'))
-    //     // console.log(firstInningsDetails)
-    //     if(!firstInningsDetails){
-    //         navigate('/admin')
-    //     }else{
-    //         setFirstInningsDetails(firstInningsDetails)
-    //     }
-
-    // },[navigate])
-
-    useEffect(()=>{
-      // console.log(firstInningsDetails)
-      setTarget(firstInningsDetails.runs + 1)
-      setBattingTeam(firstInningsDetails.bowlingteam)
-      setBowlingTeam(firstInningsDetails.battingteam)
-      setTotalOver(firstInningsDetails.totalOver)
-      
-    },[firstInningsDetails])
+    
 
     useEffect(() => {
       const handleMessage = (data) => {
@@ -51,10 +33,9 @@ const SecondInnings = () => {
         settotalBalls(data.balls || 0);
         setIningsOver(data.iningsOver);
         setBattingTeamWon(data.battingTeamWon);
-        setBowlingTeamWon(data.setBowlingTeamWon)
+        setBowlingTeamWon(data.bowlingTeamWon)
     
-    
-        localStorage.setItem("firstInningsDetails", JSON.stringify(data));
+        
       };
 
       
@@ -93,13 +74,6 @@ const SecondInnings = () => {
         <div>
         <Title text={`${bowlingTeam} will bowl`} className='mt-5'/>
         <Title text={`Target: ${target}`} className='mt-5'/>
-
-        <div className='flex justify-around mt-15 '>
-          {[0,1,2,3,4,5,6,"wide","no"].map((value)=>(
-            <button key={value} className='bg-amber-400 p-1 rounded-xl h-10 w-10 cursor-pointer' onClick={()=>changeRun(value)}>{value}</button>
-          ))}
-        </div>
-        <div className='flex justify-center mt-5 font-bold text-2xl text-red-600 rounded-xl cursor-pointer' onClick={()=>changeRun("w")}>Out</div>
         
       </div>
       )}

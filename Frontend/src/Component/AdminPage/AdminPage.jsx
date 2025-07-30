@@ -25,10 +25,6 @@ const AdminPage = () => {
   const [Overs, setOvers]  = useState('0.0')
   const [secondInningsStart, setSecondInningsStart] = useState(false)
 
-  // const tossDetails = ()=>{
-  //   JSON.parse(localStorage.getItem("tossDetails"))
-  // }
-  
 
   useEffect(()=>{
     const match = JSON.parse(localStorage.getItem('matchDetails'))
@@ -94,6 +90,33 @@ const AdminPage = () => {
     }
 
   };
+
+  useEffect(()=>{
+
+    const liveFirstInningsData = {
+      bowlingteam,
+      battingteam,
+      runs: currentRun,
+      balls: totalBalls,
+      wickets: currentWicket,
+      totalOver
+    }
+
+    console.log('LiveDeatails: ',liveFirstInningsData)
+
+    localStorage.setItem('liveFirstInningsData',  JSON.stringify(liveFirstInningsData))
+
+  },[totalBalls,currentRun,currentWicket])
+
+  useEffect(()=>{
+    const data = JSON.parse(localStorage.getItem('liveFirstInningsData'))
+
+    setBattingTeam(data.battingteam)
+    setBowlingTeam(data.bowlingteam)
+    setCurrentRun(data.runs)
+
+
+  },[])
 
   useEffect(()=>{
     if(iningsOver){
