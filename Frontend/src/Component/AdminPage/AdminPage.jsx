@@ -129,24 +129,41 @@ const AdminPage = () => {
 
     
     
+  useEffect(()=>{
+    if(secondInningsStart){
+      const firstInnings = {
+      bowlingteam,
+      battingteam,
+      runs: currentRun,
+      balls: totalBalls,
+      wickets: currentWicket,
+      iningsOver,
+      secondInningsStart
+    }
+    console.log(firstInnings)
+    socket.emit('message', firstInnings)
+
+    setTimeout(()=>(
+      routeChange()
+    ),200)
+    }
+  },[secondInningsStart])
 
   const routeChange = () => {
-  // Mark second innings start
-  setSecondInningsStart(true);
-
-  // 🛑 Stop listening to "message" event
   socket.off('message');
-
-  // 🔌 Disconnect socket connection
   if (socket && socket.connected) {
     socket.disconnect();
     console.log('Socket disconnected on route change');
   }
-
-  // 🌐 Navigate to second innings
   navigate('/second-innings');
 };
 
+
+  const handleSubmit = ()=>{
+    setSecondInningsStart(true);
+  }
+
+  
 
   return (
     <div>
@@ -172,7 +189,7 @@ const AdminPage = () => {
         <div>
             <Title text={`1st innings end`} className='mt-5'/>
             <Title text={`Target: ${currentRun+1}`}/>
-            <button className='bg-amber-400 p-1 rounded-xl ml-30 mt-7 cursor-pointer' onClick={routeChange}>Second Innings</button>
+            <button className='bg-amber-400 p-1 rounded-xl ml-30 mt-7 cursor-pointer' onClick={handleSubmit}>Second Innings</button>
         </div>
       )}
       
