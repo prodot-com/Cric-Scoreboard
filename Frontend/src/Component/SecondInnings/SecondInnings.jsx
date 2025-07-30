@@ -88,7 +88,9 @@ const SecondInnings = () => {
           runs: currentRun,
           balls: totalBalls,
           wickets: currentWicket,
-          iningsOver
+          iningsOver,
+          battingTeamWon,
+          bowlingTeamWon
         }
         console.log(SecondInnings)
         socket.emit('newMessage', SecondInnings)

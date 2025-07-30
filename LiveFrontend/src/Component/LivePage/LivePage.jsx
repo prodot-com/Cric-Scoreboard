@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { replace, useNavigate } from 'react-router';
 import { io } from 'socket.io-client';
 
 const socket = io("https://cric-scoreboard.onrender.com/");
@@ -63,7 +63,7 @@ useEffect(() => {
   // }
   useEffect(()=>{
     if(secondInningsStart){
-      navigate('/live-second')
+      navigate('/live-second', {replace: true})
     }
   },[secondInningsStart])
 

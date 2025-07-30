@@ -44,16 +44,20 @@ const SecondInnings = () => {
     useEffect(() => {
       const handleMessage = (data) => {
         console.log(data)
-        setBattingTeam(data.battingteam || "N/A");
-        setBowlingTeam(data.bowlingteam || "N/A");
+        setBattingTeam(data.battingTeam || "N/A");
+        setBowlingTeam(data.bowlingTeam || "N/A");
         setcurrentRun(data.runs || 0);
         setcurrentWicket(data.wickets || 0);
         settotalBalls(data.balls || 0);
-        setIningsOver(data.iningsOver)
+        setIningsOver(data.iningsOver);
+        setBattingTeamWon(data.battingTeamWon);
+        setBowlingTeamWon(data.setBowlingTeamWon)
     
     
         localStorage.setItem("firstInningsDetails", JSON.stringify(data));
       };
+
+      
     
       socket.on("newMessage", handleMessage);
     
@@ -61,6 +65,10 @@ const SecondInnings = () => {
         socket.off("newMessage", handleMessage);
       };
     }, []);
+
+    useEffect(()=>{
+        console.log(battingTeam, bowlingTeam, currentRun)
+      },[totalBalls])
 
 
 
