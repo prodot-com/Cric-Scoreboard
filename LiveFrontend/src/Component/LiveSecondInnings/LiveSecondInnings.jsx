@@ -50,7 +50,6 @@ const SecondInnings = () => {
         setcurrentWicket(data.wickets || 0);
         settotalBalls(data.balls || 0);
         setIningsOver(data.iningsOver)
-        setSecondInningsStart(data.secondInningsStart)
     
     
         localStorage.setItem("firstInningsDetails", JSON.stringify(data));
