@@ -38,6 +38,7 @@ const SecondInnings = () => {
     
         
       };
+      
 
       
     
@@ -53,6 +54,9 @@ const SecondInnings = () => {
         const balls = totalBalls % 6;
         setOvers(`${over}.${balls}`);
       }, [totalBalls]);
+
+    
+
 
 
 

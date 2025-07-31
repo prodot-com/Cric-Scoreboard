@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState , useRef} from 'react'
 import { useNavigate } from 'react-router'
 import Title from '../Title/Title'
 import { io } from "socket.io-client";
@@ -7,6 +7,7 @@ const socket = io("https://cric-scoreboard.onrender.com/");
 
 const SecondInnings = () => {
     let navigate = useNavigate()
+    const socketRef = useRef(null)
 
     const [firstInningsDetails, setFirstInningsDetails] = useState({})
     const [totalOver,setTotalOver] = useState(0)
@@ -20,6 +21,13 @@ const SecondInnings = () => {
     const [bowlingTeam, setBowlingTeam]  = useState('')
     const [battingTeamWon, setBattingTeamWon] = useState(false)
     const [bowlingTeamWon, setBowlingTeamWon] = useState(false)
+
+      useEffect(() => {
+        socketRef.current = io("https://cric-scoreboard.onrender.com/");
+        return () => {
+          socketRef.current?.disconnect();
+        };
+      }, [])
 
     useEffect(()=>{
 
