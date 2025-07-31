@@ -37,6 +37,11 @@ io.on('connection', (socket) => {
         io.emit('newMessage',data)
     })
 
+    socket.on('teamDetails', (data)=>{
+        console.log(data)
+        io.emit(data)
+    })
+
     socket.on('disconnect', (reason)=>{
         console.log('User Disconnected: ',socket.id,'-->',reason)
     })

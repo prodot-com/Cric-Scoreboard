@@ -20,13 +20,24 @@ const AdminPage = () => {
   const [secondInningsStart, setSecondInningsStart] = useState(false)
 
   
-  
+
   useEffect(() => {
     socketRef.current = io("https://cric-scoreboard.onrender.com/");
     return () => {
       socketRef.current?.disconnect();
     };
   }, [])
+
+  // useEffect(()=>{
+  //   const data = JSON.parse(localStorage.getItem('liveFirstInningsData'))
+  //   if(data){
+  //     console.log(data)
+  //     setCurrentRun(data.runs)
+  //     setCurrentWicket(data.wickets)
+  //     setTotalBalls(data.balls)
+  //   }
+
+  // },[])
 
 
   
@@ -92,19 +103,24 @@ const AdminPage = () => {
     }
   }
 
-
-  useEffect(() => {
-    const liveFirstInningsData = {
-      bowlingteam,
-      battingteam,
-      runs: currentRun,
-      balls: totalBalls,
-      wickets: currentWicket,
-      totalOver
+  useEffect(()=>{
+    if(iningsOver){
+      
     }
+  },[iningsOver])
 
-    localStorage.setItem('liveFirstInningsData', JSON.stringify(liveFirstInningsData))
-  }, [totalBalls, currentRun, currentWicket])
+  // useEffect(() => {
+  //   const liveFirstInningsData = {
+  //     bowlingteam,
+  //     battingteam,
+  //     runs: currentRun,
+  //     balls: totalBalls,
+  //     wickets: currentWicket,
+  //     totalOver
+  //   }
+
+  //   localStorage.setItem('liveFirstInningsData', JSON.stringify(liveFirstInningsData))
+  // }, [totalBalls, currentRun, currentWicket])
 
 
   useEffect(() => {
