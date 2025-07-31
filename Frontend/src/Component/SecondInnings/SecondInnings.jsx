@@ -15,6 +15,7 @@ const SecondInnings = () => {
     const [iningsOver, setIningsOver] = useState(false)
     const [currentRun, setcurrentRun]  = useState(0)
     const [currentWicket, setcurrentWicket]  = useState(0)
+    const [overs, setOvers] = useState("0.0");
     const [totalBalls, settotalBalls]  = useState(0)
     const [bowlingTeam, setBowlingTeam]  = useState('')
     const [battingTeamWon, setBattingTeamWon] = useState(false)
@@ -31,6 +32,17 @@ const SecondInnings = () => {
         }
 
     },[navigate])
+
+    useEffect(()=>{
+        const data = JSON.parse(sessionStorage.getItem('liveSecondInningsData'))
+        if(data){
+          console.log(data)
+          setcurrentRun(data.runs)
+          setcurrentWicket(data.wickets)
+          settotalBalls(data.balls)
+        }
+    
+      },[])
 
     useEffect(()=>{
       // console.log(firstInningsDetails)
@@ -77,9 +89,24 @@ const SecondInnings = () => {
 
     }
 
-    // useEffect(()=>
-    //   console.log(battingTeamWon, bowlingTeamWon)
-    // ,[currentRun, currentWicket, totalBalls])
+    useEffect(() => {
+        const liveSecondInningsData = {
+          bowlingTeam,
+          battingTeam,
+          runs: currentRun,
+          balls: totalBalls,
+          wickets: currentWicket,
+          totalOver
+        }
+    
+        sessionStorage.setItem('liveSecondInningsData', JSON.stringify(liveSecondInningsData))
+      }, [totalBalls, currentRun, currentWicket])
+
+    useEffect(()=>{
+      if(battingTeamWon || bowlingTeamWon){
+        sessionStorage.clear("liveSecondInningsData")
+      }
+    },[battingTeamWon, bowlingTeamWon])
 
     useEffect(()=>{
         const SecondInnings = {
@@ -96,6 +123,12 @@ const SecondInnings = () => {
         socket.emit('newMessage', SecondInnings)
     
       },[totalBalls, currentRun,currentWicket])
+
+      useEffect(() => {
+    const over = Math.floor(totalBalls / 6);
+    const balls = totalBalls % 6;
+    setOvers(`${over}.${balls}`);
+  }, [totalBalls]);
 
 
   return (
@@ -117,6 +150,7 @@ const SecondInnings = () => {
       ):
       (
         <div>
+        <Title text={`Over: ${overs}`} className='mt-5'/>
         <Title text={`${bowlingTeam} will bowl`} className='mt-5'/>
         <Title text={`Target: ${target}`} className='mt-5'/>
 

@@ -28,16 +28,16 @@ const AdminPage = () => {
     };
   }, [])
 
-  // useEffect(()=>{
-  //   const data = JSON.parse(localStorage.getItem('liveFirstInningsData'))
-  //   if(data){
-  //     console.log(data)
-  //     setCurrentRun(data.runs)
-  //     setCurrentWicket(data.wickets)
-  //     setTotalBalls(data.balls)
-  //   }
+  useEffect(()=>{
+    const data = JSON.parse(sessionStorage.getItem('liveFirstInningsData'))
+    if(data){
+      console.log(data)
+      setCurrentRun(data.runs)
+      setCurrentWicket(data.wickets)
+      setTotalBalls(data.balls)
+    }
 
-  // },[])
+  },[])
 
 
   
@@ -103,24 +103,19 @@ const AdminPage = () => {
     }
   }
 
-  useEffect(()=>{
-    if(iningsOver){
-      
+
+  useEffect(() => {
+    const liveFirstInningsData = {
+      bowlingteam,
+      battingteam,
+      runs: currentRun,
+      balls: totalBalls,
+      wickets: currentWicket,
+      totalOver
     }
-  },[iningsOver])
 
-  // useEffect(() => {
-  //   const liveFirstInningsData = {
-  //     bowlingteam,
-  //     battingteam,
-  //     runs: currentRun,
-  //     balls: totalBalls,
-  //     wickets: currentWicket,
-  //     totalOver
-  //   }
-
-  //   localStorage.setItem('liveFirstInningsData', JSON.stringify(liveFirstInningsData))
-  // }, [totalBalls, currentRun, currentWicket])
+    sessionStorage.setItem('liveFirstInningsData', JSON.stringify(liveFirstInningsData))
+  }, [totalBalls, currentRun, currentWicket])
 
 
   useEffect(() => {
@@ -166,6 +161,7 @@ const AdminPage = () => {
     setTimeout(() => {
       if (socketRef.current?.connected) {
         socketRef.current.disconnect();
+        sessionStorage.clear('liveFirstInningsData')
         console.log('Socket disconnected on route change');
       }
       navigate('/second-innings');

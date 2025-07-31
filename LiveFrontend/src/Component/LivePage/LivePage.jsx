@@ -19,6 +19,20 @@ const LiveFirstInnings = () => {
   const [iningsOver, setIningsOver] = useState(false)
   const [secondInningsStart, setSecondInningsStart] = useState(false)
 
+  useEffect(() => {
+  const savedData = localStorage.getItem("firstInningsDetails");
+  if (savedData) {
+    const parsed = JSON.parse(savedData);
+    setBattingTeam(parsed.battingteam );
+    setBowlingTeam(parsed.bowlingteam );
+    setCurrentRun(parsed.runs || 0);
+    setCurrentWicket(parsed.wickets || 0);
+    setTotalBalls(parsed.balls || 0);
+    setIningsOver(parsed.iningsOver)
+  }
+}, []);
+
+
 useEffect(() => {
   const handleMessage = (data) => {
     console.log(data)
@@ -41,18 +55,6 @@ useEffect(() => {
   };
 }, []);
 
-useEffect(() => {
-  const savedData = localStorage.getItem("firstInningsDetails");
-  if (savedData) {
-    const parsed = JSON.parse(savedData);
-    setBattingTeam(parsed.battingteam || "N/A");
-    setBowlingTeam(parsed.bowlingteam || "N/A");
-    setCurrentRun(parsed.runs || 0);
-    setCurrentWicket(parsed.wickets || 0);
-    setTotalBalls(parsed.balls || 0);
-    setIningsOver(parsed.iningsOver)
-  }
-}, []);
 
   // const routeChange = ()=>{
   //   navigate('/live-second')

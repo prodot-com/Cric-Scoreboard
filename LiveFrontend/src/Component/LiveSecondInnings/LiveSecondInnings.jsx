@@ -16,6 +16,7 @@ const SecondInnings = () => {
     const [currentRun, setcurrentRun]  = useState(0)
     const [currentWicket, setcurrentWicket]  = useState(0)
     const [totalBalls, settotalBalls]  = useState(0)
+    const [overs, setOvers] = useState("0.0");
     const [bowlingTeam, setBowlingTeam]  = useState('_')
     const [battingTeamWon, setBattingTeamWon] = useState(false)
     const [bowlingTeamWon, setBowlingTeamWon] = useState(false)
@@ -47,9 +48,11 @@ const SecondInnings = () => {
       };
     }, []);
 
-    useEffect(()=>{
-        console.log(battingTeam, bowlingTeam, currentRun)
-      },[totalBalls])
+      useEffect(() => {
+        const over = Math.floor(totalBalls / 6);
+        const balls = totalBalls % 6;
+        setOvers(`${over}.${balls}`);
+      }, [totalBalls]);
 
 
 
@@ -72,6 +75,8 @@ const SecondInnings = () => {
       ):
       (
         <div>
+        
+        <Title text={`Over:${overs}`} className='mt-5'/>
         <Title text={`${bowlingTeam} will bowl`} className='mt-5'/>
         <Title text={`Target: ${target}`} className='mt-5'/>
         
