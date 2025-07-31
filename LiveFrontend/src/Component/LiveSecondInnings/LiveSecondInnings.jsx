@@ -8,6 +8,8 @@ const socket = io("https://cric-scoreboard.onrender.com/");
 const SecondInnings = () => {
     let navigate = useNavigate()
 
+
+
     const [firstInningsDetails, setFirstInningsDetails] = useState({})
     const [totalOver,setTotalOver] = useState(0)
     const [target, setTarget] = useState(0)
@@ -22,7 +24,14 @@ const SecondInnings = () => {
     const [bowlingTeamWon, setBowlingTeamWon] = useState(false)
 
 
-    
+    useEffect(()=>{
+      const data = JSON.parse(localStorage.getItem('firstInningsDetails'))
+      if(data){
+        console.log(data)
+        setBattingTeam(data.battingTeam)
+        setBowlingTeam(data.bowlingTeam)
+      }
+    },[])
 
     useEffect(() => {
       const handleMessage = (data) => {

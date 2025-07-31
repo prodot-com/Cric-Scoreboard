@@ -18,7 +18,7 @@ const AdminPage = () => {
   const [totalBalls, setTotalBalls] = useState(0)
   const [Overs, setOvers] = useState('0.0')
   const [secondInningsStart, setSecondInningsStart] = useState(false)
-  const [secondInningsStarted, setSecondInningsStarted] = useState(true)
+  const [secondInningsStarted, setSecondInningsStarted] = useState(false)
 
   
 
@@ -172,6 +172,7 @@ const AdminPage = () => {
 
   const handleSubmit = () => {
     setSecondInningsStart(true);
+    secondInningsStarted(true)
   }
 
   return (

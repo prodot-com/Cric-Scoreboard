@@ -20,23 +20,28 @@ const LiveFirstInnings = () => {
   const [secondInningsStart, setSecondInningsStart] = useState(false)
   const [secondInningsStarted, setSecondInningsStarted] = useState(false)
 
-  useEffect(() => {
-  const savedData = localStorage.getItem("firstInningsDetails");
-  if (savedData) {
-    const parsed = JSON.parse(savedData);
-    setBattingTeam(parsed.battingteam );
-    setBowlingTeam(parsed.bowlingteam );
-    setCurrentRun(parsed.runs || 0);
-    setCurrentWicket(parsed.wickets || 0);
-    setTotalBalls(parsed.balls || 0);
-    setIningsOver(parsed.iningsOver)
-  }
-}, []);
+//   useEffect(() => {
+//   const savedData = localStorage.getItem("firstInningsDetails");
+//   if (savedData) {
+//     const parsed = JSON.parse(savedData);
+//     setBattingTeam(parsed.battingteam );
+//     setBowlingTeam(parsed.bowlingteam );
+//     setCurrentRun(parsed.runs || 0);
+//     setCurrentWicket(parsed.wickets || 0);
+//     setTotalBalls(parsed.balls || 0);
+//     setIningsOver(parsed.iningsOver)
+//   }
+// }, []);
 
 
 useEffect(() => {
   const handleMessage = (data) => {
     console.log(data)
+
+    if(data.secondInningsStarted === true){
+      navigate('/live-second')
+    }
+
     setBattingTeam(data.battingteam || "N/A");
     setBowlingTeam(data.bowlingteam || "N/A");
     setCurrentRun(data.runs || 0);
@@ -46,8 +51,22 @@ useEffect(() => {
     setSecondInningsStart(data.secondInningsStart)
     setSecondInningsStarted(data.secondInningsStarted)
 
+    console.log(data)
 
-    localStorage.setItem("firstInningsDetails", JSON.stringify(data));
+    const FirstInnings = {
+      runs: data.runs,
+      balls: data.balls,
+      wickets: data.wickets
+    }
+
+    const MatchData = {
+      battingteam: data.battingteam,
+      bowlingteam: data.bowlingteam
+    }
+
+
+    localStorage.setItem("FirstInnings", JSON.stringify(FirstInnings));
+    localStorage.setItem("Matchdata", JSON.stringify(MatchData));
   };
 
   socket.on("message", handleMessage);
@@ -56,6 +75,12 @@ useEffect(() => {
     socket.off("message", handleMessage);
   };
 }, []);
+
+  // useEffect(()=>{
+  //   if(secondInningsStarted){
+  //     navigate('/live-second')
+  //   }
+  // },[secondInningsStarted])
 
 
   // const routeChange = ()=>{
