@@ -1,14 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { replace, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 import { io } from 'socket.io-client';
 
 const socket = io("https://cric-scoreboard.onrender.com/");
-// const navigate = useNavigate()
-
 
 const LiveFirstInnings = () => {
-
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const [battingteam, setBattingTeam] = useState("Loading...");
   const [bowlingteam, setBowlingTeam] = useState("Loading...");
@@ -16,88 +13,56 @@ const LiveFirstInnings = () => {
   const [currentWicket, setCurrentWicket] = useState(0);
   const [totalBalls, setTotalBalls] = useState(0);
   const [overs, setOvers] = useState("0.0");
-  const [iningsOver, setIningsOver] = useState(false)
-  const [secondInningsStart, setSecondInningsStart] = useState(false)
-  const [secondInningsStarted, setSecondInningsStarted] = useState(false)
-
-//   useEffect(() => {
-//   const savedData = localStorage.getItem("firstInningsDetails");
-//   if (savedData) {
-//     const parsed = JSON.parse(savedData);
-//     setBattingTeam(parsed.battingteam );
-//     setBowlingTeam(parsed.bowlingteam );
-//     setCurrentRun(parsed.runs || 0);
-//     setCurrentWicket(parsed.wickets || 0);
-//     setTotalBalls(parsed.balls || 0);
-//     setIningsOver(parsed.iningsOver)
-//   }
-// }, []);
+  const [iningsOver, setIningsOver] = useState(false);
+  const [secondInningsStart, setSecondInningsStart] = useState(false);
 
 
-useEffect(() => {
-  const handleMessage = (data) => {
-    console.log(data)
-
-    if(data.secondInningsStarted === true){
-      navigate('/live-second')
+  useEffect(() => {
+    const data = JSON.parse(sessionStorage.getItem('liveFirstInningsData'));
+    if (data) {
+      setCurrentRun(data.runs || 0);
+      setCurrentWicket(data.wickets || 0);
+      setTotalBalls(data.balls || 0);
+      setBattingTeam(data.battingteam || "Loading...");
+      setBowlingTeam(data.bowlingteam || "Loading...");
     }
-
-    setBattingTeam(data.battingteam || "N/A");
-    setBowlingTeam(data.bowlingteam || "N/A");
-    setCurrentRun(data.runs || 0);
-    setCurrentWicket(data.wickets || 0);
-    setTotalBalls(data.balls || 0);
-    setIningsOver(data.iningsOver)
-    setSecondInningsStart(data.secondInningsStart)
-    setSecondInningsStarted(data.secondInningsStarted)
-
-    console.log(data)
-
-    const FirstInnings = {
-      runs: data.runs,
-      balls: data.balls,
-      wickets: data.wickets
-    }
-
-    const MatchData = {
-      battingteam: data.battingteam,
-      bowlingteam: data.bowlingteam
-    }
+  }, []);
 
 
-    localStorage.setItem("FirstInnings", JSON.stringify(FirstInnings));
-    localStorage.setItem("Matchdata", JSON.stringify(MatchData));
-  };
+  useEffect(() => {
+    const handleMessage = (data) => {
+      if (data.secondInningsStarted) {
+        navigate('/live-second', { replace: true });
+      }
 
-  socket.on("message", handleMessage);
+      setBattingTeam(data.battingteam || "N/A");
+      setBowlingTeam(data.bowlingteam || "N/A");
+      setCurrentRun(data.runs || 0);
+      setCurrentWicket(data.wickets || 0);
+      setTotalBalls(data.balls || 0);
+      setIningsOver(data.iningsOver || false);
+      setSecondInningsStart(data.secondInningsStart || false);
 
-  return () => {
-    socket.off("message", handleMessage);
-  };
-}, []);
+      
+      const liveFirstInningsData = {
+        battingteam: data.battingteam,
+        bowlingteam: data.bowlingteam,
+        runs: data.runs,
+        balls: data.balls,
+        wickets: data.wickets,
+      };
 
-  // useEffect(()=>{
-  //   if(secondInningsStarted){
-  //     navigate('/live-second')
-  //   }
-  // },[secondInningsStarted])
+      sessionStorage.setItem('liveFirstInningsData', JSON.stringify(liveFirstInningsData));
+    };
 
+    socket.on("message", handleMessage);
 
-  // const routeChange = ()=>{
-  //   navigate('/live-second')
-  // }
+    return () => {
+      socket.off("message", handleMessage);
+    };
+  }, [navigate]);
 
-  // if(setSecondInningsStart){
-  //   routeChange()
-  // }
-  useEffect(()=>{
-    if(secondInningsStart){
-      navigate('/live-second', {replace: true})
-    }
-  },[secondInningsStart])
-
-
-
+  
   useEffect(() => {
     const over = Math.floor(totalBalls / 6);
     const balls = totalBalls % 6;
@@ -105,7 +70,7 @@ useEffect(() => {
   }, [totalBalls]);
 
   return (
-      <div className='text-3xl font-bold flex flex-col items-center mt-7'>
+    <div className='text-3xl font-bold flex flex-col items-center mt-7'>
       <div>{battingteam}</div>
       <div>{`${currentRun}/${currentWicket}`}</div>
       <div>{`Balls: ${totalBalls}`}</div>
@@ -114,7 +79,7 @@ useEffect(() => {
       {iningsOver && (
         <div className='flex flex-col items-center mt-9 text-indigo-700'>
           <h3>Innings Over</h3>
-          <h2>{`Target: ${currentRun +1}`}</h2>
+          <h2>{`Target: ${currentRun + 1}`}</h2>
           <h2>Second Innings will start soon</h2>
         </div>
       )}
