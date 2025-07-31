@@ -35,6 +35,7 @@ const SecondInnings = () => {
         setIningsOver(data.iningsOver);
         setBattingTeamWon(data.battingTeamWon);
         setBowlingTeamWon(data.bowlingTeamWon)
+        setTarget(data.target)
     
         
       };
@@ -42,10 +43,10 @@ const SecondInnings = () => {
 
       
     
-      socket.on("newMessage", handleMessage);
+      socket.on("message", handleMessage);
     
       return () => {
-        socket.off("newMessage", handleMessage);
+        socket.off("message", handleMessage);
       };
     }, []);
 

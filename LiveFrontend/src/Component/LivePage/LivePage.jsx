@@ -18,6 +18,7 @@ const LiveFirstInnings = () => {
   const [overs, setOvers] = useState("0.0");
   const [iningsOver, setIningsOver] = useState(false)
   const [secondInningsStart, setSecondInningsStart] = useState(false)
+  const [secondInningsStarted, setSecondInningsStarted] = useState(false)
 
   useEffect(() => {
   const savedData = localStorage.getItem("firstInningsDetails");
@@ -43,6 +44,7 @@ useEffect(() => {
     setTotalBalls(data.balls || 0);
     setIningsOver(data.iningsOver)
     setSecondInningsStart(data.secondInningsStart)
+    setSecondInningsStarted(data.secondInningsStarted)
 
 
     localStorage.setItem("firstInningsDetails", JSON.stringify(data));

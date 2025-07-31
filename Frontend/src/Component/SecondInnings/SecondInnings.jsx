@@ -21,6 +21,7 @@ const SecondInnings = () => {
     const [bowlingTeam, setBowlingTeam]  = useState('')
     const [battingTeamWon, setBattingTeamWon] = useState(false)
     const [bowlingTeamWon, setBowlingTeamWon] = useState(false)
+    const [secondInningsStarted, setSecondInningsStarted] = useState(true)
 
       useEffect(() => {
         socketRef.current = io("https://cric-scoreboard.onrender.com/");
@@ -125,10 +126,13 @@ const SecondInnings = () => {
           wickets: currentWicket,
           iningsOver,
           battingTeamWon,
-          bowlingTeamWon
+          bowlingTeamWon,
+          target,
+          secondInningsStarted
         }
-        console.log(SecondInnings)
-        socket.emit('newMessage', SecondInnings)
+
+        console.log(SecondInnings, secondInningsStarted)
+        socket.emit('message', SecondInnings)
     
       },[totalBalls, currentRun,currentWicket])
 

@@ -18,6 +18,7 @@ const AdminPage = () => {
   const [totalBalls, setTotalBalls] = useState(0)
   const [Overs, setOvers] = useState('0.0')
   const [secondInningsStart, setSecondInningsStart] = useState(false)
+  const [secondInningsStarted, setSecondInningsStarted] = useState(true)
 
   
 
@@ -141,9 +142,10 @@ const AdminPage = () => {
       balls: totalBalls,
       wickets: currentWicket,
       iningsOver,
-      secondInningsStart
+      secondInningsStart,
+      secondInningsStarted
     }
-
+    console.log(firstInnings)
     socketRef.current?.emit('message', firstInnings)
   }, [totalBalls, currentRun, currentWicket, secondInningsStart])
 
