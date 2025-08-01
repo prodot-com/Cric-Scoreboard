@@ -20,6 +20,13 @@ const SecondInnings = () => {
   const [bowlingTeamWon, setBowlingTeamWon] = useState(false);
   const [bowlingStarted, setBowlingStarted] = useState(false)
 
+  useEffect(()=>{
+    const data = JSON.parse(localStorage.getItem('targetDetails'))
+    console.log(data)
+    setTarget(data.targ)
+    setBattingTeam(data.battingteam)
+  },[])
+
   // Load live session data
   useEffect(() => {
     const data = JSON.parse(sessionStorage.getItem('liveFirstInningsData'));
@@ -76,7 +83,10 @@ const SecondInnings = () => {
         <div>{battingTeam}</div>
         <div>{`${currentRun}/${currentWicket}`}</div>
         <div>{`Balls: ${totalBalls}`}</div>
-      </div>): (<div></div>)}
+      </div>): (<div className='text-3xl font-bold flex justify-around mt-7'>
+        <div>{`Target:${target}`}</div>
+        <div>{`${bowlingTeam} will bowl`}</div>
+      </div>)}
 
       {battingTeamWon ? (
         <h3 className='flex justify-center text-4xl font-bold mt-12 text-indigo-700'>{`${battingTeam} Won`}</h3>
