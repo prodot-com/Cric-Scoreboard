@@ -18,6 +18,7 @@ const SecondInnings = () => {
   const [iningsOver, setIningsOver] = useState(false);
   const [battingTeamWon, setBattingTeamWon] = useState(false);
   const [bowlingTeamWon, setBowlingTeamWon] = useState(false);
+  const [bowlingStarted, setBowlingStarted] = useState(false)
 
   // Load live session data
   useEffect(() => {
@@ -41,6 +42,7 @@ const SecondInnings = () => {
       setBattingTeamWon(data.battingTeamWon);
       setBowlingTeamWon(data.bowlingTeamWon);
       setTarget(data.target);
+      setBowlingStarted(data.bowlingStarted)
     };
 
     socket.on("message", handleMessage);
@@ -70,17 +72,19 @@ const SecondInnings = () => {
 
   return (
     <div>
-      <div className='text-3xl font-bold flex justify-around mt-7'>
+      {bowlingStarted ? (<div className='text-3xl font-bold flex justify-around mt-7'>
         <div>{battingTeam}</div>
         <div>{`${currentRun}/${currentWicket}`}</div>
         <div>{`Balls: ${totalBalls}`}</div>
-      </div>
+      </div>): (<div></div>)}
 
       {battingTeamWon ? (
         <h3 className='flex justify-center text-4xl font-bold mt-12 text-indigo-700'>{`${battingTeam} Won`}</h3>
       ) : bowlingTeamWon ? (
         <h3 className='flex justify-center text-4xl font-bold mt-12 text-indigo-700'>{`${bowlingTeam} Won`}</h3>
-      ) : (
+      ) : !bowlingStarted ? (
+        <h3 className='flex justify-center text-4xl font-bold mt-12 text-indigo-700'>{`Match not yet started`}</h3>
+      ): (
         <div>
           <Title text={`Over: ${overs}`} className='mt-5' />
           <Title text={`${bowlingTeam} will bowl`} className='mt-5' />

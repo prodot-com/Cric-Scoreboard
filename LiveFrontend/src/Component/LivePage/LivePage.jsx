@@ -47,9 +47,9 @@ const LiveFirstInnings = () => {
       const liveFirstInningsData = {
         battingteam: data.battingteam,
         bowlingteam: data.bowlingteam,
-        runs: data.runs,
-        balls: data.balls,
-        wickets: data.wickets,
+        // runs: data.runs,
+        // balls: data.balls,
+        // wickets: data.wickets,
       };
 
       sessionStorage.setItem('liveFirstInningsData', JSON.stringify(liveFirstInningsData));
