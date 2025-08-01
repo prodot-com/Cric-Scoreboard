@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { useCric } from '../../Context/CricContext';
 
 const Creation = () => {
+  
   const [input, setInput] = useState({
     name: '',
     team1: '',
