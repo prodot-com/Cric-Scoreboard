@@ -40,4 +40,20 @@ const deleteMatch = async(req, res)=>{
     }
 }
 
-export { createMatch , deleteMatch};
+const getmatch = async(req, res)=>{
+    try {
+        
+        const matches = await Match.find()
+
+        if(!matches){
+            return res.status(400).json({message: "No match found"})
+        }
+
+        res.status(200).json(matches)
+
+    } catch (error) {
+        throw new error(400, "Something went Wrong")
+    }
+}
+
+export { createMatch , deleteMatch, getmatch};
