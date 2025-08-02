@@ -13,6 +13,8 @@ const createMatch = async (req, res) => {
         const match = await Match.create({ name, team1, team2, over });
 
         res.status(201).json(match);
+        
+        console.log("Created Match ID:", match._id);
         // res.send('Complete')
     } catch (error) {
         throw new ApiError(500, 'Something Went Wrong')
@@ -23,6 +25,7 @@ const createMatch = async (req, res) => {
 const deleteMatch = async(req, res)=>{
     try {
         const {id} = req.params;
+        console.log("Received ID:", id);
 
         const result = await Match.findByIdAndDelete(id)
 
@@ -37,4 +40,4 @@ const deleteMatch = async(req, res)=>{
     }
 }
 
-export { createMatch };
+export { createMatch , deleteMatch};
