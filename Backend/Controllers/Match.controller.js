@@ -1,7 +1,7 @@
 import ApiError from '../Utils/ApiError.js'
 import { Match } from '../model/Match.model.js';
 
-const createMatch = async (req, res, next) => {
+const createMatch = async (req, res) => {
     try {
         const { name, team1, team2, over } = req.body; // ← FIXED
         console.log(name, team1, team2, over)
@@ -15,9 +15,26 @@ const createMatch = async (req, res, next) => {
         res.status(201).json(match);
         // res.send('Complete')
     } catch (error) {
-        console.error('Error creating match:', error);
-        next(new ApiError(500, 'Something Went Wrong'));
+        throw new ApiError(500, 'Something Went Wrong')
     }
 };
+
+
+const deleteMatch = async(req, res)=>{
+    try {
+        const {id} = req.params;
+
+        const result = await Match.findByIdAndDelete(id)
+
+        if(!result){
+            return res.status(400).json({message: 'Id not found'})
+        }
+
+        res.status(200).json({ message: "Match deleted successfully" })
+
+    } catch (error) {
+        throw new ApiError(500, "Something Went Wrong")
+    }
+}
 
 export { createMatch };
