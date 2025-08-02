@@ -1,11 +1,12 @@
-import mongoose, {Schema} from "mongoose";
+import mongoose from 'mongoose';
 
-const matchSchema = new Schema({
-    creator: String,
-    team1: String,
-    team2: String
-},
-{timestamps: true})
+const matchSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  team1: { type: String, required: true },
+  team2: { type: String, required: true },
+  over: { type: Number, required: true },
+},{timestamps:true},{
+  collection: 'matches' // 👈 Prevents naming errors
+});
 
-
-export const MatchModel = mongoose.model("Match", matchSchema)
+export const Match = mongoose.model("Match", matchSchema);

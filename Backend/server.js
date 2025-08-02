@@ -3,6 +3,7 @@ import { createServer } from 'http'
 import { Server } from 'socket.io'
 import cors from 'cors'
 import connectDB from './db/index.js'
+import matchRouter from './Routes/Match.route.js'
 
 const app = express()
 
@@ -20,6 +21,8 @@ app.use(cors({
 const httpServer = createServer(app)
 
 connectDB()
+
+app.use('/user', matchRouter)
 
 const io = new Server(httpServer, {
     cors: {

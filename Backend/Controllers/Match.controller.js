@@ -1,14 +1,23 @@
-import express from 'express'
 import ApiError from '../Utils/ApiError.js'
+import { Match } from '../model/Match.model.js';
 
-
-const createMatch = async()=>{
+const createMatch = async (req, res, next) => {
     try {
-        const {creator, team1, team2} = req.body
-        console.log(creator, team1, team2)
-    } catch (error) {
-        throw new ApiError(500, 'Something Went Wrong')
-    }
-}
+        const { name, team1, team2, over } = req.body; // ← FIXED
+        console.log(name, team1, team2, over)
 
-export {createMatch}
+        if (!name || !team1 || !team2 || !over) {
+            return res.status(400).json({ error: 'All fields are required' });
+        }
+
+        const match = await Match.create({ name, team1, team2, over });
+
+        res.status(201).json(match);
+        // res.send('Complete')
+    } catch (error) {
+        console.error('Error creating match:', error);
+        next(new ApiError(500, 'Something Went Wrong'));
+    }
+};
+
+export { createMatch };
