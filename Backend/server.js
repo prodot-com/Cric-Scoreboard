@@ -6,6 +6,8 @@ import connectDB from './db/index.js'
 
 const app = express()
 
+app.use(express.json())
+
 // Allow multiple origins
 const allowedOrigins = ["http://localhost:5173", "http://localhost:5174"];
 
