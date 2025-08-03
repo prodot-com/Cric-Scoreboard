@@ -7,7 +7,7 @@ router.route('/create').post(createMatch)
 router.route('/delete/:id').post(deleteMatch)
 router.route('/get').get(getmatch)
 router.route('/one/:id').get(findMatch)
-router.route('/add/:id').get(addToss)
+router.route('/add/:id').post(addToss)
 
 
 export default router
