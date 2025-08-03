@@ -26,7 +26,6 @@ const Matches = () => {
     },[])
 
     const routeChange =(matchId)=>{
-      console.log(matchId)
         navigate(`/Live/${matchId}`)
     }
 

@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { io } from 'socket.io-client';
 import { useParams } from 'react-router';
+import axios from 'axios';
 
 
 const socket = io("https://cric-scoreboard.onrender.com/");
 
 const LiveFirstInnings = () => {
   const navigate = useNavigate();
+    const {id}=useParams()
 
   const [battingteam, setBattingTeam] = useState("Loading...");
   const [bowlingteam, setBowlingTeam] = useState("Loading...");
@@ -18,6 +20,26 @@ const LiveFirstInnings = () => {
   const [iningsOver, setIningsOver] = useState(false);
   const [secondInningsStart, setSecondInningsStart] = useState(false);
   const [bowlingStarted, setBowlingStarted] = useState(false)
+
+  useEffect(()=>{
+    
+    const getDetails = async ()=>{
+      try {
+        
+        console.log("matchId: ", id)
+        const response = await axios.get(`https://cric-scoreboard.onrender.com/user/one/${id}`)
+        const result = response.data.result
+        console.log(result)
+        setBattingTeam(result.team1)
+        setBowlingTeam(result.team2)
+      } catch (error) {
+        console.log(error)
+      }
+    }
+
+    getDetails()
+
+  },[])
 
 
   useEffect(() => {
@@ -91,7 +113,11 @@ const LiveFirstInnings = () => {
         <div>{battingteam}</div>
         <div>{`${currentRun}/${currentWicket}`}</div>
         <div>{`Balls: ${totalBalls}`}</div>
-      </div>): (<div className='flex justify-center text-4xl font-bold mt-12 text-indigo-700'>Match not yet started</div>)}
+      </div>): (<div className='flex flex-col items-center justify-center text-4xl font-bold mt-12 text-indigo-700'>
+        <h2>{`Team1: ${battingteam}`}</h2>
+        <h2>{`Team1: ${bowlingteam}`}</h2>
+        <h3>Match not yet started</h3>
+      </div>)}
 
       {iningsOver && (
         <div className='flex flex-col items-center mt-9 text-indigo-700'>
