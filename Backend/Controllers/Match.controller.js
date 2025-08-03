@@ -74,10 +74,17 @@ const findMatch = async(req, res)=>{
 
 const addToss = async(req, res)=>{
     try {
-        
+        const {id} = req.params
+        const {tossWinner, decision} = req.body
+
+        const response = await Match.findByIdAndUpdate(id,
+            {tossWinner, decision},
+            {new: true}
+        )
+
     } catch (error) {
         throw new ApiError(400, "Something Went Wrong")
     }
 }
 
-export { createMatch , deleteMatch, getmatch, findMatch};
+export { createMatch , deleteMatch, getmatch, findMatch, addToss};
