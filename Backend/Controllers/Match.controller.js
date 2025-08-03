@@ -72,4 +72,12 @@ const findMatch = async(req, res)=>{
     }
 }
 
+const addToss = async(req, res)=>{
+    try {
+        
+    } catch (error) {
+        throw new ApiError(400, "Something Went Wrong")
+    }
+}
+
 export { createMatch , deleteMatch, getmatch, findMatch};

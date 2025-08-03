@@ -29,14 +29,15 @@ const Creation = () => {
     try {
       const res = await axios.post('https://cric-scoreboard.onrender.com/user/create', input)
       console.log('match Created: ', res.data)
+
+      localStorage.setItem('matchDetails', JSON.stringify(input));
+    const id= res.data._id
+    navigate(`/toss/${id}`);
+      
     } catch (error) {
       console.log('went wrong',error)
       return
     }
-
-    localStorage.setItem('matchDetails', JSON.stringify(input));
-    navigate('/toss');
-    console.log(JSON.parse(localStorage.getItem('matchDetails')))
   };
 
   return (

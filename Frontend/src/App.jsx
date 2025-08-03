@@ -27,7 +27,7 @@ const App = () => {
     <Routes>
         <Route path='/' element={<Index/>}/>
         <Route path='/creation' element={<Creation/>}/>
-        <Route path='/toss' element={<Toss/>}/>
+        <Route path='/toss/:id' element={<Toss/>}/>
         <Route path='/admin' element={<AdminPage/>}/>
         <Route path='/second-innings' element={<SecondInnings/>}/>
         {/* <Route path='/live-first' element={<LiveFirstInnings/>}/> */}
