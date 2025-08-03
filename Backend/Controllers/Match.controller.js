@@ -82,6 +82,8 @@ const addToss = async(req, res)=>{
             {new: true}
         )
 
+        res.status(200).json({response})
+
     } catch (error) {
         throw new ApiError(400, "Something Went Wrong")
     }
