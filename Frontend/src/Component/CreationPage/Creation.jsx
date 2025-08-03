@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useCric } from '../../Context/CricContext';
+import axios from 'axios'
 
 const Creation = () => {
   
@@ -14,7 +15,7 @@ const Creation = () => {
   const { addMatchDetails } = useCric(); 
   const navigate = useNavigate(); 
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Basic validation
@@ -22,10 +23,18 @@ const Creation = () => {
       alert("Please fill out all fields.");
       return;
     }
+    console.log(input)
+    addMatchDetails(input);
 
-    addMatchDetails(input); // Passing input directly
+    try {
+      const res = await axios.post('https://cric-scoreboard.onrender.com/user/create', input)
+      console.log('match Created: ', res.data)
+    } catch (error) {
+      console.log('went wrong',error)
+      return
+    }
 
-    localStorage.setItem('matchDetails', JSON.stringify(input)); // Storing input
+    localStorage.setItem('matchDetails', JSON.stringify(input));
     navigate('/toss');
     console.log(JSON.parse(localStorage.getItem('matchDetails')))
   };
