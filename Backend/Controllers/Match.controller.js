@@ -59,7 +59,8 @@ const getmatch = async(req, res)=>{
 const findMatch = async(req, res)=>{
     try {
         const {id}= req.params
-        const result = await Match.findOne(id)
+        console.log(id)
+        const result = await Match.findById(id )
 
         if(!result){
             return res.status(500).json({message: "Id not found" })
@@ -71,4 +72,4 @@ const findMatch = async(req, res)=>{
     }
 }
 
-export { createMatch , deleteMatch, getmatch};
+export { createMatch , deleteMatch, getmatch, findMatch};
