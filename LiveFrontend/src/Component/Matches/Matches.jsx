@@ -31,10 +31,10 @@ const Matches = () => {
 
   return (
     <div className='flex flex-col justify-center items-center gap-8 mt-10'>
-        <div className=''>Live Matches</div>
+        <div className='lex items-center text-4xl font-bold mb-5 text-amber-600'>Live Matches</div>
         {(matches.length ==0 )?(<div>No Live Match now</div>)
         :(matches.map((match)=>(
-          <div>
+          <div className='gap-5 flex flex-col bg-indigo-500 p-8 rounded-xl font-bold text-2xl'>
             <h3>{`Match Creator: ${match.name}`}</h3>
             <div className='flex flex-col items-center'>
               <h2>{`${match.team1}`}</h2>
