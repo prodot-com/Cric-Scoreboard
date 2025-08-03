@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { io } from 'socket.io-client';
+import { useParams } from 'react-router';
+
 
 const socket = io("https://cric-scoreboard.onrender.com/");
 

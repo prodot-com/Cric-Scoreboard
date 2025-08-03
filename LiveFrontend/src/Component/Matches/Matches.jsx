@@ -25,8 +25,9 @@ const Matches = () => {
       fetchMatch()
     },[])
 
-    const routeChange =()=>{
-        navigate('/Live')
+    const routeChange =(matchId)=>{
+      console.log(matchId)
+        navigate(`/Live/${matchId}`)
     }
 
   return (
@@ -34,7 +35,7 @@ const Matches = () => {
         <div className='lex items-center text-4xl font-bold mb-5 text-amber-600'>Live Matches</div>
         {(matches.length ==0 )?(<div>No Live Match now</div>)
         :(matches.map((match)=>(
-          <div className='gap-5 flex flex-col bg-indigo-500 p-8 rounded-xl font-bold text-2xl'>
+          <div key={match._id} onClick={()=>routeChange(match._id)} className='gap-5 flex flex-col bg-indigo-500 p-8 rounded-xl font-bold text-2xl'>
             <h3>{`Match Creator: ${match.name}`}</h3>
             <div className='flex flex-col items-center'>
               <h2>{`${match.team1}`}</h2>
