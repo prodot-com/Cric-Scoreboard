@@ -56,4 +56,19 @@ const getmatch = async(req, res)=>{
     }
 }
 
+const findMatch = async(req, res)=>{
+    try {
+        const {id}= req.params
+        const result = await Match.findOne(id)
+
+        if(!result){
+            return res.status(500).json({message: "Id not found" })
+        }
+        res.status(200).json({result})
+
+    } catch (error) {
+        throw new ApiError(500, 'Something Went Wrong')
+    }
+}
+
 export { createMatch , deleteMatch, getmatch};
