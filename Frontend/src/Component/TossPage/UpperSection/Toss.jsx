@@ -2,8 +2,12 @@ import React, { useEffect, useState } from 'react'
 import Title from '../../Title/Title'
 import { useNavigate } from 'react-router'
 import { useCric } from '../../../Context/CricContext'
+import axios from 'axios'
+import { useParams } from 'react-router'
 
 const Toss = () => {
+  
+    const {id}=useParams()
 
 
   const [tossWinner,setTossWinner] = useState('Game')
@@ -38,10 +42,22 @@ const Toss = () => {
     return tossWinner
   }
 
-  const handleDecision = (choice)=>{
+  const handleDecision = async (choice)=>{
     const tossDetails ={
       tossWinner,
       decision: choice
+    }
+    try {
+      const res = await axios.post(`https://cric-scoreboard.onrender.com/user/add/${id}`,
+      {
+        tossWinner,
+        decision: choice
+      }
+      )
+      console.log('Toss Data:::',res.data)
+    } catch (error) {
+      console.log('Something Went Wrong')
+      return
     }
       localStorage.setItem('tossDetails', JSON.stringify(tossDetails))
       setDecision(choice)

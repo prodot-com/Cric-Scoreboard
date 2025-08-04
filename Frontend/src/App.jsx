@@ -16,10 +16,6 @@ const App = () => {
     setMatchDetails(input)
   }
 
-  
-
-  
-
 
   return (
     <CricProvider value={{matchDetails, addMatchDetails}}>
