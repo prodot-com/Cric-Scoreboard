@@ -120,7 +120,16 @@ const SecondInnings = () => {
         balls: totalBalls
       }
       console.log('first:',firstSummary)
-        console.log('secondSummary:',secondSummary)
+      console.log('secondSummary:',secondSummary)
+
+      const addSummary = async ()=>{
+        try {
+          
+        } catch (error) {
+          console.log('Some error happened', error)
+          return
+        }
+      }
 
 
     }

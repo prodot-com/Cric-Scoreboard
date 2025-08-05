@@ -92,10 +92,26 @@ const addToss = async(req, res)=>{
 const addSummary = async(req, res)=>{
     try {
         const {id} = req.params
-        
+        const {firstSummary, secondSummary} = req.body
+
+        if(!firstSummary|| !secondSummary){
+            return res.status(400).json({ error: 'Missing summaries' })
+        }
+
+        const match =await Match.findById(id)
+        if(!match){
+            return res.status(400).json({error: 'invalid id'})
+        }
+
+        match.firstSummary = firstSummary,
+        match.secondSummary = secondSummary
+
+        await match.save()
+
+        res.status(200).json({message:'succesfully saved', match})
 
     } catch (error) {
         throw new ApiError(400, "Something Went Wrong")
     }
 }
-export { createMatch , deleteMatch, getmatch, findMatch, addToss};
+export { createMatch , deleteMatch, getmatch, findMatch, addToss, addSummary};
