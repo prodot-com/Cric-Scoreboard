@@ -159,7 +159,7 @@ const AdminPage = () => {
         sessionStorage.removeItem('liveFirstInningsData')
         console.log('Socket disconnected on route change')
       }
-      navigate('/second-innings')
+      navigate(`/second-innings/${id}`)
     }, 200)
   }
 

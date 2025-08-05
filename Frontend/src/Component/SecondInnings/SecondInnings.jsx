@@ -1,13 +1,16 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import Title from '../Title/Title';
 import { io } from "socket.io-client";
+import axios from 'axios';
+
 
 const socket = io("https://cric-scoreboard.onrender.com/");
 
 const SecondInnings = () => {
   const navigate = useNavigate();
   const socketRef = useRef(null);
+  const {id} = useParams()
 
   const [firstInningsDetails, setFirstInningsDetails] = useState({});
   const [totalOver, setTotalOver] = useState(0);
@@ -124,12 +127,19 @@ const SecondInnings = () => {
 
       const addSummary = async ()=>{
         try {
-          
+          const res = await axios.post(`http://localhost:9000/user/addsummary/${id}`,{
+            firstSummary,
+            secondSummary
+          })
+
+          console.log(res.data)
         } catch (error) {
           console.log('Some error happened', error)
           return
         }
       }
+
+      addSummary()
 
 
     }
