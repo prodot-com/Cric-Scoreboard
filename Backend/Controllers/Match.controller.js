@@ -114,4 +114,24 @@ const addSummary = async(req, res)=>{
         throw new ApiError(400, "Something Went Wrong")
     }
 }
-export { createMatch , deleteMatch, getmatch, findMatch, addToss, addSummary};
+
+const fetchSummary = async(req, res)=>{
+    try {
+        const {id}= req.params
+        const matchSummary = await Match.findById(id).select('firstSummary secondSummary')
+
+        if(!matchSummary){
+            res.status(500).json({message: 'Not summary'})
+        }
+
+        res.status(200).json({
+            firstSummary: matchSummary.firstSummary,
+            secondSummary: matchSummary.secondSummary,
+        })
+
+
+    } catch (error) {
+        throw new ApiError(400,'something Went Wrong')
+    }
+}
+export { createMatch , deleteMatch, getmatch, findMatch, addToss, addSummary, fetchSummary};

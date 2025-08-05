@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { addSummary, addToss, createMatch, deleteMatch, findMatch, getmatch } from "../Controllers/Match.controller.js";
+import { addSummary, addToss, createMatch, deleteMatch, fetchSummary, findMatch, getmatch } from "../Controllers/Match.controller.js";
 
 const router = Router()
 
@@ -9,6 +9,7 @@ router.route('/get').get(getmatch)
 router.route('/one/:id').get(findMatch)
 router.route('/addtoss/:id').post(addToss)
 router.route('/addsummary/:id').post(addSummary)
+router.route('/fetchsummary/:id').get(fetchSummary)
 
 
 export default router
