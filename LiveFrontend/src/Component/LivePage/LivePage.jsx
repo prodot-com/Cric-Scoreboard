@@ -20,6 +20,8 @@ const LiveFirstInnings = () => {
   const [iningsOver, setIningsOver] = useState(false);
   const [secondInningsStart, setSecondInningsStart] = useState(false);
   const [bowlingStarted, setBowlingStarted] = useState(false)
+  const [tossWinner, setTossWinner] = useState('...')
+  const [decision, setDecision] = useState('...')
 
   useEffect(()=>{
     
@@ -32,6 +34,8 @@ const LiveFirstInnings = () => {
         console.log(result)
         setBattingTeam(result.team1)
         setBowlingTeam(result.team2)
+        setTossWinner(result.tossWinner)
+        setDecision(result.decision.toLowerCase())
       } catch (error) {
         console.log(error)
       }
@@ -117,6 +121,7 @@ const LiveFirstInnings = () => {
         <h2>{`Team1: ${battingteam}`}</h2>
         <h2>{`Team1: ${bowlingteam}`}</h2>
         <h3>Match not yet started</h3>
+        <h2 className='text-amber-500 text-2xl mt-7 '>{`Team ${tossWinner} choose to ${decision} first`}</h2>
       </div>)}
 
       {iningsOver && (
