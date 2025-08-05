@@ -91,9 +91,11 @@ const addToss = async(req, res)=>{
 
 const addSummary = async(req, res)=>{
     try {
+        const {id} = req.params
         
+
     } catch (error) {
-        
+        throw new ApiError(400, "Something Went Wrong")
     }
 }
 export { createMatch , deleteMatch, getmatch, findMatch, addToss};

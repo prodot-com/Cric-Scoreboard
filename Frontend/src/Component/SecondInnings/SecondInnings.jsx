@@ -110,7 +110,17 @@ const SecondInnings = () => {
         wickets: data.wickets,
         balls: data.balls
       }
-      console.log(firstSummary)
+
+      const secondSummary ={
+        battingteam: battingTeam,
+        bowlingteam: bowlingTeam,
+        runs: currentRun,
+        totalOver,
+        wickets: currentWicket,
+        balls: totalBalls
+      }
+      console.log('first:',firstSummary)
+        console.log('secondSummary:',secondSummary)
 
 
     }
