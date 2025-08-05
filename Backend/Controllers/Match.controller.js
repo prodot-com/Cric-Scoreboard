@@ -89,4 +89,11 @@ const addToss = async(req, res)=>{
     }
 }
 
+const addSummary = async(req, res)=>{
+    try {
+        
+    } catch (error) {
+        
+    }
+}
 export { createMatch , deleteMatch, getmatch, findMatch, addToss};
