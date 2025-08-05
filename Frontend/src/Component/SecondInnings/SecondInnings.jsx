@@ -23,6 +23,7 @@ const SecondInnings = () => {
   const [bowlingTeamWon, setBowlingTeamWon] = useState(false);
   const [secondInningsStarted, setSecondInningsStarted] = useState(true);
   const [bowlingStarted, setBowlingStarted] = useState(false);
+  const [matchEnd, setMatchEnd] = useState(false)
 
   useEffect(() => {
     socketRef.current = io("https://cric-scoreboard.onrender.com/");
@@ -62,19 +63,25 @@ const SecondInnings = () => {
     if (value === 'wide' || value === 'no') {
       setCurrentRun(prev => {
         const newRun = prev + 1;
-        if (newRun >= target) setBattingTeamWon(true);
+        if (newRun >= target) {
+          setBattingTeamWon(true);
+          setMatchEnd(true)};
         return newRun;
       });
     } else if (value === 'w') {
       setCurrentWicket(prev => {
         const newWickets = prev + 1;
-        if (newWickets === 10) setBowlingTeamWon(true);
+        if (newWickets === 10) {
+          setBowlingTeamWon(true);
+          setMatchEnd(true)};
         return newWickets;
       });
     } else {
       setCurrentRun(prev => {
         const newRun = prev + value;
-        if (newRun >= target) setBattingTeamWon(true);
+        if (newRun >= target) {
+          setBattingTeamWon(true);
+          setMatchEnd(true)};
         return newRun;
       });
     }
@@ -82,11 +89,32 @@ const SecondInnings = () => {
     if (value !== 'wide' && value !== 'no') {
       setTotalBalls(prev => {
         const newBalls = prev + 1;
-        if (newBalls === totalOver * 6) setBowlingTeamWon(true);
+        if (newBalls === totalOver * 6) {
+          setBowlingTeamWon(true); 
+          setMatchEnd(true)};
         return newBalls;
       });
     }
   };
+
+  useEffect(()=>{
+    if(matchEnd){
+      console.log('matchend',matchEnd)
+      const data = JSON.parse(localStorage.getItem('firstInningsDetails'))
+      console.log(data)
+      const firstSummary = {
+        battingteam: data.battingteam,
+        bowlingteam: data.bowlingteam,
+        runs: data.runs,
+        totalOver: data.totalOver,
+        wickets: data.wickets,
+        balls: data.balls
+      }
+      console.log(firstSummary)
+
+
+    }
+  },[matchEnd])
 
   useEffect(() => {
     const data = {
