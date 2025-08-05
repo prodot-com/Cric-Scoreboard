@@ -1,27 +1,36 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Index from './Component/FrontPage/Index.jsx';
-import Creation from './Component/CreationPage/Creation';
-import Toss from './Component/TossPage/UpperSection/Toss';
-import AdminPage from './Component/AdminPage/AdminPage';
-import SecondInnings from './Component/SecondInnings/SecondInnings';
-import { CricProvider } from './Context/CricContext';
+import React, { useEffect, useState } from 'react'
+import Index from './Component/FrontPage/Index.jsx'
+import Creation from './Component/CreationPage/Creation'
+import { BrowserRouter, Routes, Route , Link} from 'react-router-dom'
+import Toss from './Component/TossPage/UpperSection/Toss'
+import AdminPage from './Component/AdminPage/AdminPage'
+import SecondInnings from './Component/SecondInnings/SecondInnings'
+import { CricContext, CricProvider, useCric } from './Context/CricContext'
+
+
 
 const App = () => {
-  return (
-    <CricProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/creation" element={<Creation />} />
-          <Route path="/toss/:id" element={<Toss />} />
-          <Route path="/admin/:id" element={<AdminPage />} />
-          <Route path="/second-innings" element={<SecondInnings />} />
-          <Route path="*" element={<h2>Page Not Found</h2>} />
-        </Routes>
-      </BrowserRouter>
-    </CricProvider>
-  );
-};
+  const [matchDetails, setMatchDetails] = useState({})
 
-export default App;
+  const addMatchDetails =(input)=>{
+    setMatchDetails(input)
+  }
+
+
+  return (
+    <CricProvider value={{matchDetails, addMatchDetails}}>
+      <BrowserRouter>
+    <Routes>
+        <Route path='/' element={<Index/>}/>
+        <Route path='/creation' element={<Creation/>}/>
+        <Route path='/toss/:id' element={<Toss/>}/>
+        <Route path='/admin/:id' element={<AdminPage/>}/>
+        <Route path='/second-innings' element={<SecondInnings/>}/>
+        {/* <Route path='/live-first' element={<LiveFirstInnings/>}/> */}
+    </Routes>
+    </BrowserRouter>
+    </CricProvider>
+  )
+}
+
+export default App

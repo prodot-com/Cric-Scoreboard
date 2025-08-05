@@ -20,7 +20,7 @@ const Toss = () => {
       // console.log(matchDetails.input)
       const local = JSON.parse(localStorage.getItem('matchDetails'))
       // console.log(local)
-      navigate(`/admin1/${id}`)
+      navigate(`/admin/${id}`)
   }
 
   const getElement = ()=>{
@@ -48,7 +48,7 @@ const Toss = () => {
       decision: choice
     }
     try {
-      const res = await axios.post(`https://cric-scoreboard.onrender.com/user/add/${id}`,
+      const res = await axios.post(`http://localhost:9000/user/add/${id}`,
       {
         tossWinner,
         decision: choice
