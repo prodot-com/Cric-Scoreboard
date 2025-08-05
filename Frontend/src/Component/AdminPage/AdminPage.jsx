@@ -2,10 +2,12 @@ import React, { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router'
 import Title from '../Title/Title'
 import { io } from "socket.io-client";
+import { useParams } from 'react-router';
 
 const AdminPage = () => {
   const navigate = useNavigate()
   const socketRef = useRef(null)
+  const {id}= useParams()
 
   const [matchData, setMatchData] = useState({})
   const [totalOver, setTotalOver] = useState(0)

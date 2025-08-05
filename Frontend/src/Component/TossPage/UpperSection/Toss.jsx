@@ -20,7 +20,7 @@ const Toss = () => {
       // console.log(matchDetails.input)
       const local = JSON.parse(localStorage.getItem('matchDetails'))
       // console.log(local)
-      navigate('/admin')
+      navigate(`/admin1/${id}`)
   }
 
   const getElement = ()=>{
