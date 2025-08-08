@@ -76,6 +76,11 @@ const addToss = async(req, res)=>{
     try {
         const {id} = req.params
         const {tossWinner, decision} = req.body
+        console.log(tossWinner, decision)
+
+        if(!tossWinner || !decision){
+            return res.status(400).json({message: 'Details required'})
+        }
 
         const response = await Match.findByIdAndUpdate(id,
             {tossWinner, decision},
