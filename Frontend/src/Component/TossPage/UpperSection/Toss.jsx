@@ -48,7 +48,7 @@ const Toss = () => {
       decision: choice
     }
     try {
-      const res = await axios.post(`http://localhost:9000/user/addtoss/${id}`,
+      const res = await axios.post(`https://cric-scoreboard.onrender.com/user/addtoss/${id}`,
       {
         tossWinner,
         decision: choice
