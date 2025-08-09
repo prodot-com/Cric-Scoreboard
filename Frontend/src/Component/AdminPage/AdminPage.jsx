@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router'
 import Title from '../Title/Title'
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 import { useParams } from 'react-router';
 
 const AdminPage = () => {
@@ -23,10 +23,21 @@ const AdminPage = () => {
   const [secondInningsStarted, setSecondInningsStarted] = useState(false)
   const [bowlingStarted, setBowlingStarted] = useState(false)
 
-  useEffect(() => {
-    socketRef.current = io("https://cric-scoreboard.onrender.com/")
-    return () => socketRef.current?.disconnect()
-  }, [])
+useEffect(() => {
+  socketRef.current = io("https://cric-scoreboard.onrender.com/")
+
+  socketRef.current.on("connect", () => {
+    console.log("Connected:", socketRef.current.id)
+    if (id) {
+      socketRef.current.emit('joinMatch', id)
+    }
+  })
+
+  return () => {
+    socketRef.current.disconnect()
+  }
+}, [id])
+
 
   useEffect(() => {
     const data = JSON.parse(sessionStorage.getItem('liveFirstInningsData'))
@@ -132,7 +143,7 @@ const AdminPage = () => {
       bowlingStarted
     }
 
-    socketRef.current?.emit('message', firstInnings)
+    socketRef.current?.emit('message', {matchId: id, data: firstInnings})
   }, [
     totalBalls,
     currentRun,

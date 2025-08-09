@@ -23,6 +23,12 @@ const LiveFirstInnings = () => {
   const [tossWinner, setTossWinner] = useState('...')
   const [decision, setDecision] = useState('...')
 
+  useEffect(() => {
+  socket.emit("joinMatch", id); 
+
+}, [id]);
+
+
   useEffect(()=>{
     
     const getDetails = async ()=>{

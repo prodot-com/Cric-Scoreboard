@@ -10,7 +10,7 @@ const app = express()
 app.use(express.json())
 
 // Allow multiple origins
-const allowedOrigins = ["http://localhost:5173", "http://localhost:5174"];
+const allowedOrigins = ["http://localhost:5173", "http://localhost:5174"]
 
 app.use(cors({
     origin: allowedOrigins,
@@ -35,28 +35,32 @@ const io = new Server(httpServer, {
 io.on('connection', (socket) => {
     console.log('User Connected: ', socket.id)
 
-    socket.on('joinMatch', (matchId)=>{
+    // Join a match room
+    socket.on('joinMatch', (matchId) => {
         socket.join(matchId)
         console.log(`Socket ${socket.id} joined match room: ${matchId}`)
     })
 
-    socket.on('message', ({data, matchId}) => {
-        console.log('Message received: ', data, 'MatchId: ', matchId),
-        io.emit('message', data)
+    // Generic message
+    socket.on('message', ({ data, matchId }) => {
+        console.log('Message received: ', data, 'MatchId: ', matchId)
+        io.to(matchId).emit('message', data) // ✅ only send to that match
     })
 
-    socket.on('newMessage', ({data,matchId})=>{
-        console.log('New Message Recieved: ', data),
-        io.to(matchId).emit('newMessage',data)
+    // Chat or new message
+    socket.on('newMessage', ({ data, matchId }) => {
+        console.log('New Message Received: ', data, 'MatchId: ', matchId)
+        io.to(matchId).emit('newMessage', data) // ✅ only send to that match
     })
 
-    socket.on('teamDetails', ({data,matchId})=>{
-        console.log(data)
-        io.to(matchId).emit(data)
+    // Team details update
+    socket.on('teamDetails', ({ data, matchId }) => {
+        console.log('Team details received for match:', matchId, data)
+        io.to(matchId).emit('teamDetails', data) // ✅ only send to that match
     })
 
-    socket.on('disconnect', (reason)=>{
-        console.log('User Disconnected: ',socket.id,'-->',reason)
+    socket.on('disconnect', (reason) => {
+        console.log('User Disconnected: ', socket.id, '-->', reason)
     })
 })
 
