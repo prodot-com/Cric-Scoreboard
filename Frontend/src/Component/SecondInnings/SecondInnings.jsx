@@ -5,8 +5,6 @@ import { io } from "socket.io-client";
 import axios from 'axios';
 
 
-const socket = io("https://cric-scoreboard.onrender.com/");
-
 const SecondInnings = () => {
   const navigate = useNavigate();
   const socketRef = useRef(null);
@@ -28,12 +26,15 @@ const SecondInnings = () => {
   const [bowlingStarted, setBowlingStarted] = useState(false);
   const [matchEnd, setMatchEnd] = useState(false)
 
-  useEffect(() => {
-    socketRef.current = io("https://cric-scoreboard.onrender.com/");
-    return () => {
-      socketRef.current?.disconnect();
-    };
-  }, []);
+useEffect(() => {
+  socketRef.current = io("https://cric-scoreboard.onrender.com/");
+  socketRef.current.emit('joinMatch', id); // join match room
+
+  return () => {
+    socketRef.current.disconnect();
+  };
+}, [id]);
+
 
   useEffect(() => {
     const firstInnings = JSON.parse(localStorage.getItem('firstInningsDetails'));
@@ -177,7 +178,7 @@ const SecondInnings = () => {
       secondInningsStarted,
       bowlingStarted
     };
-    socket.emit('message', data);
+    socketRef.current.emit('message', {data, matchId: id});
   }, [totalBalls,
   currentRun,
   currentWicket,

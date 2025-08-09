@@ -78,7 +78,7 @@ const LiveFirstInnings = () => {
       if (data.secondInningsStarted) {
         console.log("Target to be saved:", data.runs); 
         targetDetails(data)
-        navigate('/live-second', { replace: true });
+        navigate(`/live-second/${id}`, { replace: true });
       }
       // console.log(data)
 

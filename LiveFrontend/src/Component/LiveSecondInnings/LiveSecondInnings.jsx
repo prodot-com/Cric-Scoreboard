@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import Title from '../Title/Title';
 import { io } from 'socket.io-client';
 
@@ -7,6 +7,8 @@ const socket = io("https://cric-scoreboard.onrender.com/");
 
 const SecondInnings = () => {
   const navigate = useNavigate();
+
+  const {id}= useParams()
 
   const [target, setTarget] = useState(0);
   const [battingTeam, setBattingTeam] = useState('Loading');
@@ -19,6 +21,11 @@ const SecondInnings = () => {
   const [battingTeamWon, setBattingTeamWon] = useState(false);
   const [bowlingTeamWon, setBowlingTeamWon] = useState(false);
   const [bowlingStarted, setBowlingStarted] = useState(false)
+
+    useEffect(() => {
+    socket.emit("joinMatch", id); 
+  
+  }, [id]);
 
   useEffect(()=>{
     const data = JSON.parse(localStorage.getItem('targetDetails'))
