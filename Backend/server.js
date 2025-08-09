@@ -35,19 +35,24 @@ const io = new Server(httpServer, {
 io.on('connection', (socket) => {
     console.log('User Connected: ', socket.id)
 
-    socket.on('message', (data) => {
-        console.log('Message received: ', data),
+    socket.on('joinMatch', (matchId)=>{
+        socket.join(matchId)
+        console.log(`Socket ${socket.id} joined match room: ${matchId}`)
+    })
+
+    socket.on('message', ({data, matchId}) => {
+        console.log('Message received: ', data, 'MatchId: ', matchId),
         io.emit('message', data)
     })
 
-    socket.on('newMessage', (data)=>{
+    socket.on('newMessage', ({data,matchId})=>{
         console.log('New Message Recieved: ', data),
-        io.emit('newMessage',data)
+        io.to(matchId).emit('newMessage',data)
     })
 
-    socket.on('teamDetails', (data)=>{
+    socket.on('teamDetails', ({data,matchId})=>{
         console.log(data)
-        io.emit(data)
+        io.to(matchId).emit(data)
     })
 
     socket.on('disconnect', (reason)=>{
