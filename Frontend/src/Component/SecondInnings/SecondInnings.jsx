@@ -128,7 +128,7 @@ useEffect(() => {
 
       const addSummary = async ()=>{
         try {
-          const res = await axios.post(`http://localhost:9000/user/addsummary/${id}`,{
+          const res = await axios.post(`https://cric-scoreboard.onrender.com/user/addsummary/${id}`,{
             firstSummary,
             secondSummary
           })
