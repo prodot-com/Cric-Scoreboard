@@ -189,6 +189,10 @@ useEffect(() => {
   secondInningsStarted,
   bowlingStarted]);
 
+  const watchSummary = ()=>{
+
+  }
+
   useEffect(() => {
     const over = Math.floor(totalBalls / 6);
     const balls = totalBalls % 6;
@@ -204,9 +208,14 @@ useEffect(() => {
       </div>
 
       {battingTeamWon ? (
-        <h3 className='flex justify-center text-4xl font-bold mt-12 text-indigo-700'>{`${battingTeam} Won`}</h3>
+        <div><h3 className='flex items-center justify-center font-bold text-4xl mt-10 text-indigo-700'>{`${battingTeam} Won`}</h3>
+        <h4 className='flex items-center justify-center font-bold text-4xl text-purple-600 mt-7' onClick={watchSummary}>Watch Summary</h4>
+        <div>{iningsOver ? (<div>gh</div>):(<div></div>)}</div>
+        </div>
       ) : bowlingTeamWon ? (
-        <h3 className='flex justify-center text-4xl font-bold mt-12 text-indigo-700'>{`${bowlingTeam} Won`}</h3>
+        <div className='flex flex-col items-center justify-center text-4xl cursor-pointer font-bold mt-12'><h3 className='text-indigo-700'>{`${battingTeam} Won`}</h3>
+        <h4 className='text-purple-600 mt-7' onClick={watchSummary}>Watch Summary</h4>
+        </div>
       ) : (
         <div>
           <Title text={`Over: ${overs}`} className='mt-5' />
