@@ -18,7 +18,7 @@ const matchSchema = new mongoose.Schema({
   firstSummary: inningsSchema,
   secondSummary: inningsSchema,
   
-},{timestamps:true},{
+},{timestamps:true,
   collection: 'matches'
 });
 

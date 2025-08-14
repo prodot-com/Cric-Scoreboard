@@ -98,6 +98,7 @@ const addSummary = async(req, res)=>{
     try {
         const {id} = req.params
         const {firstSummary, secondSummary} = req.body
+        // console.log(firstSummary, secondSummary)
 
         if(!firstSummary|| !secondSummary){
             return res.status(400).json({ error: 'Missing summaries' })

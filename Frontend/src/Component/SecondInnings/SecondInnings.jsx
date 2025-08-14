@@ -4,11 +4,10 @@ import Title from '../Title/Title';
 import { io } from "socket.io-client";
 import axios from 'axios';
 
-
 const SecondInnings = () => {
   const navigate = useNavigate();
   const socketRef = useRef(null);
-  const {id} = useParams()
+  const { id } = useParams();
 
   const [firstInningsDetails, setFirstInningsDetails] = useState({});
   const [totalOver, setTotalOver] = useState(0);
@@ -24,17 +23,18 @@ const SecondInnings = () => {
   const [bowlingTeamWon, setBowlingTeamWon] = useState(false);
   const [secondInningsStarted, setSecondInningsStarted] = useState(true);
   const [bowlingStarted, setBowlingStarted] = useState(false);
-  const [matchEnd, setMatchEnd] = useState(false)
+  const [matchEnd, setMatchEnd] = useState(false);
 
-useEffect(() => {
-  socketRef.current = io("https://cric-scoreboard.onrender.com/");
-  socketRef.current.emit('joinMatch', id); // join match room
+  const [summary, setSummary] = useState(null); // Store fetched summary
+  const [showSummary, setShowSummary] = useState(false); // Toggle display
 
-  return () => {
-    socketRef.current.disconnect();
-  };
-}, [id]);
-
+  useEffect(() => {
+    socketRef.current = io("https://cric-scoreboard.onrender.com/");
+    socketRef.current.emit('joinMatch', id);
+    return () => {
+      socketRef.current.disconnect();
+    };
+  }, [id]);
 
   useEffect(() => {
     const firstInnings = JSON.parse(localStorage.getItem('firstInningsDetails'));
@@ -69,7 +69,8 @@ useEffect(() => {
         const newRun = prev + 1;
         if (newRun >= target) {
           setBattingTeamWon(true);
-          setMatchEnd(true)};
+          setMatchEnd(true);
+        }
         return newRun;
       });
     } else if (value === 'w') {
@@ -77,7 +78,8 @@ useEffect(() => {
         const newWickets = prev + 1;
         if (newWickets === 10) {
           setBowlingTeamWon(true);
-          setMatchEnd(true)};
+          setMatchEnd(true);
+        }
         return newWickets;
       });
     } else {
@@ -85,7 +87,8 @@ useEffect(() => {
         const newRun = prev + value;
         if (newRun >= target) {
           setBattingTeamWon(true);
-          setMatchEnd(true)};
+          setMatchEnd(true);
+        }
         return newRun;
       });
     }
@@ -94,57 +97,49 @@ useEffect(() => {
       setTotalBalls(prev => {
         const newBalls = prev + 1;
         if (newBalls === totalOver * 6) {
-          setBowlingTeamWon(true); 
-          setMatchEnd(true)};
+          setBowlingTeamWon(true);
+          setMatchEnd(true);
+        }
         return newBalls;
       });
     }
   };
 
-  useEffect(()=>{
-    if(matchEnd){
-      console.log('matchend',matchEnd)
-      const data = JSON.parse(localStorage.getItem('firstInningsDetails'))
-      console.log(data)
+  useEffect(() => {
+    if (matchEnd) {
+      const data = JSON.parse(localStorage.getItem('firstInningsDetails'));
       const firstSummary = {
-        battingteam: data.battingteam,
-        bowlingteam: data.bowlingteam,
-        runs: data.runs,
-        totalOver: data.totalOver,
-        wickets: data.wickets,
-        balls: data.balls
-      }
+  battingTeam: data.battingteam,
+  bowlingTeam: data.bowlingteam,
+  runs: data.runs,
+  totalOver: data.totalOver,
+  wickets: data.wickets,
+  balls: data.balls
+};
 
-      const secondSummary ={
-        battingteam: battingTeam,
-        bowlingteam: bowlingTeam,
-        runs: currentRun,
-        totalOver,
-        wickets: currentWicket,
-        balls: totalBalls
-      }
-      console.log('first:',firstSummary)
-      console.log('secondSummary:',secondSummary)
+const secondSummary = {
+  battingTeam: battingTeam,
+  bowlingTeam: bowlingTeam,
+  runs: currentRun,
+  totalOver,
+  wickets: currentWicket,
+  balls: totalBalls
+};
 
-      const addSummary = async ()=>{
+
+      const addSummary = async () => {
         try {
-          const res = await axios.post(`https://cric-scoreboard.onrender.com/user/addsummary/${id}`,{
+          await axios.post(`http://localhost:9000/user/addsummary/${id}`, {
             firstSummary,
             secondSummary
-          })
-
-          console.log(res.data)
+          });
         } catch (error) {
-          console.log('Some error happened', error)
-          return
+          console.log('Some error happened', error);
         }
-      }
-
-      addSummary()
-
-
+      };
+      addSummary();
     }
-  },[matchEnd])
+  }, [matchEnd]);
 
   useEffect(() => {
     const data = {
@@ -178,20 +173,28 @@ useEffect(() => {
       secondInningsStarted,
       bowlingStarted
     };
-    socketRef.current.emit('message', {data, matchId: id});
-  }, [totalBalls,
-  currentRun,
-  currentWicket,
-  iningsOver,
-  battingTeamWon,
-  bowlingTeamWon,
-  target,
-  secondInningsStarted,
-  bowlingStarted]);
+    socketRef.current.emit('message', { data, matchId: id });
+  }, [
+    totalBalls,
+    currentRun,
+    currentWicket,
+    iningsOver,
+    battingTeamWon,
+    bowlingTeamWon,
+    target,
+    secondInningsStarted,
+    bowlingStarted
+  ]);
 
-  const watchSummary = ()=>{
-
-  }
+  const watchSummary = async () => {
+    try {
+      const res = await axios.get(`https://cric-scoreboard.onrender.com/user/fetchsummary/${id}`);
+      setSummary(res.data); // Store in state
+      setShowSummary(true); // Show on UI
+    } catch (error) {
+      console.log("Error fetching summary", error);
+    }
+  };
 
   useEffect(() => {
     const over = Math.floor(totalBalls / 6);
@@ -208,13 +211,23 @@ useEffect(() => {
       </div>
 
       {battingTeamWon ? (
-        <div><h3 className='flex items-center justify-center font-bold text-4xl mt-10 text-indigo-700'>{`${battingTeam} Won`}</h3>
-        <h4 className='flex items-center justify-center font-bold text-4xl text-purple-600 mt-7' onClick={watchSummary}>Watch Summary</h4>
-        <div>{iningsOver ? (<div>gh</div>):(<div></div>)}</div>
+        <div>
+          <h3 className='flex items-center justify-center font-bold text-4xl mt-10 text-indigo-700'>
+            {`${battingTeam} Won`}
+          </h3>
+          <h4
+            className='flex items-center justify-center font-bold cursor-pointer text-4xl text-purple-600 mt-7'
+            onClick={watchSummary}
+          >
+            Watch Summary
+          </h4>
         </div>
       ) : bowlingTeamWon ? (
-        <div className='flex flex-col items-center justify-center text-4xl cursor-pointer font-bold mt-12'><h3 className='text-indigo-700'>{`${battingTeam} Won`}</h3>
-        <h4 className='text-purple-600 mt-7' onClick={watchSummary}>Watch Summary</h4>
+        <div className='flex flex-col items-center justify-center text-4xl cursor-pointer font-bold mt-12'>
+          <h3 className='text-indigo-700'>{`${bowlingTeam} Won`}</h3>
+          <h4 className='text-purple-600 mt-7' onClick={watchSummary}>
+            Watch Summary
+          </h4>
         </div>
       ) : (
         <div>
@@ -245,6 +258,21 @@ useEffect(() => {
             }}
           >
             Out
+          </div>
+        </div>
+      )}
+
+      {/* Summary Display */}
+      {showSummary && summary && (
+        <div className='mt-10 p-5 bg-gray-100 rounded-lg'>
+          <h2 className='text-2xl font-bold text-center mb-4'>Match Summary</h2>
+          <div className='mb-4'>
+            <h3 className='font-bold'>First Innings:</h3>
+            <p>{summary.firstSummary.battingTeam} - {summary.firstSummary.runs}/{summary.firstSummary.wickets} in {summary.firstSummary.totalOver} overs</p>
+          </div>
+          <div>
+            <h3 className='font-bold'>Second Innings:</h3>
+            <p>{summary.secondSummary.battingTeam} - {summary.secondSummary.runs}/{summary.secondSummary.wickets} in {summary.secondSummary.totalOver} overs</p>
           </div>
         </div>
       )}
