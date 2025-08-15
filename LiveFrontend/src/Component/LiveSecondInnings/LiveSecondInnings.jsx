@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import Title from '../Title/Title';
 import { io } from 'socket.io-client';
+import axios from 'axios'
 
 const socket = io("https://cric-scoreboard.onrender.com/");
 
@@ -21,6 +22,9 @@ const SecondInnings = () => {
   const [battingTeamWon, setBattingTeamWon] = useState(false);
   const [bowlingTeamWon, setBowlingTeamWon] = useState(false);
   const [bowlingStarted, setBowlingStarted] = useState(false)
+
+  const [summary, setSummary] = useState(null); 
+  const [showSummary, setShowSummary] = useState(false);
 
     useEffect(() => {
     socket.emit("joinMatch", id); 
@@ -65,7 +69,17 @@ const SecondInnings = () => {
     };
   }, []);
 
-  // Store live data in session
+  const watchSummary = async () => {
+    try {
+      const res = await axios.get(`https://cric-scoreboard.onrender.com/user/fetchsummary/${id}`);
+      setSummary(res.data);
+      setShowSummary(true);
+    } catch (error) {
+      console.log("Error fetching summary", error);
+    }
+  };
+
+ 
   useEffect(() => {
     const liveSecondInningsData = {
       bowlingTeam,
@@ -77,7 +91,7 @@ const SecondInnings = () => {
     sessionStorage.setItem('liveFirstInningsData', JSON.stringify(liveSecondInningsData));
   }, [totalBalls, currentRun, currentWicket]);
 
-  // Calculate overs
+ 
   useEffect(() => {
     const over = Math.floor(totalBalls / 6);
     const balls = totalBalls % 6;
@@ -96,9 +110,19 @@ const SecondInnings = () => {
       </div>)}
 
       {battingTeamWon ? (
-        <h3 className='flex justify-center text-4xl font-bold mt-12 text-indigo-700'>{`${battingTeam} Won`}</h3>
+        <div className='flex flex-col items-center justify-center text-4xl cursor-pointer font-bold mt-12'>
+          <h3 className='text-indigo-700'>{`${battingTeam} Won`}</h3>
+          <h4 className='text-purple-600 mt-7' onClick={watchSummary}>
+            Watch Summary
+          </h4>
+        </div>
       ) : bowlingTeamWon ? (
-        <h3 className='flex justify-center text-4xl font-bold mt-12 text-indigo-700'>{`${bowlingTeam} Won`}</h3>
+        <div className='flex flex-col items-center justify-center text-4xl cursor-pointer font-bold mt-12'>
+          <h3 className='text-indigo-700'>{`${bowlingTeam} Won`}</h3>
+          <h4 className='text-purple-600 mt-7' onClick={watchSummary}>
+            Watch Summary
+          </h4>
+        </div>
       ) : !bowlingStarted ? (
         <h3 className='flex justify-center text-4xl font-bold mt-12 text-indigo-700'>{`Match not yet started`}</h3>
       ): (
@@ -108,6 +132,22 @@ const SecondInnings = () => {
           <Title text={`Target: ${target}`} className='mt-5' />
         </div>
       )}
+
+
+      {showSummary && summary && (
+        <div className='mt-10 p-5 bg-gray-100 rounded-lg'>
+          <h2 className='text-2xl font-bold text-center mb-4'>Match Summary</h2>
+          <div className='mb-4'>
+            <h3 className='font-bold'>First Innings:</h3>
+            <p>{summary.firstSummary.battingTeam} - {summary.firstSummary.runs}/{summary.firstSummary.wickets} in {summary.firstSummary.totalOver} overs</p>
+          </div>
+          <div>
+            <h3 className='font-bold'>Second Innings:</h3>
+            <p>{summary.secondSummary.battingTeam} - {summary.secondSummary.runs}/{summary.secondSummary.wickets} in {summary.secondSummary.totalOver} overs</p>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

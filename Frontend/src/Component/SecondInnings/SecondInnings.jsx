@@ -25,8 +25,8 @@ const SecondInnings = () => {
   const [bowlingStarted, setBowlingStarted] = useState(false);
   const [matchEnd, setMatchEnd] = useState(false);
 
-  const [summary, setSummary] = useState(null); // Store fetched summary
-  const [showSummary, setShowSummary] = useState(false); // Toggle display
+  const [summary, setSummary] = useState(null); 
+  const [showSummary, setShowSummary] = useState(false);
 
   useEffect(() => {
     socketRef.current = io("https://cric-scoreboard.onrender.com/");
@@ -189,8 +189,8 @@ const secondSummary = {
   const watchSummary = async () => {
     try {
       const res = await axios.get(`https://cric-scoreboard.onrender.com/user/fetchsummary/${id}`);
-      setSummary(res.data); // Store in state
-      setShowSummary(true); // Show on UI
+      setSummary(res.data);
+      setShowSummary(true);
     } catch (error) {
       console.log("Error fetching summary", error);
     }
@@ -211,14 +211,9 @@ const secondSummary = {
       </div>
 
       {battingTeamWon ? (
-        <div>
-          <h3 className='flex items-center justify-center font-bold text-4xl mt-10 text-indigo-700'>
-            {`${battingTeam} Won`}
-          </h3>
-          <h4
-            className='flex items-center justify-center font-bold cursor-pointer text-4xl text-purple-600 mt-7'
-            onClick={watchSummary}
-          >
+        <div className='flex flex-col items-center justify-center text-4xl cursor-pointer font-bold mt-12'>
+          <h3 className='text-indigo-700'>{`${battingTeam} Won`}</h3>
+          <h4 className='text-purple-600 mt-7' onClick={watchSummary}>
             Watch Summary
           </h4>
         </div>
@@ -262,7 +257,6 @@ const secondSummary = {
         </div>
       )}
 
-      {/* Summary Display */}
       {showSummary && summary && (
         <div className='mt-10 p-5 bg-gray-100 rounded-lg'>
           <h2 className='text-2xl font-bold text-center mb-4'>Match Summary</h2>
