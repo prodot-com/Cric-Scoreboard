@@ -24,6 +24,7 @@ const SecondInnings = () => {
   const [secondInningsStarted, setSecondInningsStarted] = useState(true);
   const [bowlingStarted, setBowlingStarted] = useState(false);
   const [matchEnd, setMatchEnd] = useState(false);
+  const [difference, setDifference] = useState(0)
 
   const [summary, setSummary] = useState(null); 
   const [showSummary, setShowSummary] = useState(false);
@@ -129,7 +130,7 @@ const secondSummary = {
 
       const addSummary = async () => {
         try {
-          await axios.post(`http://localhost:9000/user/addsummary/${id}`, {
+          await axios.post(`https://cric-scoreboard.onrender.com/user/addsummary/${id}`, {
             firstSummary,
             secondSummary
           });
@@ -196,6 +197,20 @@ const secondSummary = {
     }
   };
 
+  useEffect(()=>{
+      if(battingTeamWon){
+        console.log('batting team = ', battingTeam)
+        const Difference = 10 - currentWicket
+        setDifference(Difference)
+      }
+        
+      if(bowlingTeamWon){
+        console.log('bowlingTeam won', bowlingTeam)
+        const Difference = target - currentRun
+        setDifference(Difference)
+      }
+    },[battingTeamWon, bowlingTeamWon])
+
   useEffect(() => {
     const over = Math.floor(totalBalls / 6);
     const balls = totalBalls % 6;
@@ -213,6 +228,7 @@ const secondSummary = {
       {battingTeamWon ? (
         <div className='flex flex-col items-center justify-center text-4xl cursor-pointer font-bold mt-12'>
           <h3 className='text-indigo-700'>{`${battingTeam} Won`}</h3>
+          <h3 className='text-indigo-700'>{`${battingTeam} won by ${difference} wickets`}</h3>
           <h4 className='text-purple-600 mt-7' onClick={watchSummary}>
             Watch Summary
           </h4>
@@ -220,6 +236,7 @@ const secondSummary = {
       ) : bowlingTeamWon ? (
         <div className='flex flex-col items-center justify-center text-4xl cursor-pointer font-bold mt-12'>
           <h3 className='text-indigo-700'>{`${bowlingTeam} Won`}</h3>
+          <h3 className='text-indigo-700'>{`${bowlingTeam} won by ${difference} runs`}</h3>
           <h4 className='text-purple-600 mt-7' onClick={watchSummary}>
             Watch Summary
           </h4>

@@ -21,6 +21,37 @@ const createMatch = async (req, res) => {
     }
 };
 
+const setMatchComplete = async (req, res)=>{
+    try {
+        
+        const {id} = req.params
+        console.log("Recieved: ", id)
+        const newMatch = await Match.findByIdAndUpdate(id, {
+            completed: true
+        },
+    {
+        new: true,
+        runValidators: true
+    })
+
+    if(!newMatch){
+        res.json({
+            message: "Cann't change the data"
+        })
+    }
+
+    res.status(200).json({
+      message: "User updated successfully",
+      data: newMatch,
+    });
+
+
+
+    } catch (error) {
+        throw new ApiError(500, "Cannot complete match")
+    }
+}
+
 
 const deleteMatch = async(req, res)=>{
     try {
@@ -140,4 +171,4 @@ const fetchSummary = async(req, res)=>{
         throw new ApiError(400,'something Went Wrong')
     }
 }
-export { createMatch , deleteMatch, getmatch, findMatch, addToss, addSummary, fetchSummary};
+export { createMatch , deleteMatch, getmatch, findMatch, addToss, addSummary, fetchSummary, setMatchComplete};

@@ -15,6 +15,7 @@ const matchSchema = new mongoose.Schema({
   over: { type: Number, required: true },
   tossWinner: {type: String},
   decision: {type: String},
+  completed:{type: Boolean},
   firstSummary: inningsSchema,
   secondSummary: inningsSchema,
   

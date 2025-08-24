@@ -21,7 +21,8 @@ const SecondInnings = () => {
   const [iningsOver, setIningsOver] = useState(false);
   const [battingTeamWon, setBattingTeamWon] = useState(false);
   const [bowlingTeamWon, setBowlingTeamWon] = useState(false);
-  const [bowlingStarted, setBowlingStarted] = useState(false)
+  const [bowlingStarted, setBowlingStarted] = useState(false);
+  const [difference, setDifference] = useState(0)
 
   const [summary, setSummary] = useState(null); 
   const [showSummary, setShowSummary] = useState(false);
@@ -51,6 +52,7 @@ const SecondInnings = () => {
   // Socket updates
   useEffect(() => {
     const handleMessage = (data) => {
+      setShowSummary(false)
       setBattingTeam(data.battingTeam || "N/A");
       setBowlingTeam(data.bowlingTeam || "N/A");
       setCurrentRun(data.runs || 0);
@@ -78,6 +80,20 @@ const SecondInnings = () => {
       console.log("Error fetching summary", error);
     }
   };
+
+  useEffect(()=>{
+    if(battingTeamWon){
+      console.log('batting team = ', battingTeam)
+      const Difference = 10 - currentWicket
+      setDifference(Difference)
+    }
+      
+    if(bowlingTeamWon){
+      console.log('bowlingTeam won', bowlingTeam)
+      const Difference = target - currentRun
+      setDifference(Difference)
+    }
+  },[battingTeamWon, bowlingTeamWon])
 
  
   useEffect(() => {
@@ -112,6 +128,7 @@ const SecondInnings = () => {
       {battingTeamWon ? (
         <div className='flex flex-col items-center justify-center text-4xl cursor-pointer font-bold mt-12'>
           <h3 className='text-indigo-700'>{`${battingTeam} Won`}</h3>
+          <h3 className='text-indigo-700'>{`${battingTeam} won by ${difference} wickets`}</h3>
           <h4 className='text-purple-600 mt-7' onClick={watchSummary}>
             Watch Summary
           </h4>
@@ -119,6 +136,7 @@ const SecondInnings = () => {
       ) : bowlingTeamWon ? (
         <div className='flex flex-col items-center justify-center text-4xl cursor-pointer font-bold mt-12'>
           <h3 className='text-indigo-700'>{`${bowlingTeam} Won`}</h3>
+          <h3 className='text-indigo-700'>{`${bowlingTeam} won by ${difference} runs`}</h3>
           <h4 className='text-purple-600 mt-7' onClick={watchSummary}>
             Watch Summary
           </h4>
@@ -144,6 +162,13 @@ const SecondInnings = () => {
           <div>
             <h3 className='font-bold'>Second Innings:</h3>
             <p>{summary.secondSummary.battingTeam} - {summary.secondSummary.runs}/{summary.secondSummary.wickets} in {summary.secondSummary.totalOver} overs</p>
+          </div>
+          <div>
+            {battingTeamWon?(<div>
+              <h3 className='text-indigo-700'>{`${battingTeam} won by ${difference} wickets`}</h3>
+            </div>):(<div>
+              <h3 className='text-indigo-700'>{`${bowlingTeam} won by ${difference} runs`}</h3>
+            </div>)}
           </div>
         </div>
       )}
