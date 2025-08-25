@@ -229,7 +229,7 @@ useEffect(() => {
   }
 
   return (
-    <div>
+    <div className='font-mono'>
       <div className='text-3xl font-bold flex justify-around mt-7'>
         <div>{battingteam}</div>
         <div>{`${currentRun}/${currentWicket}`}</div>
@@ -279,6 +279,19 @@ useEffect(() => {
           </button>
         </div>
       )}
+      <div className='flex justify-around mt-5 '>
+        <div >
+          <h1 className='font-bold text-2xl'>Batsmen</h1>
+          <p>{`${matchData.striker}:`}</p>
+          <p>{`${matchData.nonStriker}:`}</p>
+        </div>
+
+
+        <div>
+          <h1 className='font-bold text-2xl'>Bowler</h1>
+            
+        </div>
+      </div>
     </div>
   )
 }
