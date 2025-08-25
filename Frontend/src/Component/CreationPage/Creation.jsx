@@ -10,8 +10,8 @@ const Creation = () => {
     team1: '',
     team2: '',
     over: '',
-    striker: '',
-    nonStriker: '',
+    batsman1: '',
+    batsman2: '',
     bowler: ''
   });
 
@@ -112,8 +112,8 @@ const Creation = () => {
               placeholder="Enter Team-1 name"
               className="bg-blue-400 rounded-xl"
               type="text"
-              value={input.striker}
-              onChange={(e) => setInput({ ...input, striker: e.target.value })}
+              value={input.batsman1}
+              onChange={(e) => setInput({ ...input, batsman1: e.target.value })}
             />
           </label>
 
@@ -123,8 +123,8 @@ const Creation = () => {
               placeholder="Enter Team-1 name"
               className="bg-blue-400 rounded-xl"
               type="text"
-              value={input.nonStriker}
-              onChange={(e) => setInput({ ...input, nonStriker: e.target.value })}
+              value={input.batsman2}
+              onChange={(e) => setInput({ ...input, batsman2: e.target.value })}
             />
           </label>
 

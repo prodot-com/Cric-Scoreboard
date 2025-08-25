@@ -16,7 +16,7 @@ const matchSchema = new mongoose.Schema({
   team2: { type: String, required: true },
   over: { type: Number, required: true },
   batsman1: { type: String, required: true },
-  batsmen2: { type: String, required: true },
+  batsman2: { type: String, required: true },
   bowler: { type: String, required: true },
   tossWinner: { type: String },
   decision: { type: String },

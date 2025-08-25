@@ -1,18 +1,16 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 import Title from '../Title/Title'
-import { io, Socket } from "socket.io-client";
-import { useParams } from 'react-router';
+import { io } from "socket.io-client";
 import axios from 'axios'
 
 const AdminPage = () => {
   const navigate = useNavigate()
   const socketRef = useRef(null)
-  const {id}= useParams()
+  const { id } = useParams()
 
   const [matchData, setMatchData] = useState({})
   const [totalOver, setTotalOver] = useState(0)
-  const [tossData, setTossData] = useState({})
   const [battingteam, setBattingTeam] = useState('')
   const [bowlingteam, setBowlingTeam] = useState('')
   const [currentRun, setCurrentRun] = useState(0)
@@ -24,104 +22,72 @@ const AdminPage = () => {
   const [secondInningsStarted, setSecondInningsStarted] = useState(false)
   const [bowlingStarted, setBowlingStarted] = useState(false)
 
-useEffect(() => {
-  socketRef.current = io("https://cric-scoreboard.onrender.com/")
+  const [striker, setStriker] = useState('')
+  const [nonStriker, setNonStriker] = useState('')
+  const [bowler, setBowler] = useState('')
+  const [newBowler, setNewBowler] = useState("");
+  const [nextBatsman, setNextBatsman] = useState('')
+  const [availableBatsmen, setAvailableBatsmen] = useState([])
+  const [availableBowlers, setAvailableBowlers] = useState([])
+  const [newBatsman, setNewBatsman] = useState("");
 
-  socketRef.current.on("connect", () => {
-    console.log("Connected:", socketRef.current.id)
-    if (id) {
-      socketRef.current.emit('joinMatch', id)
+
+  useEffect(() => {
+    socketRef.current = io("https://cric-scoreboard.onrender.com/")
+
+    socketRef.current.on("connect", () => {
+      if (id) socketRef.current.emit('joinMatch', id)
+    })
+
+    return () => {
+      socketRef.current.disconnect()
     }
-  })
+  }, [id])
 
-  return () => {
-    socketRef.current.disconnect()
-  }
-}, [id])
-
-  const getMatch = async ()=>{
-
+  const getMatch = async () => {
     try {
-      
-      const res =await axios.get(`http://localhost:9000/user/one/${id}`)
-      if(!res)console.log('Error fecthing the match details')
-
-      console.log(res.data.result)
+      const res = await axios.get(`http://localhost:9000/user/one/${id}`)
       setMatchData(res.data.result)
-
     } catch (error) {
       console.log(error)
     }
   }
 
-  useEffect(()=>{
+  useEffect(() => { getMatch() }, [])
 
-    getMatch()
-    
+  useEffect(() => {
+    if (!matchData) return
+    setTotalOver(matchData.over)
 
-  },[])
-  useEffect(()=>{
-    console.log("MatchData:", matchData)
+    const batting = matchData.decision === 'BAT'
+      ? matchData.tossWinner
+      : matchData.tossWinner === matchData.team1
+        ? matchData.team2
+        : matchData.team1
 
-    if (!matchData) {
-      navigate('/')
-    } else {
-      // setMatchData(match)
-      // setTossData(toss)
-      setTotalOver(matchData.over)
+    const bowling = matchData.team1 !== matchData.tossWinner
+      ? matchData.team1
+      : matchData.team2
 
-      const batting = matchData.decision === 'BAT'
-        ? matchData.tossWinner
-        : matchData.tossWinner === matchData.team1
-          ? matchData.team2
-          : matchData.team1
+    setBattingTeam(batting)
+    setBowlingTeam(bowling)
 
-      const bowling = matchData.team1 !== matchData.tossWinner
-        ? matchData.team1
-        : matchData.team2
-
-      setBattingTeam(batting)
-      setBowlingTeam(bowling)
+    // lineups
+    if (matchData.players) {
+      setAvailableBatsmen(matchData.players[batting] || [])
+      setAvailableBowlers(matchData.players[bowling] || [])
     }
+  }, [matchData])
 
-
-  })
-
-
-  // useEffect(() => {
-  //   const data = JSON.parse(sessionStorage.getItem('liveFirstInningsData'))
-  //   if (data) {
-  //     setCurrentRun(data.runs)
-  //     setCurrentWicket(data.wickets)
-  //     setTotalBalls(data.balls)
-  //   }
-  // }, [])
-
-  // useEffect(() => {
-  //   const match = JSON.parse(localStorage.getItem('matchDetails'))
-  //   const toss = JSON.parse(localStorage.getItem('tossDetails'))
-
-  //   if (!match || !toss) {
-  //     navigate('/')
-  //   } else {
-  //     setMatchData(match)
-  //     setTossData(toss)
-  //     setTotalOver(match.over)
-
-  //     const batting = toss.decision === 'BAT'
-  //       ? toss.tossWinner
-  //       : toss.tossWinner === match.team1
-  //         ? match.team2
-  //         : match.team1
-
-  //     const bowling = match.team1 !== toss.tossWinner
-  //       ? match.team1
-  //       : match.team2
-
-  //     setBattingTeam(batting)
-  //     setBowlingTeam(bowling)
-  //   }
-  // }, [])
+  useEffect(() => {
+    if (matchData?.batsman1 && matchData?.batsman2) {
+      setStriker(matchData.batsman1)
+      setNonStriker(matchData.batsman2)
+      setAvailableBatsmen(prev => prev.filter(p => p !== matchData.batsman1 && p !== matchData.batsman2))
+      setBowler(matchData.bowler)
+      setAvailableBowlers(prev => [...prev, matchData.bowler.trim()])
+    }
+  }, [matchData])
 
   useEffect(() => {
     const over = Math.floor(totalBalls / 6)
@@ -138,6 +104,13 @@ useEffect(() => {
       setCurrentWicket(prev => {
         const newWickets = prev + 1
         if (newWickets === 10) setIningsOver(true)
+
+        // bring next batsman
+        if (nextBatsman) {
+          setStriker(nextBatsman)
+          setAvailableBatsmen(prev => prev.filter(p => p !== nextBatsman))
+          setNextBatsman('')
+        }
         return newWickets
       })
     } else {
@@ -148,36 +121,27 @@ useEffect(() => {
       setTotalBalls(prev => {
         const newBalls = prev + 1
         if (newBalls === matchData.over * 6) setIningsOver(true)
+
+        if( value === 1|| value === 3|| value ===5){
+          const temp = striker
+          setStriker(nonStriker)
+          setNonStriker(temp)
+        }
+       
+        if (newBalls % 6 === 0) {
+          const temp = striker
+          setStriker(nonStriker)
+          setNonStriker(temp)
+          setBowler('') 
+        }
         return newBalls
       })
     }
   }
 
-  // useEffect(() => {
-  //   const liveFirstInningsData = {
-  //     bowlingteam,
-  //     battingteam,
-  //     runs: currentRun,
-  //     balls: totalBalls,
-  //     wickets: currentWicket,
-  //     totalOver
-  //   }
-  //   sessionStorage.setItem('liveFirstInningsData', JSON.stringify(liveFirstInningsData))
-  // }, [totalBalls, currentRun, currentWicket])
-
-  // useEffect(() => {
-  //   if (iningsOver) {
-  //     const firstInningsDetails = {
-  //       bowlingteam,
-  //       battingteam,
-  //       runs: currentRun,
-  //       balls: totalBalls,
-  //       wickets: currentWicket,
-  //       totalOver
-  //     }
-  //     localStorage.setItem("firstInningsDetails", JSON.stringify(firstInningsDetails))
-  //   }
-  // }, [iningsOver])
+  useEffect(()=>{
+    console.log(striker)
+  },[striker,nonStriker])
 
   useEffect(() => {
     const firstInnings = {
@@ -189,39 +153,14 @@ useEffect(() => {
       iningsOver,
       secondInningsStart,
       secondInningsStarted,
-      bowlingStarted
+      bowlingStarted,
+      striker,
+      nonStriker,
+      bowler
     }
 
-    socketRef.current?.emit('message', {matchId: id, data: firstInnings})
-  }, [
-    totalBalls,
-    currentRun,
-    currentWicket,
-    iningsOver,
-    secondInningsStart,
-    secondInningsStarted,
-    bowlingStarted
-  ])
-
-  useEffect(() => {
-    if (secondInningsStart) {
-      setTimeout(() => {
-        routeChange()
-      }, 300)
-    }
-  }, [secondInningsStart])
-
-  const routeChange = () => {
-    socketRef.current?.off('message')
-    setTimeout(() => {
-      if (socketRef.current?.connected) {
-        socketRef.current.disconnect()
-        sessionStorage.removeItem('liveFirstInningsData')
-        console.log('Socket disconnected on route change')
-      }
-      navigate(`/second-innings/${id}`)
-    }, 200)
-  }
+    socketRef.current?.emit('message', { matchId: id, data: firstInnings })
+  }, [totalBalls, currentRun, currentWicket, iningsOver, secondInningsStart, secondInningsStarted, bowlingStarted, striker, nonStriker, bowler])
 
   const handleSubmit = () => {
     setSecondInningsStart(true)
@@ -241,12 +180,13 @@ useEffect(() => {
         <div>
           <Title text={`${bowlingteam} will bowl`} className='mt-5' />
 
+          
           <div className='flex justify-around mt-15 flex-wrap gap-2'>
             {[0, 1, 2, 3, 4, 5, 6, "wide", "no"].map((value) => (
               <button
                 key={value}
-                disabled={iningsOver}
-                className='bg-amber-400 p-1 rounded-xl h-10 w-10 cursor-pointer disabled:opacity-50'
+                disabled={iningsOver || !bowler}
+                className='bg-amber-400 p-1 rounded-xl h-10 w-14 cursor-pointer disabled:opacity-50'
                 onClick={() => {
                   changeRun(value)
                   setBowlingStarted(true)
@@ -257,15 +197,108 @@ useEffect(() => {
             ))}
           </div>
 
+          
           <div
-            className='flex justify-center mt-5 font-bold text-2xl text-red-600 rounded-xl cursor-pointer'
-            onClick={() => {
+            className='flex justify-center items mt-5 font-bold text-2xl text-red-600 cursor-pointer'
+            
+          >
+            <h1 onClick={() => {
               changeRun('W')
               setBowlingStarted(true)
-            }}
-          >
-            Out
+            }}>Out</h1>
           </div>
+
+          {/* Next batsman dropdown (only visible after wicket) */}
+          {/* Next batsman selection (only visible after wicket) */}
+{currentWicket > 0 && (
+  <div className='mt-5 flex flex-col items-center gap-3'>
+    {/* <div className="flex gap-3 items-center">
+      <label className='font-bold'>Next Batsman:</label>
+      <select
+        value={nextBatsman}
+        onChange={(e) => setNextBatsman(e.target.value)}
+        className='border p-1 rounded'
+      >
+        <option value="">Select</option>
+        {availableBatsmen.map(p => (
+          <option key={p} value={p}>{p}</option>
+        ))}
+      </select>
+    </div> */}
+
+    {/* Add new batsman */}
+    <div className="flex gap-3 items-center">
+      <label className='font-bold'>Add New Batsman:</label>
+      <input
+        type="text"
+        value={newBatsman}
+        onChange={(e) => setNewBatsman(e.target.value)}
+        className='border p-1 rounded'
+        placeholder="Enter batsman name"
+      />
+      <button
+  className='bg-green-500 text-white px-3 py-1 rounded'
+  onClick={() => {
+    if (newBatsman.trim()) {
+      const batsman = newBatsman.trim();
+      setAvailableBatsmen(prev => [...prev, batsman]);
+      setStriker(batsman);
+      setNextBatsman("");   
+      setNewBatsman("");
+    }
+  }}
+>
+  Add
+</button>
+
+    </div>
+  </div>
+)}
+
+
+          {/* Bowler dropdown (must pick at start of over) */}
+          {(!bowler || totalBalls % 6 === 0) && (
+  <div className='mt-5 flex flex-col items-center gap-3'>
+    <div className="flex gap-3 items-center">
+      <label className='font-bold'>Select Bowler:</label>
+      <select
+        value={bowler}
+        onChange={(e) => setBowler(e.target.value)}
+        className='border p-1 rounded'
+      >
+        <option value="">Select</option>
+        {availableBowlers.map(p => (
+          <option key={p} value={p}>{p}</option>
+        ))}
+      </select>
+    </div>
+
+    {/* Add new bowler */}
+    <div className="flex gap-3 items-center">
+      <label className='font-bold'>Add New Bowler:</label>
+      <input
+        type="text"
+        value={newBowler}
+        onChange={(e) => setNewBowler(e.target.value)}
+        className='border p-1 rounded'
+        placeholder="Enter bowler name"
+      />
+      <button
+        className='bg-blue-500 text-white px-3 py-1 rounded'
+        onClick={() => {
+          if (newBowler.trim()) {
+            setAvailableBowlers(prev => [...prev, newBowler.trim()]);
+            setBowler(newBowler.trim());
+            setNewBowler("");
+          }
+        }}
+      >
+        Add
+      </button>
+    </div>
+  </div>
+)}
+
         </div>
       ) : (
         <div>
@@ -279,17 +312,17 @@ useEffect(() => {
           </button>
         </div>
       )}
+
+      {/* Batsmen + Bowler Info */}
       <div className='flex justify-around mt-5 '>
-        <div >
+        <div>
           <h1 className='font-bold text-2xl'>Batsmen</h1>
-          <p>{`${matchData.striker}:`}</p>
-          <p>{`${matchData.nonStriker}:`}</p>
+          <p>{`${striker || '-'}`}</p>
+          <p>{`${nonStriker || '-'}`}</p>
         </div>
-
-
         <div>
           <h1 className='font-bold text-2xl'>Bowler</h1>
-            
+          <p>{bowler || '-'}</p>
         </div>
       </div>
     </div>
