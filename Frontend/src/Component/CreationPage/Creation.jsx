@@ -9,7 +9,10 @@ const Creation = () => {
     name: '',
     team1: '',
     team2: '',
-    over: ''
+    over: '',
+    striker: '',
+    nonStriker: '',
+    bowler: ''
   });
 
   const { addMatchDetails } = useCric(); 
@@ -27,7 +30,7 @@ const Creation = () => {
     addMatchDetails(input);
 
     try {
-      const res = await axios.post('https://cric-scoreboard.onrender.com/user/create', input)
+      const res = await axios.post('http://localhost:9000/user/create', input)
       console.log('match Created: ', res.data)
 
       localStorage.setItem('matchDetails', JSON.stringify(input));
@@ -100,6 +103,39 @@ const Creation = () => {
               type="number"
               value={input.over}
               onChange={(e) => setInput({ ...input, over: Number(e.target.value) })}
+            />
+          </label>
+
+          <label>
+            Striker:
+            <input
+              placeholder="Enter Team-1 name"
+              className="bg-blue-400 rounded-xl"
+              type="text"
+              value={input.striker}
+              onChange={(e) => setInput({ ...input, striker: e.target.value })}
+            />
+          </label>
+
+          <label>
+            NonStriker:
+            <input
+              placeholder="Enter Team-1 name"
+              className="bg-blue-400 rounded-xl"
+              type="text"
+              value={input.nonStriker}
+              onChange={(e) => setInput({ ...input, nonStriker: e.target.value })}
+            />
+          </label>
+
+          <label>
+            Bowler:
+            <input
+              placeholder="Enter Team-1 name"
+              className="bg-blue-400 rounded-xl"
+              type="text"
+              value={input.bowler}
+              onChange={(e) => setInput({ ...input, bowler: e.target.value })}
             />
           </label>
 

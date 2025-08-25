@@ -3,20 +3,21 @@ import { Match } from '../model/Match.model.js';
 
 const createMatch = async (req, res) => {
     try {
-        const { name, team1, team2, over } = req.body; // ← FIXED
-        console.log(name, team1, team2, over)
+        const { name, team1, team2, over, striker, nonStriker, bowler } = req.body; // ← FIXED
+        console.log(name, team1, team2, over, striker, nonStriker, bowler)
 
-        if (!name || !team1 || !team2 || !over) {
+        if (!name || !team1 || !team2 || !over || !striker || !nonStriker || !bowler) {
             return res.status(400).json({ error: 'All fields are required' });
         }
 
-        const match = await Match.create({ name, team1, team2, over });
+        const match = await Match.create({ name, team1, team2, over, striker, nonStriker, bowler});
 
         res.status(201).json(match);
         
         console.log("Created Match ID:", match._id);
         // res.send('Complete')
     } catch (error) {
+         console.error("Match Creation Error:", error); 
         throw new ApiError(500, 'Something Went Wrong')
     }
 };
@@ -125,32 +126,36 @@ const addToss = async(req, res)=>{
     }
 }
 
-const addSummary = async(req, res)=>{
+const addSummary = async (req, res) => {
     try {
-        const {id} = req.params
-        const {firstSummary, secondSummary} = req.body
-        // console.log(firstSummary, secondSummary)
+        const { id } = req.params;
+        const { firstSummary, secondSummary } = req.body;
 
-        if(!firstSummary|| !secondSummary){
-            return res.status(400).json({ error: 'Missing summaries' })
+        if (!firstSummary || !secondSummary) {
+            return res.status(400).json({ error: "Missing summaries" });
         }
 
-        const match =await Match.findById(id)
-        if(!match){
-            return res.status(400).json({error: 'invalid id'})
+        if (typeof secondSummary !== "object" || !secondSummary.matchWinner) {
+            return res.status(400).json({ message: "Missing Match Winner" });
         }
 
-        match.firstSummary = firstSummary,
-        match.secondSummary = secondSummary
+        const match = await Match.findById(id);
+        if (!match) {
+            return res.status(404).json({ error: "Invalid match ID" });
+        }
 
-        await match.save()
+        match.firstSummary = firstSummary;
+        match.secondSummary = secondSummary;
 
-        res.status(200).json({message:'succesfully saved', match})
+        await match.save();
 
+        res.status(200).json({ message: "Successfully saved", match });
     } catch (error) {
-        throw new ApiError(400, "Something Went Wrong")
+        console.error(error);
+        res.status(500).json({ error: "Something went wrong" });
     }
-}
+};
+
 
 const fetchSummary = async(req, res)=>{
     try {

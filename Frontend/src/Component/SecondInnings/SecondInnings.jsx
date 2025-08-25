@@ -24,7 +24,8 @@ const SecondInnings = () => {
   const [secondInningsStarted, setSecondInningsStarted] = useState(true);
   const [bowlingStarted, setBowlingStarted] = useState(false);
   const [matchEnd, setMatchEnd] = useState(false);
-  const [difference, setDifference] = useState(0)
+  const [difference, setDifference] = useState(0);
+  const [matchWinner, setMatchWinner]= useState('')
 
   const [summary, setSummary] = useState(null); 
   const [showSummary, setShowSummary] = useState(false);
@@ -71,6 +72,7 @@ const SecondInnings = () => {
         if (newRun >= target) {
           setBattingTeamWon(true);
           setMatchEnd(true);
+          setMatchWinner(battingTeam)
         }
         return newRun;
       });
@@ -80,6 +82,7 @@ const SecondInnings = () => {
         if (newWickets === 10) {
           setBowlingTeamWon(true);
           setMatchEnd(true);
+          setMatchWinner(bowlingTeam)
         }
         return newWickets;
       });
@@ -89,6 +92,7 @@ const SecondInnings = () => {
         if (newRun >= target) {
           setBattingTeamWon(true);
           setMatchEnd(true);
+          setMatchWinner(battingTeam)
         }
         return newRun;
       });
@@ -100,11 +104,22 @@ const SecondInnings = () => {
         if (newBalls === totalOver * 6) {
           setBowlingTeamWon(true);
           setMatchEnd(true);
+          setMatchWinner(bowlingTeam)
         }
         return newBalls;
       });
     }
   };
+
+//   useEffect(() => {
+//   if (battingTeamWon) {
+//     setMatchWinner(battingTeam);
+//   } else if (bowlingTeamWon) {
+//     setMatchWinner(bowlingTeam);
+//   } else {
+//     setMatchWinner(null); // no result yet
+//   }
+// }, [battingTeamWon, bowlingTeamWon, battingTeam, bowlingTeam]);
 
   const markMatchComplete = async ()=>{
 
@@ -124,7 +139,8 @@ const SecondInnings = () => {
   runs: data.runs,
   totalOver: data.totalOver,
   wickets: data.wickets,
-  balls: data.balls
+  balls: data.balls,
+  matchWinner:matchWinner
 };
 
 const secondSummary = {
@@ -133,15 +149,18 @@ const secondSummary = {
   runs: currentRun,
   totalOver,
   wickets: currentWicket,
-  balls: totalBalls
+  balls: totalBalls,
+  matchWinner
+
 };
 
 
       const addSummary = async () => {
         try {
-          await axios.post(`https://cric-scoreboard.onrender.com/user/addsummary/${id}`, {
+          console.log(secondSummary)
+          await axios.post(`http://localhost:9000/user/addSummary/${id}`, {
             firstSummary,
-            secondSummary
+            secondSummary,
           });
         } catch (error) {
           console.log('Some error happened', error);
@@ -150,6 +169,9 @@ const secondSummary = {
       addSummary();
     }
   }, [matchEnd]);
+
+  
+
 
   useEffect(() => {
     const data = {
@@ -199,6 +221,7 @@ const secondSummary = {
   const watchSummary = async () => {
     try {
       const res = await axios.get(`https://cric-scoreboard.onrender.com/user/fetchsummary/${id}`);
+      console.log(res.data)
       setSummary(res.data);
       setShowSummary(true);
     } catch (error) {
@@ -293,6 +316,9 @@ const secondSummary = {
           <div>
             <h3 className='font-bold'>Second Innings:</h3>
             <p>{summary.secondSummary.battingTeam} - {summary.secondSummary.runs}/{summary.secondSummary.wickets} in {summary.secondSummary.totalOver} overs</p>
+          </div>
+          <div>
+            <h1>{`${summary.secondSummary.matchWinner} won the match${difference}`}</h1>
           </div>
         </div>
       )}

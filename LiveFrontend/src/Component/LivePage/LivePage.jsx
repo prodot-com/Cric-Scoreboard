@@ -37,6 +37,9 @@ const LiveFirstInnings = () => {
         console.log("matchId: ", id)
         const response = await axios.get(`https://cric-scoreboard.onrender.com/user/one/${id}`)
         const result = response.data.result
+        if(result.completed){
+          navigate(`/live-second/${id}`, { replace: true })
+        }
         console.log(result)
         setBattingTeam(result.team1)
         setBowlingTeam(result.team2)

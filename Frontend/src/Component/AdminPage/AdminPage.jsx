@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router'
 import Title from '../Title/Title'
 import { io, Socket } from "socket.io-client";
 import { useParams } from 'react-router';
+import axios from 'axios'
 
 const AdminPage = () => {
   const navigate = useNavigate()
@@ -38,41 +39,89 @@ useEffect(() => {
   }
 }, [id])
 
+  const getMatch = async ()=>{
 
-  useEffect(() => {
-    const data = JSON.parse(sessionStorage.getItem('liveFirstInningsData'))
-    if (data) {
-      setCurrentRun(data.runs)
-      setCurrentWicket(data.wickets)
-      setTotalBalls(data.balls)
+    try {
+      
+      const res =await axios.get(`http://localhost:9000/user/one/${id}`)
+      if(!res)console.log('Error fecthing the match details')
+
+      console.log(res.data.result)
+      setMatchData(res.data.result)
+
+    } catch (error) {
+      console.log(error)
     }
-  }, [])
+  }
 
-  useEffect(() => {
-    const match = JSON.parse(localStorage.getItem('matchDetails'))
-    const toss = JSON.parse(localStorage.getItem('tossDetails'))
+  useEffect(()=>{
 
-    if (!match || !toss) {
+    getMatch()
+    
+
+  },[])
+  useEffect(()=>{
+    console.log("MatchData:", matchData)
+
+    if (!matchData) {
       navigate('/')
     } else {
-      setMatchData(match)
-      setTossData(toss)
-      setTotalOver(match.over)
+      // setMatchData(match)
+      // setTossData(toss)
+      setTotalOver(matchData.over)
 
-      const batting = toss.decision === 'BAT'
-        ? toss.tossWinner
-        : toss.tossWinner === match.team1
-          ? match.team2
-          : match.team1
+      const batting = matchData.decision === 'BAT'
+        ? matchData.tossWinner
+        : matchData.tossWinner === matchData.team1
+          ? matchData.team2
+          : matchData.team1
 
-      const bowling = match.team1 !== toss.tossWinner
-        ? match.team1
-        : match.team2
+      const bowling = matchData.team1 !== matchData.tossWinner
+        ? matchData.team1
+        : matchData.team2
 
       setBattingTeam(batting)
       setBowlingTeam(bowling)
     }
-  }, [])
+
+
+  })
+
+
+  // useEffect(() => {
+  //   const data = JSON.parse(sessionStorage.getItem('liveFirstInningsData'))
+  //   if (data) {
+  //     setCurrentRun(data.runs)
+  //     setCurrentWicket(data.wickets)
+  //     setTotalBalls(data.balls)
+  //   }
+  // }, [])
+
+  // useEffect(() => {
+  //   const match = JSON.parse(localStorage.getItem('matchDetails'))
+  //   const toss = JSON.parse(localStorage.getItem('tossDetails'))
+
+  //   if (!match || !toss) {
+  //     navigate('/')
+  //   } else {
+  //     setMatchData(match)
+  //     setTossData(toss)
+  //     setTotalOver(match.over)
+
+  //     const batting = toss.decision === 'BAT'
+  //       ? toss.tossWinner
+  //       : toss.tossWinner === match.team1
+  //         ? match.team2
+  //         : match.team1
+
+  //     const bowling = match.team1 !== toss.tossWinner
+  //       ? match.team1
+  //       : match.team2
+
+  //     setBattingTeam(batting)
+  //     setBowlingTeam(bowling)
+  //   }
+  // }, [])
 
   useEffect(() => {
     const over = Math.floor(totalBalls / 6)
@@ -104,31 +153,31 @@ useEffect(() => {
     }
   }
 
-  useEffect(() => {
-    const liveFirstInningsData = {
-      bowlingteam,
-      battingteam,
-      runs: currentRun,
-      balls: totalBalls,
-      wickets: currentWicket,
-      totalOver
-    }
-    sessionStorage.setItem('liveFirstInningsData', JSON.stringify(liveFirstInningsData))
-  }, [totalBalls, currentRun, currentWicket])
+  // useEffect(() => {
+  //   const liveFirstInningsData = {
+  //     bowlingteam,
+  //     battingteam,
+  //     runs: currentRun,
+  //     balls: totalBalls,
+  //     wickets: currentWicket,
+  //     totalOver
+  //   }
+  //   sessionStorage.setItem('liveFirstInningsData', JSON.stringify(liveFirstInningsData))
+  // }, [totalBalls, currentRun, currentWicket])
 
-  useEffect(() => {
-    if (iningsOver) {
-      const firstInningsDetails = {
-        bowlingteam,
-        battingteam,
-        runs: currentRun,
-        balls: totalBalls,
-        wickets: currentWicket,
-        totalOver
-      }
-      localStorage.setItem("firstInningsDetails", JSON.stringify(firstInningsDetails))
-    }
-  }, [iningsOver])
+  // useEffect(() => {
+  //   if (iningsOver) {
+  //     const firstInningsDetails = {
+  //       bowlingteam,
+  //       battingteam,
+  //       runs: currentRun,
+  //       balls: totalBalls,
+  //       wickets: currentWicket,
+  //       totalOver
+  //     }
+  //     localStorage.setItem("firstInningsDetails", JSON.stringify(firstInningsDetails))
+  //   }
+  // }, [iningsOver])
 
   useEffect(() => {
     const firstInnings = {

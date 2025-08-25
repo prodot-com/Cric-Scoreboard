@@ -95,8 +95,9 @@ const SecondInnings = () => {
 
   const watchSummary = async () => {
     try {
-      const res = await axios.get(`https://cric-scoreboard.onrender.com/user/fetchsummary/${id}`);
+      const res = await axios.get(`http://localhost:9000/user/fetchsummary/${id}`);
       setSummary(res.data);
+      console.log(res.data)
       setShowSummary(true);
     } catch (error) {
       console.log("Error fetching summary", error);
@@ -138,40 +139,6 @@ const SecondInnings = () => {
 
   return (
     <div>
-      {/* {bowlingStarted ? (<div className='text-3xl font-bold flex justify-around mt-7'>
-        <div>{battingTeam}</div>
-        <div>{`${currentRun}/${currentWicket}`}</div>
-        <div>{`Balls: ${totalBalls}`}</div>
-      </div>): (<div className='text-3xl font-bold flex justify-around mt-7'>
-        <div>{`Target:${target}`}</div>
-        <div>{`${bowlingTeam} will bowl`}</div>
-      </div>)}
-
-      {battingTeamWon ? (
-        <div className='flex flex-col items-center justify-center text-4xl cursor-pointer font-bold mt-12'>
-          <h3 className='text-indigo-700'>{`${battingTeam} Won`}</h3>
-          <h3 className='text-indigo-700'>{`${battingTeam} won by ${difference} wickets`}</h3>
-          <h4 className='text-purple-600 mt-7' onClick={watchSummary}>
-            Watch Summary
-          </h4>
-        </div>
-      ) : bowlingTeamWon ? (
-        <div className='flex flex-col items-center justify-center text-4xl cursor-pointer font-bold mt-12'>
-          <h3 className='text-indigo-700'>{`${bowlingTeam} Won`}</h3>
-          <h3 className='text-indigo-700'>{`${bowlingTeam} won by ${difference} runs`}</h3>
-          <h4 className='text-purple-600 mt-7' onClick={watchSummary}>
-            Watch Summary
-          </h4>
-        </div>
-      ) : !bowlingStarted ? (
-        <h3 className='flex justify-center text-4xl font-bold mt-12 text-indigo-700'>{`Match not yet started`}</h3>
-      ): (
-        <div>
-          <Title text={`Over: ${overs}`} className='mt-5' />
-          <Title text={`${bowlingTeam} will bowl`} className='mt-5' />
-          <Title text={`Target: ${target}`} className='mt-5' />
-        </div>
-      )} */}
 
       {
         matchEnd ? (<div>
@@ -234,9 +201,9 @@ const SecondInnings = () => {
           </div>
           <div>
             {battingTeamWon?(<div>
-              <h3 className='text-indigo-700'>{`${battingTeam} won by ${difference} wickets`}</h3>
+              <h3 className='text-indigo-700'>{`${summary.secondSummary.matchWinner} won by ${difference} wickets`}</h3>
             </div>):(<div>
-              <h3 className='text-indigo-700'>{`${bowlingTeam} won by ${difference} runs`}</h3>
+              <h3 className='text-indigo-700'>{`${summary.secondSummary.matchWinner} won by ${difference} runs`}</h3>
             </div>)}
           </div>
         </div>
