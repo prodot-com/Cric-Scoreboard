@@ -9,12 +9,11 @@ const app = express()
 
 app.use(express.json())
 
-// Allow multiple origins
+
 const allowedOrigins = ["http://localhost:5173", "http://localhost:5174"];
 
 app.use(cors({
     origin: allowedOrigins,
-    methods: ['GET', 'POST'],
     credentials: true
 }))
 

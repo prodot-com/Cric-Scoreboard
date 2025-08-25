@@ -106,8 +106,17 @@ const SecondInnings = () => {
     }
   };
 
+  const markMatchComplete = async ()=>{
+
+    await axios.put(`http://localhost:9000/user/update/${id}`)
+
+    console.log('match completed')
+
+  }
+
   useEffect(() => {
     if (matchEnd) {
+      markMatchComplete()
       const data = JSON.parse(localStorage.getItem('firstInningsDetails'));
       const firstSummary = {
   battingTeam: data.battingteam,

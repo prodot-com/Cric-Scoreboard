@@ -80,10 +80,10 @@ const LiveFirstInnings = () => {
         targetDetails(data)
         navigate(`/live-second/${id}`, { replace: true });
       }
-      // console.log(data)
+      console.log(data)
 
-      setBattingTeam(data.battingteam || "N/A");
-      setBowlingTeam(data.bowlingteam || "N/A");
+      if(data.battingTeam)setBattingTeam(data.battingteam);
+      if(data.battingTeam)setBowlingTeam(data.bowlingteam);
       setCurrentRun(data.runs || 0);
       setCurrentWicket(data.wickets || 0);
       setTotalBalls(data.balls || 0);
@@ -125,9 +125,10 @@ const LiveFirstInnings = () => {
         <div>{battingteam}</div>
         <div>{`${currentRun}/${currentWicket}`}</div>
         <div>{`Balls: ${totalBalls}`}</div>
+        <div>{bowlingteam}</div>
       </div>): (<div className='flex flex-col items-center justify-center text-4xl font-bold mt-12 text-indigo-700'>
         <h2>{`Team1: ${battingteam}`}</h2>
-        <h2>{`Team1: ${bowlingteam}`}</h2>
+        <h2>{`Team2: ${bowlingteam}`}</h2>
         <h3>Match not yet started</h3>
         <h2 className='text-amber-500 text-2xl mt-7 '>{`Team ${tossWinner} choose to ${decision} first`}</h2>
       </div>)}
