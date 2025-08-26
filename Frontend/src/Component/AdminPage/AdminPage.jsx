@@ -29,30 +29,25 @@ const AdminPage = () => {
   const [nextBatsman, setNextBatsman] = useState('')
   const [availableBatsmen, setAvailableBatsmen] = useState([])
   const [availableBowlers, setAvailableBowlers] = useState([])
-  const [newBatsman, setNewBatsman] = useState("");
+  const [newBatsman, setNewBatsman] = useState("")
 
+  const [batsmanStats, setBatsmanStats] = useState({})
+  const [bowlerStats, setBowlerStats] = useState({})
 
   useEffect(() => {
     socketRef.current = io("https://cric-scoreboard.onrender.com/")
-
     socketRef.current.on("connect", () => {
       if (id) socketRef.current.emit('joinMatch', id)
     })
-
-    return () => {
-      socketRef.current.disconnect()
-    }
+    return () => { socketRef.current.disconnect() }
   }, [id])
 
   const getMatch = async () => {
     try {
       const res = await axios.get(`http://localhost:9000/user/one/${id}`)
       setMatchData(res.data.result)
-    } catch (error) {
-      console.log(error)
-    }
+    } catch (error) { console.log(error) }
   }
-
   useEffect(() => { getMatch() }, [])
 
   useEffect(() => {
@@ -61,18 +56,13 @@ const AdminPage = () => {
 
     const batting = matchData.decision === 'BAT'
       ? matchData.tossWinner
-      : matchData.tossWinner === matchData.team1
-        ? matchData.team2
-        : matchData.team1
+      : matchData.tossWinner === matchData.team1 ? matchData.team2 : matchData.team1
 
-    const bowling = matchData.team1 !== matchData.tossWinner
-      ? matchData.team1
-      : matchData.team2
+    const bowling = matchData.team1 !== matchData.tossWinner ? matchData.team1 : matchData.team2
 
     setBattingTeam(batting)
     setBowlingTeam(bowling)
 
-    // lineups
     if (matchData.players) {
       setAvailableBatsmen(matchData.players[batting] || [])
       setAvailableBowlers(matchData.players[bowling] || [])
@@ -80,12 +70,21 @@ const AdminPage = () => {
   }, [matchData])
 
   useEffect(() => {
-    if (matchData?.batsman1 && matchData?.batsman2) {
+    if (matchData?.batsman1 && matchData?.batsman2 && matchData?.bowler) {
       setStriker(matchData.batsman1)
       setNonStriker(matchData.batsman2)
       setAvailableBatsmen(prev => prev.filter(p => p !== matchData.batsman1 && p !== matchData.batsman2))
       setBowler(matchData.bowler)
       setAvailableBowlers(prev => [...prev, matchData.bowler.trim()])
+
+      setBatsmanStats({
+        [matchData.batsman1]: { runs: 0, balls: 0, out: false },
+        [matchData.batsman2]: { runs: 0, balls: 0, out: false }
+      })
+
+      setBowlerStats({
+        [matchData.bowler]: { runs: 0, balls: 0, wickets: 0 }
+      })
     }
   }, [matchData])
 
@@ -100,48 +99,85 @@ const AdminPage = () => {
 
     if (value === 'wide' || value === 'no') {
       setCurrentRun(prev => prev + 1)
-    } else if (value === "W") {
+      if (bowler) {
+        setBowlerStats(prev => ({
+          ...prev,
+          [bowler]: { ...prev[bowler], runs: (prev[bowler]?.runs || 0) + 1 }
+        }))
+      }
+      return
+    }
+
+    if (value === "W") {
       setCurrentWicket(prev => {
         const newWickets = prev + 1
         if (newWickets === 10) setIningsOver(true)
 
-        // bring next batsman
+        setBatsmanStats(prev => ({
+          ...prev,
+          [striker]: { ...prev[striker], out: true, balls: (prev[striker]?.balls || 0) + 1 }
+        }))
+
+        setBowlerStats(prev => ({
+          ...prev,
+          [bowler]: { 
+            ...prev[bowler], 
+            balls: (prev[bowler]?.balls || 0) + 1, 
+            wickets: (prev[bowler]?.wickets || 0) + 1 
+          }
+        }))
+
         if (nextBatsman) {
           setStriker(nextBatsman)
           setAvailableBatsmen(prev => prev.filter(p => p !== nextBatsman))
+          setBatsmanStats(prev => ({
+            ...prev,
+            [nextBatsman]: { runs: 0, balls: 0, out: false }
+          }))
           setNextBatsman('')
         }
         return newWickets
       })
-    } else {
-      setCurrentRun(prev => prev + value)
+      setTotalBalls(prev => prev + 1)
+      return
     }
 
-    if (value !== 'wide' && value !== 'no') {
-      setTotalBalls(prev => {
-        const newBalls = prev + 1
-        if (newBalls === matchData.over * 6) setIningsOver(true)
+    setCurrentRun(prev => prev + value)
+    setBatsmanStats(prev => ({
+      ...prev,
+      [striker]: {
+        ...prev[striker],
+        runs: (prev[striker]?.runs || 0) + value,
+        balls: (prev[striker]?.balls || 0) + 1
+      }
+    }))
+    setBowlerStats(prev => ({
+      ...prev,
+      [bowler]: {
+        ...prev[bowler],
+        runs: (prev[bowler]?.runs || 0) + value,
+        balls: (prev[bowler]?.balls || 0) + 1
+      }
+    }))
 
-        if( value === 1|| value === 3|| value ===5){
-          const temp = striker
-          setStriker(nonStriker)
-          setNonStriker(temp)
-        }
-       
-        if (newBalls % 6 === 0) {
-          const temp = striker
-          setStriker(nonStriker)
-          setNonStriker(temp)
-          setBowler('') 
-        }
-        return newBalls
-      })
-    }
+    setTotalBalls(prev => {
+      const newBalls = prev + 1
+      if (newBalls === matchData.over * 6) setIningsOver(true)
+
+      const isEndOfOver = newBalls % 6 === 0
+      if (isEndOfOver) {
+        const temp = striker
+        setStriker(nonStriker)
+        setNonStriker(temp)
+        setBowler('')
+      } else if (value % 2 === 1) {
+        const temp = striker
+        setStriker(nonStriker)
+        setNonStriker(temp)
+      }
+      return newBalls
+    })
   }
-
-  useEffect(()=>{
-    console.log(striker)
-  },[striker,nonStriker])
 
   useEffect(() => {
     const firstInnings = {
@@ -156,11 +192,12 @@ const AdminPage = () => {
       bowlingStarted,
       striker,
       nonStriker,
-      bowler
+      bowler,
+      batsmanStats,
+      bowlerStats
     }
-
     socketRef.current?.emit('message', { matchId: id, data: firstInnings })
-  }, [totalBalls, currentRun, currentWicket, iningsOver, secondInningsStart, secondInningsStarted, bowlingStarted, striker, nonStriker, bowler])
+  }, [totalBalls, currentRun, currentWicket, iningsOver, secondInningsStart, secondInningsStarted, bowlingStarted, striker, nonStriker, bowler, batsmanStats, bowlerStats])
 
   const handleSubmit = () => {
     setSecondInningsStart(true)
@@ -179,126 +216,93 @@ const AdminPage = () => {
       {!iningsOver ? (
         <div>
           <Title text={`${bowlingteam} will bowl`} className='mt-5' />
-
-          
           <div className='flex justify-around mt-15 flex-wrap gap-2'>
-            {[0, 1, 2, 3, 4, 5, 6, "wide", "no"].map((value) => (
+            {[0,1,2,3,4,5,6,"wide","no"].map((value) => (
               <button
                 key={value}
                 disabled={iningsOver || !bowler}
                 className='bg-amber-400 p-1 rounded-xl h-10 w-14 cursor-pointer disabled:opacity-50'
-                onClick={() => {
-                  changeRun(value)
-                  setBowlingStarted(true)
-                }}
+                onClick={() => { changeRun(value); setBowlingStarted(true) }}
               >
                 {value}
               </button>
             ))}
           </div>
 
-          
-          <div
-            className='flex justify-center items mt-5 font-bold text-2xl text-red-600 cursor-pointer'
-            
-          >
-            <h1 onClick={() => {
-              changeRun('W')
-              setBowlingStarted(true)
-            }}>Out</h1>
+          <div className='flex justify-center items mt-5 font-bold text-2xl text-red-600 cursor-pointer'>
+            <h1 onClick={() => { changeRun('W'); setBowlingStarted(true) }}>Out</h1>
           </div>
 
-          {/* Next batsman dropdown (only visible after wicket) */}
-          {/* Next batsman selection (only visible after wicket) */}
-{currentWicket > 0 && (
-  <div className='mt-5 flex flex-col items-center gap-3'>
-    {/* <div className="flex gap-3 items-center">
-      <label className='font-bold'>Next Batsman:</label>
-      <select
-        value={nextBatsman}
-        onChange={(e) => setNextBatsman(e.target.value)}
-        className='border p-1 rounded'
-      >
-        <option value="">Select</option>
-        {availableBatsmen.map(p => (
-          <option key={p} value={p}>{p}</option>
-        ))}
-      </select>
-    </div> */}
+          {currentWicket > 0 && (
+            <div className='mt-5 flex flex-col items-center gap-3'>
+              <div className="flex gap-3 items-center">
+                <label className='font-bold'>Add New Batsman:</label>
+                <input
+                  type="text"
+                  value={newBatsman}
+                  onChange={(e) => setNewBatsman(e.target.value)}
+                  className='border p-1 rounded'
+                  placeholder="Enter batsman name"
+                />
+                <button
+                  className='bg-green-500 text-white px-3 py-1 rounded'
+                  onClick={() => {
+                    if (newBatsman.trim()) {
+                      const batsman = newBatsman.trim();
+                      setAvailableBatsmen(prev => [...prev, batsman]);
+                      setStriker(batsman);
+                      setBatsmanStats(prev => ({
+                        ...prev,
+                        [batsman]: { runs: 0, balls: 0, out: false }
+                      }))
+                      setNextBatsman("");
+                      setNewBatsman("");
+                    }
+                  }}
+                >Add</button>
+              </div>
+            </div>
+          )}
 
-    {/* Add new batsman */}
-    <div className="flex gap-3 items-center">
-      <label className='font-bold'>Add New Batsman:</label>
-      <input
-        type="text"
-        value={newBatsman}
-        onChange={(e) => setNewBatsman(e.target.value)}
-        className='border p-1 rounded'
-        placeholder="Enter batsman name"
-      />
-      <button
-  className='bg-green-500 text-white px-3 py-1 rounded'
-  onClick={() => {
-    if (newBatsman.trim()) {
-      const batsman = newBatsman.trim();
-      setAvailableBatsmen(prev => [...prev, batsman]);
-      setStriker(batsman);
-      setNextBatsman("");   
-      setNewBatsman("");
-    }
-  }}
->
-  Add
-</button>
-
-    </div>
-  </div>
-)}
-
-
-          {/* Bowler dropdown (must pick at start of over) */}
           {(!bowler || totalBalls % 6 === 0) && (
-  <div className='mt-5 flex flex-col items-center gap-3'>
-    <div className="flex gap-3 items-center">
-      <label className='font-bold'>Select Bowler:</label>
-      <select
-        value={bowler}
-        onChange={(e) => setBowler(e.target.value)}
-        className='border p-1 rounded'
-      >
-        <option value="">Select</option>
-        {availableBowlers.map(p => (
-          <option key={p} value={p}>{p}</option>
-        ))}
-      </select>
-    </div>
-
-    {/* Add new bowler */}
-    <div className="flex gap-3 items-center">
-      <label className='font-bold'>Add New Bowler:</label>
-      <input
-        type="text"
-        value={newBowler}
-        onChange={(e) => setNewBowler(e.target.value)}
-        className='border p-1 rounded'
-        placeholder="Enter bowler name"
-      />
-      <button
-        className='bg-blue-500 text-white px-3 py-1 rounded'
-        onClick={() => {
-          if (newBowler.trim()) {
-            setAvailableBowlers(prev => [...prev, newBowler.trim()]);
-            setBowler(newBowler.trim());
-            setNewBowler("");
-          }
-        }}
-      >
-        Add
-      </button>
-    </div>
-  </div>
-)}
-
+            <div className='mt-5 flex flex-col items-center gap-3'>
+              <div className="flex gap-3 items-center">
+                <label className='font-bold'>Select Bowler:</label>
+                <select
+                  value={bowler}
+                  onChange={(e) => setBowler(e.target.value)}
+                  className='border p-1 rounded'
+                >
+                  <option value="">Select</option>
+                  {availableBowlers.map(p => (<option key={p} value={p}>{p}</option>))}
+                </select>
+              </div>
+              <div className="flex gap-3 items-center">
+                <label className='font-bold'>Add New Bowler:</label>
+                <input
+                  type="text"
+                  value={newBowler}
+                  onChange={(e) => setNewBowler(e.target.value)}
+                  className='border p-1 rounded'
+                  placeholder="Enter bowler name"
+                />
+                <button
+                  className='bg-blue-500 text-white px-3 py-1 rounded'
+                  onClick={() => {
+                    if (newBowler.trim()) {
+                      setAvailableBowlers(prev => [...prev, newBowler.trim()]);
+                      setBowler(newBowler.trim());
+                      setBowlerStats(prev => ({
+                        ...prev,
+                        [newBowler.trim()]: { runs:0, balls:0, wickets:0 }
+                      }))
+                      setNewBowler("");
+                    }
+                  }}
+                >Add</button>
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <div>
@@ -307,22 +311,30 @@ const AdminPage = () => {
           <button
             className='bg-amber-400 p-2 rounded-xl ml-30 mt-7 cursor-pointer'
             onClick={handleSubmit}
-          >
-            Second Innings
-          </button>
+          >Second Innings</button>
+
+          <div className="mt-5">
+            <h1 className="font-bold text-2xl">Batsmen Scorecard</h1>
+            {Object.entries(batsmanStats).map(([name, stats]) => (
+              <p key={name}>{name} - {stats.runs} ({stats.balls}) {stats.out ? "out" : "not out"}</p>
+            ))}
+            <h1 className="font-bold text-2xl mt-3">Bowler Stats</h1>
+            {Object.entries(bowlerStats).map(([name, stats]) => (
+              <p key={name}>{name} - {stats.overs || Math.floor(stats.balls/6)}.{stats.balls%6} overs, {stats.runs} runs, {stats.wickets} wickets</p>
+            ))}
+          </div>
         </div>
       )}
 
-      {/* Batsmen + Bowler Info */}
       <div className='flex justify-around mt-5 '>
         <div>
           <h1 className='font-bold text-2xl'>Batsmen</h1>
-          <p>{`${striker || '-'}`}</p>
-          <p>{`${nonStriker || '-'}`}</p>
+          <p>{`${striker || '-'}`} : {batsmanStats[striker]?.runs || 0} ({batsmanStats[striker]?.balls || 0})</p>
+          <p>{`${nonStriker || '-'}`} : {batsmanStats[nonStriker]?.runs || 0} ({batsmanStats[nonStriker]?.balls || 0})</p>
         </div>
         <div>
           <h1 className='font-bold text-2xl'>Bowler</h1>
-          <p>{bowler || '-'}</p>
+          <p>{`${bowler || '-'}`}:{bowlerStats[bowler]?.wickets || 0}-{bowlerStats[bowler]?.runs||0}</p>
         </div>
       </div>
     </div>
