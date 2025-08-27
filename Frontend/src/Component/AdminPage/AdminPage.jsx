@@ -48,7 +48,11 @@ const AdminPage = () => {
       setMatchData(res.data.result)
     } catch (error) { console.log(error) }
   }
-  useEffect(() => { getMatch() }, [])
+
+
+  useEffect(() => { 
+    getMatch() 
+  }, [])
 
   useEffect(() => {
     if (!matchData) return
@@ -199,10 +203,30 @@ const AdminPage = () => {
     socketRef.current?.emit('scoreUpdate', { matchId: id, data: firstInnings })
   }, [totalBalls, currentRun, currentWicket, iningsOver, secondInningsStart, secondInningsStarted, bowlingStarted, striker, nonStriker, bowler, batsmanStats, bowlerStats])
 
-  const handleSubmit = () => {
-    setSecondInningsStart(true)
+  const handleSubmit = async () => {
+
+    const firstSummary = {
+      battingTeam: battingteam,
+      bowlingTeam: bowlingteam,
+      totalOver,
+      runs: currentRun,
+      balls: totalBalls,
+      wickets: currentWicket,
+      target: currentRun + 1
+    }
+    try {
+      
+      const res = await axios.post(`http://localhost:9000/user/addFirst/${id}`, firstSummary)
+      console.log(res)
+
+      setSecondInningsStart(true)
     setSecondInningsStarted(true)
     navigate(`/second-innings/${id}`)
+
+    } catch (error) {
+      console.log('error', error)
+    }
+    
   }
 
   return (

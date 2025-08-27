@@ -7,7 +7,8 @@ const inningsSchema = new mongoose.Schema({
   runs: { type: Number, default: 0 },
   balls: { type: Number, default: 0 },
   wickets: { type: Number, default: 0 },
-  matchWinner: { type: String, required: true }  
+  target: {type: Number, default: 0},
+  // matchWinner: { type: String, required: true }  
 }, { _id: false });
 
 const matchSchema = new mongoose.Schema({

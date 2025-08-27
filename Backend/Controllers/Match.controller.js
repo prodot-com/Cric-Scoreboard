@@ -126,35 +126,87 @@ const addToss = async(req, res)=>{
     }
 }
 
-const addSummary = async (req, res) => {
+const addFirstSummary = async (req, res)=>{
     try {
-        const { id } = req.params;
-        const { firstSummary, secondSummary } = req.body;
-
-        if (!firstSummary || !secondSummary) {
+        
+        const {id}= req.params;
+        const  firstSummary = req.body;
+        
+        if (!firstSummary) {
             return res.status(400).json({ error: "Missing summaries" });
         }
 
-        if (typeof secondSummary !== "object" || !secondSummary.matchWinner) {
-            return res.status(400).json({ message: "Missing Match Winner" });
-        }
-
-        const match = await Match.findById(id);
-        if (!match) {
-            return res.status(404).json({ error: "Invalid match ID" });
-        }
+        const match = await Match.findByIdAndUpdate(
+      id,
+      { firstSummary },
+      { new: true } // return updated match
+    );
 
         match.firstSummary = firstSummary;
-        match.secondSummary = secondSummary;
-
         await match.save();
 
         res.status(200).json({ message: "Successfully saved", match });
+
     } catch (error) {
+        
         console.error(error);
         res.status(500).json({ error: "Something went wrong" });
+
     }
-};
+}
+
+const fetchFirstSummary = async(req, res)=>{
+    try {
+        const {id } = req.params
+
+
+        const data = await Match.findById(id).select('firstSummary');
+
+        if(!res){
+            return res.status(400).json({
+                message: "Match not found"
+            })
+        }
+        
+
+        res.status(200).json({
+            message: 'Successfully fetched first innings summary', data
+        })
+
+    } catch (error) {
+        console.log("Error fetching Summary: ", error)
+    }
+}
+
+// const addSummary = async (req, res) => {
+//     try {
+//         const { id } = req.params;
+//         const { firstSummary, secondSummary } = req.body;
+
+//         if (!firstSummary || !secondSummary) {
+//             return res.status(400).json({ error: "Missing summaries" });
+//         }
+
+//         if (typeof secondSummary !== "object" || !secondSummary.matchWinner) {
+//             return res.status(400).json({ message: "Missing Match Winner" });
+//         }
+
+//         const match = await Match.findById(id);
+//         if (!match) {
+//             return res.status(404).json({ error: "Invalid match ID" });
+//         }
+
+//         match.firstSummary = firstSummary;
+//         match.secondSummary = secondSummary;
+
+//         await match.save();
+
+//         res.status(200).json({ message: "Successfully saved", match });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ error: "Something went wrong" });
+//     }
+// };
 
 
 const fetchSummary = async(req, res)=>{
@@ -176,4 +228,4 @@ const fetchSummary = async(req, res)=>{
         throw new ApiError(400,'something Went Wrong')
     }
 }
-export { createMatch , deleteMatch, getmatch, findMatch, addToss, addSummary, fetchSummary, setMatchComplete};
+export { createMatch , deleteMatch, getmatch, findMatch, addToss,fetchSummary, fetchFirstSummary, addFirstSummary, setMatchComplete};

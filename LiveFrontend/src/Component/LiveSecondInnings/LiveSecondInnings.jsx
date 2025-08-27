@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router";
 import { io } from "socket.io-client";
+import axios from 'axios'
 
 const LiveSecondInnings = () => {
   const { id } = useParams(); // matchId from URL
@@ -21,6 +22,32 @@ const LiveSecondInnings = () => {
     bowlerStats: {},
     inningsOver: false,
   });
+  // const [battingTeam, setBattingTeam] = useState('')
+  // const [bowlingTeam, setBowlingTeam] = useState('')
+  // const [target, setTarget] = useState('')
+
+  const getFirstSummary = async () => {
+    try {
+      const res = await axios.get(`http://localhost:9000/user/fetchFirst/${id}`);
+      const summary = res.data.data.firstSummary
+      setScore((prev) => ({
+        ...prev,
+        battingTeam: summary.bowlingTeam,
+        bowlingTeam: summary.battingTeam,
+        target: summary.target,
+      }));
+
+      console.log(summary);
+    } catch (err) {
+      console.error("Error fetching match:", err);
+    }
+  };
+
+  useEffect(()=>{
+
+    getFirstSummary()
+
+  },[])
 
   useEffect(() => {
     socketRef.current = io("http://localhost:9000", {
