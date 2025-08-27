@@ -23,6 +23,8 @@ const SecondInnings = () => {
   const [nextBatsman, setNextBatsman] = useState("");
   const [bowler, setBowler] = useState("");
   const [newBowler, setNewBowler] = useState("");
+  const [awaitingNewBatsman, setAwaitingNewBatsman] = useState(false);
+
 
   // stats
   const [batsmanStats, setBatsmanStats] = useState({});
@@ -110,43 +112,35 @@ const SecondInnings = () => {
 
     // wicket
     if (value === "W") {
-      setWickets((prev) => {
-        const newW = prev + 1;
-        if (newW === 10) setInningsOver(true);
-        return newW;
-      });
+  setWickets((prev) => {
+    const newW = prev + 1;
+    if (newW === 10) setInningsOver(true);
+    return newW;
+  });
 
-      setBatsmanStats((prev) => ({
-        ...prev,
-        [striker]: {
-          ...(prev[striker] || { runs: 0, balls: 0, out: false }),
-          balls: (prev[striker]?.balls || 0) + 1,
-          out: true,
-        },
-      }));
+  setBatsmanStats((prev) => ({
+    ...prev,
+    [striker]: {
+      ...(prev[striker] || { runs: 0, balls: 0, out: false }),
+      balls: (prev[striker]?.balls || 0) + 1,
+      out: true,
+    },
+  }));
 
-      if (bowler) {
-        setBowlerStats((prev) => ({
-          ...prev,
-          [bowler]: {
-            ...(prev[bowler] || { overs: 0, runs: 0, wickets: 0 }),
-            wickets: (prev[bowler]?.wickets || 0) + 1,
-          },
-        }));
-      }
+  if (bowler) {
+    setBowlerStats((prev) => ({
+      ...prev,
+      [bowler]: {
+        ...(prev[bowler] || { overs: 0, runs: 0, wickets: 0 }),
+        wickets: (prev[bowler]?.wickets || 0) + 1,
+      },
+    }));
+  }
 
-      if (nextBatsman) {
-        setStriker(nextBatsman);
-        setBatsmanStats((prev) => ({
-          ...prev,
-          [nextBatsman]: { runs: 0, balls: 0, out: false },
-        }));
-        setNextBatsman("");
-      }
+  setAwaitingNewBatsman(true); // lock scoring until new batsman is added
+  return;
+}
 
-      setBalls((prev) => updateBalls(prev, "W"));
-      return;
-    }
 
     // normal runs
     const n = Number(value);
@@ -271,14 +265,16 @@ const SecondInnings = () => {
 
   // confirm new batsman
   const confirmNewBatsman = () => {
-    if (!nextBatsman) return;
-    setStriker(nextBatsman);
-    setBatsmanStats((prev) => ({
-      ...prev,
-      [nextBatsman]: { runs: 0, balls: 0, out: false },
-    }));
-    setNextBatsman("");
-  };
+  if (!nextBatsman) return;
+  setStriker(nextBatsman);
+  setBatsmanStats((prev) => ({
+    ...prev,
+    [nextBatsman]: { runs: 0, balls: 0, out: false },
+  }));
+  setNextBatsman("");
+  setAwaitingNewBatsman(false); // unlock scoring
+};
+
 
   return (
     <div className="font-mono p-5">
@@ -376,28 +372,39 @@ const SecondInnings = () => {
         </div>
       )}
 
+      
       {/* Scoring buttons */}
-      {openersSelected && (
-        <div className="flex justify-center flex-wrap gap-2 mt-6">
-          {[0, 1, 2, 3, 4, 5, 6, "wide", "no"].map((val) => (
-            <button
-              key={val}
-              onClick={() => changeRun(val)}
-              disabled={inningsOver || Boolean(winnerMsg)}
-              className="bg-amber-400 px-4 py-2 rounded-xl disabled:opacity-50"
-            >
-              {val}
-            </button>
-          ))}
-          <button
-            onClick={() => changeRun("W")}
-            disabled={inningsOver || Boolean(winnerMsg)}
-            className="bg-red-500 text-white px-4 py-2 rounded-xl disabled:opacity-50"
-          >
-            OUT
-          </button>
-        </div>
-      )}
+{openersSelected && (
+  <div className="flex flex-col items-center mt-6">
+    <div className="flex justify-center flex-wrap gap-2">
+      {[0, 1, 2, 3, 4, 5, 6, "wide", "no"].map((val) => (
+        <button
+          key={val}
+          onClick={() => changeRun(val)}
+          disabled={inningsOver || Boolean(winnerMsg) || !bowler || awaitingNewBatsman}
+          className="bg-amber-400 px-4 py-2 rounded-xl disabled:opacity-50"
+        >
+          {val}
+        </button>
+      ))}
+      <button
+        onClick={() => changeRun("W")}
+        disabled={inningsOver || Boolean(winnerMsg) || !bowler}
+        className="bg-red-500 text-white px-4 py-2 rounded-xl disabled:opacity-50"
+      >
+        OUT
+      </button>
+    </div>
+
+    {/* Warning if no bowler */}
+    {!bowler && !inningsOver && !winnerMsg && (
+      <p className="text-red-500 font-semibold mt-2">
+        Please set a bowler before scoring
+      </p>
+    )}
+  </div>
+)}
+
 
       {/* Next batsman input */}
       {(batsmanStats[striker]?.out || batsmanStats[nonStriker]?.out) && (
