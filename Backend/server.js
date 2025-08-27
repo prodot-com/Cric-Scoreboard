@@ -41,20 +41,10 @@ io.on('connection', (socket) => {
         console.log(`Socket ${socket.id} joined match room: ${matchId}`)
     })
 
-    socket.on('message', ({data, matchId}) => {
-        console.log('Message received: ', data, 'MatchId: ', matchId)
-        io.to(matchId).emit('message', data)
-    })
-
-    socket.on('newMessage', ({data,matchId})=>{
-        console.log('New Message Recieved: ', data)
-        io.to(matchId).emit('newMessage',data)
-    })
-
-    socket.on('teamDetails', ({data,matchId})=>{
-        console.log(data)
-        io.to(matchId).emit('teamDetails',data)
-    })
+    socket.on("scoreUpdate", ({ matchId, data }) => {
+    console.log("Score update for match:", matchId, data);
+    io.to(matchId).emit("scoreUpdate", { matchId, ...data });
+  });
 
     socket.on('disconnect', (reason)=>{
         console.log('User Disconnected: ',socket.id,'-->',reason)

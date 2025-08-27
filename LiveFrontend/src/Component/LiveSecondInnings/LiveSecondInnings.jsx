@@ -1,216 +1,112 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router';
-import Title from '../Title/Title';
-import { io } from 'socket.io-client';
-import axios from 'axios'
+import React, { useEffect, useState, useRef } from "react";
+import { useParams } from "react-router";
+import { io } from "socket.io-client";
 
-const socket = io("https://cric-scoreboard.onrender.com/");
+const LiveSecondInnings = () => {
+  const { id } = useParams(); // matchId from URL
+  const socketRef = useRef(null);
 
-const SecondInnings = () => {
-  const navigate = useNavigate();
+  const [score, setScore] = useState({
+    battingTeam: "",
+    bowlingTeam: "",
+    runs: 0,
+    wickets: 0,
+    balls: 0,
+    overs: "0.0",
+    target: null,
+    striker: "",
+    nonStriker: "",
+    bowler: "",
+    batsmanStats: {},
+    bowlerStats: {},
+    inningsOver: false,
+  });
 
-  const {id}= useParams()
+  useEffect(() => {
+    socketRef.current = io("http://localhost:9000", {
+      transports: ["websocket"],
+    });
 
-  const [target, setTarget] = useState(0);
-  const [battingTeam, setBattingTeam] = useState('Loading');
-  const [bowlingTeam, setBowlingTeam] = useState('_');
-  const [currentRun, setCurrentRun] = useState(0);
-  const [currentWicket, setCurrentWicket] = useState(0);
-  const [totalBalls, setTotalBalls] = useState(0);
-  const [overs, setOvers] = useState("0.0");
-  const [iningsOver, setIningsOver] = useState(false);
-  const [battingTeamWon, setBattingTeamWon] = useState(false);
-  const [bowlingTeamWon, setBowlingTeamWon] = useState(false);
-  const [bowlingStarted, setBowlingStarted] = useState(false);
-  const [difference, setDifference] = useState(0);
-  const [matchEnd, setMatchEnd] = useState(false)
-  const [matchDetails, setMatchDetails] =useState({})
+    socketRef.current.on("connect", () => {
+      console.log("Connected to server:", socketRef.current.id);
+      socketRef.current.emit("joinMatch", id);
+    });
 
+    socketRef.current.on("scoreUpdate", (data) => {
+      console.log("Received score update:", data);
 
-  const [summary, setSummary] = useState(null); 
-  const [showSummary, setShowSummary] = useState(false);
+      const overs = `${Math.floor(data.balls / 6)}.${data.balls % 6}`;
 
+      setScore((prev) => ({
+        ...prev,
+        battingTeam: data.battingTeam,
+        bowlingTeam: data.bowlingTeam,
+        runs: data.runs,
+        wickets: data.wickets,
+        balls: data.balls,
+        overs,
+        target: data.target,
+        striker: data.striker,
+        nonStriker: data.nonStriker,
+        bowler: data.bowler,
+        batsmanStats: data.batsmanStats || {},
+        bowlerStats: data.bowlerStats || {},
+        inningsOver: data.inningsOver,
+      }));
+    });
 
-  useEffect(()=>{
-
-    const getmatch = async()=>{
-      const res = await axios.get(`http://localhost:9000/user/one/${id}`)
-
-      console.log(res)
-      if(res.data?.result.completed){
-        setMatchEnd(true)
-      }
-      setMatchDetails(res.data.result)
-
-    }
-    getmatch()
-    
-
-  },[])
-
-    useEffect(() => {
-    socket.emit("joinMatch", id); 
-  
+    return () => {
+      socketRef.current.disconnect();
+    };
   }, [id]);
 
-  useEffect(()=>{
-    const data = JSON.parse(localStorage.getItem('targetDetails'))
-    console.log(data)
-    setTarget(data.targ)
-    setBattingTeam(data.battingteam)
-    
-  },[])
-
-  // Load live session data
-  useEffect(() => {
-    const data = JSON.parse(sessionStorage.getItem('liveFirstInningsData'));
-    if (data) {
-      setCurrentRun(data.runs);
-      setCurrentWicket(data.wickets);
-      setTotalBalls(data.balls);
-    }
-  }, []);
-
-  // Socket updates
-  useEffect(() => {
-    const handleMessage = (data) => {
-      setShowSummary(false)
-      setBattingTeam(data.battingTeam || "N/A");
-      setBowlingTeam(data.bowlingTeam || "N/A");
-      setCurrentRun(data.runs || 0);
-      setCurrentWicket(data.wickets || 0);
-      setTotalBalls(data.balls || 0);
-      setIningsOver(data.iningsOver);
-      setBattingTeamWon(data.battingTeamWon);
-      setBowlingTeamWon(data.bowlingTeamWon);
-      setTarget(data.target);
-      setBowlingStarted(data.bowlingStarted)
-    };
-
-    socket.on("message", handleMessage);
-    return () => {
-      socket.off("message", handleMessage);
-    };
-  }, []);
-
-  const watchSummary = async () => {
-    try {
-      const res = await axios.get(`http://localhost:9000/user/fetchsummary/${id}`);
-      setSummary(res.data);
-      console.log(res.data)
-      setShowSummary(true);
-    } catch (error) {
-      console.log("Error fetching summary", error);
-    }
-  };
-
-  useEffect(()=>{
-    if(battingTeamWon){
-      console.log('batting team = ', battingTeam)
-      const Difference = 10 - currentWicket
-      setDifference(Difference)
-    }
-      
-    if(bowlingTeamWon){
-      console.log('bowlingTeam won', bowlingTeam)
-      const Difference = target - currentRun
-      setDifference(Difference)
-    }
-  },[battingTeamWon, bowlingTeamWon])
-
- 
-  useEffect(() => {
-    const liveSecondInningsData = {
-      bowlingTeam,
-      battingTeam,
-      runs: currentRun,
-      balls: totalBalls,
-      wickets: currentWicket
-    };
-    sessionStorage.setItem('liveFirstInningsData', JSON.stringify(liveSecondInningsData));
-  }, [totalBalls, currentRun, currentWicket]);
-
- 
-  useEffect(() => {
-    const over = Math.floor(totalBalls / 6);
-    const balls = totalBalls % 6;
-    setOvers(`${over}.${balls}`);
-  }, [totalBalls]);
-
   return (
-    <div>
+    <div className="font-mono p-5">
+      <h1 className="text-3xl font-bold text-center mb-5">
+        {score.battingTeam} vs {score.bowlingTeam}
+      </h1>
 
-      {
-        matchEnd ? (<div>
-          <h1>Match Ended</h1>
-          <button className='text-purple-600 mt-7 cursor-pointer' onClick={watchSummary}>
-            Watch Summary
-          </button>
+      <div className="flex justify-around text-2xl font-bold mb-5">
+        <div>Score: {score.runs}/{score.wickets}</div>
+        <div>Overs: {score.overs}</div>
+      </div>
 
-        </div>):(<div>
+      {score.target && (
+        <h2 className="text-xl font-bold text-center mb-5">
+          Target: {score.target} | Required: {Math.max(0, score.target - score.runs)}
+        </h2>
+      )}
 
-              {bowlingStarted ? (<div className='text-3xl font-bold flex justify-around mt-7'>
-        <div>{battingTeam}</div>
-        <div>{`${currentRun}/${currentWicket}`}</div>
-        <div>{`Balls: ${totalBalls}`}</div>
-      </div>): (<div className='text-3xl font-bold flex justify-around mt-7'>
-        <div>{`Target:${target}`}</div>
-        <div>{`${bowlingTeam} will bowl`}</div>
-      </div>)}
-
-      {battingTeamWon ? (
-        <div className='flex flex-col items-center justify-center text-4xl cursor-pointer font-bold mt-12'>
-          <h3 className='text-indigo-700'>{`${battingTeam} Won`}</h3>
-          <h3 className='text-indigo-700'>{`${battingTeam} won by ${difference} wickets`}</h3>
-          <h4 className='text-purple-600 mt-7' onClick={watchSummary}>
-            Watch Summary
-          </h4>
-        </div>
-      ) : bowlingTeamWon ? (
-        <div className='flex flex-col items-center justify-center text-4xl cursor-pointer font-bold mt-12'>
-          <h3 className='text-indigo-700'>{`${bowlingTeam} Won`}</h3>
-          <h3 className='text-indigo-700'>{`${bowlingTeam} won by ${difference} runs`}</h3>
-          <h4 className='text-purple-600 mt-7' onClick={watchSummary}>
-            Watch Summary
-          </h4>
-        </div>
-      ) : !bowlingStarted ? (
-        <h3 className='flex justify-center text-4xl font-bold mt-12 text-indigo-700'>{`Match not yet started`}</h3>
-      ): (
+      <div className="flex justify-around mt-5">
         <div>
-          <Title text={`Over: ${overs}`} className='mt-5' />
-          <Title text={`${bowlingTeam} will bowl`} className='mt-5' />
-          <Title text={`Target: ${target}`} className='mt-5' />
+          <h2 className="font-bold text-xl">Batsmen</h2>
+          <p>
+            {score.striker || "-"} :{" "}
+            {score.batsmanStats[score.striker]?.runs || 0} (
+            {score.batsmanStats[score.striker]?.balls || 0}){" "}
+            {score.batsmanStats[score.striker]?.out ? "out" : "not out"}
+          </p>
+          <p>
+            {score.nonStriker || "-"} :{" "}
+            {score.batsmanStats[score.nonStriker]?.runs || 0} (
+            {score.batsmanStats[score.nonStriker]?.balls || 0}){" "}
+            {score.batsmanStats[score.nonStriker]?.out ? "out" : "not out"}
+          </p>
         </div>
-      )}
 
-        </div>)
-      }
-
-
-      {showSummary && summary && (
-        <div className='mt-10 p-5 bg-gray-100 rounded-lg'>
-          <h2 className='text-2xl font-bold text-center mb-4'>Match Summary</h2>
-          <div className='mb-4'>
-            <h3 className='font-bold'>First Innings:</h3>
-            <p>{summary.firstSummary.battingTeam} - {summary.firstSummary.runs}/{summary.firstSummary.wickets} in {summary.firstSummary.totalOver} overs</p>
-          </div>
-          <div>
-            <h3 className='font-bold'>Second Innings:</h3>
-            <p>{summary.secondSummary.battingTeam} - {summary.secondSummary.runs}/{summary.secondSummary.wickets} in {summary.secondSummary.totalOver} overs</p>
-          </div>
-          <div>
-            {battingTeamWon?(<div>
-              <h3 className='text-indigo-700'>{`${summary.secondSummary.matchWinner} won by ${difference} wickets`}</h3>
-            </div>):(<div>
-              <h3 className='text-indigo-700'>{`${summary.secondSummary.matchWinner} won by ${difference} runs`}</h3>
-            </div>)}
-          </div>
+        <div>
+          <h2 className="font-bold text-xl">Bowler</h2>
+          <p>{score.bowler || "-"}</p>
         </div>
-      )}
+      </div>
 
+      {score.inningsOver && (
+        <h2 className="text-red-600 font-bold text-2xl text-center mt-5">
+          Innings Over
+        </h2>
+      )}
     </div>
   );
 };
 
-export default SecondInnings;
+export default LiveSecondInnings;

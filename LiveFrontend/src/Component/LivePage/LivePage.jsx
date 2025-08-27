@@ -5,7 +5,7 @@ import { useParams } from 'react-router';
 import axios from 'axios';
 
 
-const socket = io("https://cric-scoreboard.onrender.com/");
+const socket = io("http://localhost:9000/");
 
 const LiveFirstInnings = () => {
   const navigate = useNavigate();
@@ -23,6 +23,18 @@ const LiveFirstInnings = () => {
   const [tossWinner, setTossWinner] = useState('...')
   const [decision, setDecision] = useState('...')
 
+  const [striker, setStriker] = useState('')
+  const [nonStriker, setNonStriker] = useState('')
+  const [bowler, setBowler] = useState('')
+  const [newBowler, setNewBowler] = useState("");
+  const [nextBatsman, setNextBatsman] = useState('')
+  const [availableBatsmen, setAvailableBatsmen] = useState([])
+  const [availableBowlers, setAvailableBowlers] = useState([])
+  const [newBatsman, setNewBatsman] = useState("")
+
+  const [batsmanStats, setBatsmanStats] = useState({})
+  const [bowlerStats, setBowlerStats] = useState({})
+
   useEffect(() => {
   socket.emit("joinMatch", id); 
 
@@ -35,7 +47,7 @@ const LiveFirstInnings = () => {
       try {
         
         console.log("matchId: ", id)
-        const response = await axios.get(`https://cric-scoreboard.onrender.com/user/one/${id}`)
+        const response = await axios.get(`http://localhost:9000/user/one/${id}`)
         const result = response.data.result
         if(result.completed){
           navigate(`/live-second/${id}`, { replace: true })
@@ -81,18 +93,24 @@ const LiveFirstInnings = () => {
       if (data.secondInningsStarted) {
         console.log("Target to be saved:", data.runs); 
         targetDetails(data)
-        navigate(`/live-second/${id}`, { replace: true });
+        navigate(`/live-sec/${id}`, { replace: true });
       }
       console.log(data)
 
-      if(data.battingTeam)setBattingTeam(data.battingteam);
-      if(data.battingTeam)setBowlingTeam(data.bowlingteam);
+      if(data.battingteam)setBattingTeam(data.battingteam);
+      if(data.battingteam)setBowlingTeam(data.bowlingteam);
       setCurrentRun(data.runs || 0);
       setCurrentWicket(data.wickets || 0);
       setTotalBalls(data.balls || 0);
       setIningsOver(data.iningsOver || false);
       setSecondInningsStart(data.secondInningsStart || false);
-      setBowlingStarted(data.bowlingStarted || false)
+      setBowlingStarted(data.bowlingStarted || false);
+      setBatsmanStats(data.batsmanStats);
+      setStriker(data.striker);
+      setNonStriker(data.nonStriker);
+      setBowlerStats(data.bowlerStats);
+      setBowler(data.bowler || " ");
+
 
       
       const liveFirstInningsData = {
@@ -106,10 +124,10 @@ const LiveFirstInnings = () => {
       localStorage.setItem('liveFirstInningsData', JSON.stringify(liveFirstInningsData));
     };
 
-    socket.on("message", handleMessage);
+    socket.on("scoreUpdate", handleMessage);
 
     return () => {
-      socket.off("message", handleMessage);
+      socket.off("scoreUpdate", handleMessage);
     };
   }, [navigate]);
 
@@ -124,11 +142,36 @@ const LiveFirstInnings = () => {
 
   return (
     <div>
-      {bowlingStarted ? (<div className='text-3xl font-bold flex justify-around mt-7'>
-        <div>{battingteam}</div>
+      {bowlingStarted ? (<div className='text-3xl font-bold flex flex-col justify-around gap-7 mt-7 m-4'>
+        <div className='flex justify-around'>
+          <div>{battingteam}</div>
         <div>{`${currentRun}/${currentWicket}`}</div>
         <div>{`Balls: ${totalBalls}`}</div>
         <div>{bowlingteam}</div>
+        </div>
+        <div className='text-3xl font-bold flex  justify-between gap-7 mt-7'>
+          <div>
+            <h1>{striker}: {batsmanStats[striker].runs} - {batsmanStats[striker].balls}
+              {batsmanStats[striker].out ? (<div>
+                Out
+              </div>)
+              :(<div> </div>)}
+            </h1>
+            <h1>{nonStriker}: {batsmanStats[nonStriker].runs} - {batsmanStats[nonStriker].balls}
+              {batsmanStats[nonStriker].out ? (<div>
+                Out
+              </div>)
+              :(<div></div>)}
+            </h1>
+          </div>
+
+          {bowlerStats[bowler] && (<div>
+            <h1>{bowler}: {bowlerStats[bowler].wickets || 0}-{bowlerStats[bowler].runs || 0}</h1>
+          </div>)}
+
+        </div>
+    
+
       </div>): (<div className='flex flex-col items-center justify-center text-4xl font-bold mt-12 text-indigo-700'>
         <h2>{`Team1: ${battingteam}`}</h2>
         <h2>{`Team2: ${bowlingteam}`}</h2>

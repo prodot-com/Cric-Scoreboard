@@ -35,7 +35,7 @@ const AdminPage = () => {
   const [bowlerStats, setBowlerStats] = useState({})
 
   useEffect(() => {
-    socketRef.current = io("https://cric-scoreboard.onrender.com/")
+    socketRef.current = io("http://localhost:9000/")
     socketRef.current.on("connect", () => {
       if (id) socketRef.current.emit('joinMatch', id)
     })
@@ -196,12 +196,13 @@ const AdminPage = () => {
       batsmanStats,
       bowlerStats
     }
-    socketRef.current?.emit('message', { matchId: id, data: firstInnings })
+    socketRef.current?.emit('scoreUpdate', { matchId: id, data: firstInnings })
   }, [totalBalls, currentRun, currentWicket, iningsOver, secondInningsStart, secondInningsStarted, bowlingStarted, striker, nonStriker, bowler, batsmanStats, bowlerStats])
 
   const handleSubmit = () => {
     setSecondInningsStart(true)
     setSecondInningsStarted(true)
+    navigate(`/second-innings/${id}`)
   }
 
   return (

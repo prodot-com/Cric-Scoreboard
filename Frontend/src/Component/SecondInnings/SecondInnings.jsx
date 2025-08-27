@@ -1,327 +1,271 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate, useParams } from 'react-router';
-import Title from '../Title/Title';
+import React, { useEffect, useState, useRef } from "react";
+import { useNavigate, useParams } from "react-router";
 import { io } from "socket.io-client";
-import axios from 'axios';
+import axios from "axios";
 
 const SecondInnings = () => {
-  const navigate = useNavigate();
-  const socketRef = useRef(null);
   const { id } = useParams();
+  const socketRef = useRef(null);
+  const navigate = useNavigate();
 
-  const [firstInningsDetails, setFirstInningsDetails] = useState({});
-  const [totalOver, setTotalOver] = useState(0);
-  const [target, setTarget] = useState(0);
-  const [battingTeam, setBattingTeam] = useState('');
-  const [iningsOver, setIningsOver] = useState(false);
-  const [currentRun, setCurrentRun] = useState(0);
-  const [currentWicket, setCurrentWicket] = useState(0);
+  const [matchData, setMatchData] = useState({});
+  const [runs, setRuns] = useState(0);
+  const [wickets, setWickets] = useState(0);
+  const [balls, setBalls] = useState(0);
   const [overs, setOvers] = useState("0.0");
-  const [totalBalls, setTotalBalls] = useState(0);
-  const [bowlingTeam, setBowlingTeam] = useState('');
-  const [battingTeamWon, setBattingTeamWon] = useState(false);
-  const [bowlingTeamWon, setBowlingTeamWon] = useState(false);
-  const [secondInningsStarted, setSecondInningsStarted] = useState(true);
-  const [bowlingStarted, setBowlingStarted] = useState(false);
-  const [matchEnd, setMatchEnd] = useState(false);
-  const [difference, setDifference] = useState(0);
-  const [matchWinner, setMatchWinner]= useState('')
+  const [inningsOver, setInningsOver] = useState(false);
 
-  const [summary, setSummary] = useState(null); 
-  const [showSummary, setShowSummary] = useState(false);
+  const [striker, setStriker] = useState("");
+  const [nonStriker, setNonStriker] = useState("");
+  const [bowler, setBowler] = useState("");
+  const [newBowler, setNewBowler] = useState("");
 
+  const [nextBatsman, setNextBatsman] = useState("");
+  const [newBatsman, setNewBatsman] = useState("");
+
+  const [availableBatsmen, setAvailableBatsmen] = useState([]);
+  const [availableBowlers, setAvailableBowlers] = useState([]);
+
+  const [batsmanStats, setBatsmanStats] = useState({});
+  const [bowlerStats, setBowlerStats] = useState({});
+
+  // ✅ connect socket
   useEffect(() => {
-    socketRef.current = io("https://cric-scoreboard.onrender.com/");
-    socketRef.current.emit('joinMatch', id);
-    return () => {
-      socketRef.current.disconnect();
-    };
+    socketRef.current = io("http://localhost:9000", { transports: ["websocket"] });
+    socketRef.current.on("connect", () => {
+      socketRef.current.emit("joinMatch", id);
+    });
+    return () => socketRef.current.disconnect();
   }, [id]);
 
-  useEffect(() => {
-    const firstInnings = JSON.parse(localStorage.getItem('firstInningsDetails'));
-    if (!firstInnings) {
-      navigate('/admin');
-    } else {
-      setFirstInningsDetails(firstInnings);
+  // ✅ fetch match details
+  const getMatch = async () => {
+    try {
+      const res = await axios.get(`http://localhost:9000/user/one/${id}`);
+      setMatchData(res.data.result);
+    } catch (err) {
+      console.error("Error fetching match:", err);
     }
-  }, [navigate]);
+  };
 
   useEffect(() => {
-    const data = JSON.parse(sessionStorage.getItem('liveSecondInningsData'));
-    if (data) {
-      setCurrentRun(data.runs || 0);
-      setCurrentWicket(data.wickets || 0);
-      setTotalBalls(data.balls || 0);
-    }
+    getMatch();
   }, []);
 
+  // ✅ setup batting/bowling sides for 2nd innings
   useEffect(() => {
-    setTarget(firstInningsDetails.runs + 1 || 0);
-    setBattingTeam(firstInningsDetails.bowlingteam || '');
-    setBowlingTeam(firstInningsDetails.battingteam || '');
-    setTotalOver(firstInningsDetails.totalOver || 0);
-  }, [firstInningsDetails]);
+    if (!matchData.team1 || !matchData.team2) return;
 
+    // second innings batting team is opposite of first innings
+    const firstBatting =
+      matchData.decision === "BAT"
+        ? matchData.tossWinner
+        : matchData.tossWinner === matchData.team1
+        ? matchData.team2
+        : matchData.team1;
+
+    const batting = firstBatting === matchData.team1 ? matchData.team2 : matchData.team1;
+    const bowling = batting === matchData.team1 ? matchData.team2 : matchData.team1;
+
+    setAvailableBatsmen(matchData.players?.[batting] || []);
+    setAvailableBowlers(matchData.players?.[bowling] || []);
+
+    // pick initial batsmen
+    if (matchData.players && matchData.players[batting]) {
+      const players = matchData.players[batting];
+      if (players.length >= 2) {
+        setStriker(players[0]);
+        setNonStriker(players[1]);
+        setAvailableBatsmen(players.slice(2)); // remove openers
+        setBatsmanStats({
+          [players[0]]: { runs: 0, balls: 0, out: false },
+          [players[1]]: { runs: 0, balls: 0, out: false },
+        });
+      }
+    }
+  }, [matchData]);
+
+  // ✅ overs calculation
+  useEffect(() => {
+    const o = Math.floor(balls / 6);
+    const b = balls % 6;
+    setOvers(`${o}.${b}`);
+  }, [balls]);
+
+  // ✅ change run logic
   const changeRun = (value) => {
-    if (iningsOver) return;
+    if (inningsOver) return;
 
-    if (value === 'wide' || value === 'no') {
-      setCurrentRun(prev => {
-        const newRun = prev + 1;
-        if (newRun >= target) {
-          setBattingTeamWon(true);
-          setMatchEnd(true);
-          setMatchWinner(battingTeam)
-        }
-        return newRun;
-      });
-    } else if (value === 'w') {
-      setCurrentWicket(prev => {
-        const newWickets = prev + 1;
-        if (newWickets === 10) {
-          setBowlingTeamWon(true);
-          setMatchEnd(true);
-          setMatchWinner(bowlingTeam)
-        }
-        return newWickets;
-      });
-    } else {
-      setCurrentRun(prev => {
-        const newRun = prev + value;
-        if (newRun >= target) {
-          setBattingTeamWon(true);
-          setMatchEnd(true);
-          setMatchWinner(battingTeam)
-        }
-        return newRun;
-      });
+    if (value === "wide" || value === "no") {
+      setRuns((prev) => prev + 1);
+      return;
     }
 
-    if (value !== 'wide' && value !== 'no') {
-      setTotalBalls(prev => {
-        const newBalls = prev + 1;
-        if (newBalls === totalOver * 6) {
-          setBowlingTeamWon(true);
-          setMatchEnd(true);
-          setMatchWinner(bowlingTeam)
+    if (value === "W") {
+      setWickets((prev) => {
+        const newW = prev + 1;
+        if (newW === 10) setInningsOver(true);
+
+        setBatsmanStats((prevStats) => ({
+          ...prevStats,
+          [striker]: { ...prevStats[striker], out: true },
+        }));
+
+        if (nextBatsman) {
+          setStriker(nextBatsman);
+          setBatsmanStats((prev) => ({
+            ...prev,
+            [nextBatsman]: { runs: 0, balls: 0, out: false },
+          }));
+          setNextBatsman("");
         }
-        return newBalls;
+
+        return newW;
       });
+      return;
     }
+
+    // ✅ normal runs
+    setRuns((prev) => prev + value);
+
+    setBatsmanStats((prev) => ({
+      ...prev,
+      [striker]: {
+        ...prev[striker],
+        runs: (prev[striker]?.runs || 0) + value,
+        balls: (prev[striker]?.balls || 0) + 1,
+      },
+    }));
+
+    setBalls((prev) => {
+      const newBalls = prev + 1;
+      if (newBalls === matchData.over * 6) setInningsOver(true);
+
+      const endOfOver = newBalls % 6 === 0;
+
+      if (endOfOver) {
+        const temp = striker;
+        setStriker(nonStriker);
+        setNonStriker(temp);
+        setBowler(""); // reset bowler
+      } else if (value % 2 === 1) {
+        // odd run → swap strike
+        const temp = striker;
+        setStriker(nonStriker);
+        setNonStriker(temp);
+      }
+
+      return newBalls;
+    });
   };
 
-//   useEffect(() => {
-//   if (battingTeamWon) {
-//     setMatchWinner(battingTeam);
-//   } else if (bowlingTeamWon) {
-//     setMatchWinner(bowlingTeam);
-//   } else {
-//     setMatchWinner(null); // no result yet
-//   }
-// }, [battingTeamWon, bowlingTeamWon, battingTeam, bowlingTeam]);
-
-  const markMatchComplete = async ()=>{
-
-    await axios.put(`http://localhost:9000/user/update/${id}`)
-
-    console.log('match completed')
-
-  }
-
+  // ✅ emit score update
   useEffect(() => {
-    if (matchEnd) {
-      markMatchComplete()
-      const data = JSON.parse(localStorage.getItem('firstInningsDetails'));
-      const firstSummary = {
-  battingTeam: data.battingteam,
-  bowlingTeam: data.bowlingteam,
-  runs: data.runs,
-  totalOver: data.totalOver,
-  wickets: data.wickets,
-  balls: data.balls,
-  matchWinner:matchWinner
-};
+    if (!matchData.team1 || !matchData.team2) return;
 
-const secondSummary = {
-  battingTeam: battingTeam,
-  bowlingTeam: bowlingTeam,
-  runs: currentRun,
-  totalOver,
-  wickets: currentWicket,
-  balls: totalBalls,
-  matchWinner
+    const firstBatting =
+      matchData.decision === "BAT"
+        ? matchData.tossWinner
+        : matchData.tossWinner === matchData.team1
+        ? matchData.team2
+        : matchData.team1;
 
-};
+    const batting = firstBatting === matchData.team1 ? matchData.team2 : matchData.team1;
+    const bowling = batting === matchData.team1 ? matchData.team2 : matchData.team1;
 
-
-      const addSummary = async () => {
-        try {
-          console.log(secondSummary)
-          await axios.post(`http://localhost:9000/user/addSummary/${id}`, {
-            firstSummary,
-            secondSummary,
-          });
-        } catch (error) {
-          console.log('Some error happened', error);
-        }
-      };
-      addSummary();
-    }
-  }, [matchEnd]);
-
-  
-
-
-  useEffect(() => {
     const data = {
-      bowlingTeam,
-      battingTeam,
-      runs: currentRun,
-      balls: totalBalls,
-      wickets: currentWicket,
-      totalOver
+      battingTeam: batting,
+      bowlingTeam: bowling,
+      runs,
+      wickets,
+      balls,
+      striker,
+      nonStriker,
+      bowler,
+      batsmanStats,
+      bowlerStats,
+      inningsOver,
+      target: matchData?.firstSummary?.runs ? matchData.firstSummary.runs + 1 : null,
     };
-    sessionStorage.setItem('liveSecondInningsData', JSON.stringify(data));
-  }, [totalBalls, currentRun, currentWicket]);
 
-  useEffect(() => {
-    if (battingTeamWon || bowlingTeamWon) {
-      sessionStorage.removeItem('liveSecondInningsData');
-    }
-  }, [battingTeamWon, bowlingTeamWon]);
-
-  useEffect(() => {
-    const data = {
-      bowlingTeam,
-      battingTeam,
-      runs: currentRun,
-      balls: totalBalls,
-      wickets: currentWicket,
-      iningsOver,
-      battingTeamWon,
-      bowlingTeamWon,
-      target,
-      secondInningsStarted,
-      bowlingStarted
-    };
-    socketRef.current.emit('message', { data, matchId: id });
-  }, [
-    totalBalls,
-    currentRun,
-    currentWicket,
-    iningsOver,
-    battingTeamWon,
-    bowlingTeamWon,
-    target,
-    secondInningsStarted,
-    bowlingStarted
-  ]);
-
-  const watchSummary = async () => {
-    try {
-      const res = await axios.get(`https://cric-scoreboard.onrender.com/user/fetchsummary/${id}`);
-      console.log(res.data)
-      setSummary(res.data);
-      setShowSummary(true);
-    } catch (error) {
-      console.log("Error fetching summary", error);
-    }
-  };
-
-  useEffect(()=>{
-      if(battingTeamWon){
-        console.log('batting team = ', battingTeam)
-        const Difference = 10 - currentWicket
-        setDifference(Difference)
-      }
-        
-      if(bowlingTeamWon){
-        console.log('bowlingTeam won', bowlingTeam)
-        const Difference = target - currentRun
-        setDifference(Difference)
-      }
-    },[battingTeamWon, bowlingTeamWon])
-
-  useEffect(() => {
-    const over = Math.floor(totalBalls / 6);
-    const balls = totalBalls % 6;
-    setOvers(`${over}.${balls}`);
-  }, [totalBalls]);
+    socketRef.current?.emit("scoreUpdate", { matchId: id, data });
+  }, [runs, wickets, balls, striker, nonStriker, bowler, batsmanStats, inningsOver]);
 
   return (
-    <div>
-      <div className='text-3xl font-bold flex justify-around mt-7'>
-        <div>{battingTeam}</div>
-        <div>{`${currentRun}/${currentWicket}`}</div>
-        <div>{`Balls: ${totalBalls}`}</div>
+    <div className="font-mono p-5">
+      <h1 className="text-2xl font-bold text-center mb-4">Second Innings Admin Panel</h1>
+
+      <div className="flex justify-around text-xl font-bold mb-5">
+        <div>Score: {runs}/{wickets}</div>
+        <div>Overs: {overs}</div>
       </div>
 
-      {battingTeamWon ? (
-        <div className='flex flex-col items-center justify-center text-4xl cursor-pointer font-bold mt-12'>
-          <h3 className='text-indigo-700'>{`${battingTeam} Won`}</h3>
-          <h3 className='text-indigo-700'>{`${battingTeam} won by ${difference} wickets`}</h3>
-          <h4 className='text-purple-600 mt-7' onClick={watchSummary}>
-            Watch Summary
-          </h4>
-        </div>
-      ) : bowlingTeamWon ? (
-        <div className='flex flex-col items-center justify-center text-4xl cursor-pointer font-bold mt-12'>
-          <h3 className='text-indigo-700'>{`${bowlingTeam} Won`}</h3>
-          <h3 className='text-indigo-700'>{`${bowlingTeam} won by ${difference} runs`}</h3>
-          <h4 className='text-purple-600 mt-7' onClick={watchSummary}>
-            Watch Summary
-          </h4>
-        </div>
-      ) : (
-        <div>
-          <Title text={`Over: ${overs}`} className='mt-5' />
-          <Title text={`${bowlingTeam} will bowl`} className='mt-5' />
-          <Title text={`Target: ${target}`} className='mt-5' />
+      {/* ✅ scoring buttons */}
+      <div className="flex justify-around flex-wrap gap-2">
+  {[0, 1, 2, 3, 4, 5, 6, "wide", "no"].map((val) => (
+    <button
+      key={val}
+      onClick={() => changeRun(val)}
+      disabled={inningsOver}   // ✅ only disable if innings over
+      className="bg-amber-400 px-4 py-2 rounded-xl disabled:opacity-50"
+    >
+      {val}
+    </button>
+  ))}
+  <button
+    onClick={() => changeRun("W")}
+    disabled={inningsOver}
+    className="bg-red-500 text-white px-4 py-2 rounded-xl"
+  >
+    OUT
+  </button>
+</div>
 
-          <div className='flex justify-around mt-8'>
-            {[0, 1, 2, 3, 4, 5, 6, 'wide', 'no'].map((value) => (
-              <button
-                key={value}
-                className='bg-amber-400 p-1 rounded-xl h-10 w-10 cursor-pointer'
-                onClick={() => {
-                  changeRun(value);
-                  setBowlingStarted(true);
-                }}
-              >
-                {value}
-              </button>
-            ))}
-          </div>
 
-          <div
-            className='flex justify-center mt-5 font-bold text-2xl text-red-600 rounded-xl cursor-pointer'
-            onClick={() => {
-              changeRun('w');
-              setBowlingStarted(true);
-            }}
+      {/* ✅ new batsman input */}
+      {wickets > 0 && (
+        <div className="mt-4 flex gap-2 items-center justify-center">
+          <select
+            value={nextBatsman}
+            onChange={(e) => setNextBatsman(e.target.value)}
+            className="border px-2 py-1 rounded"
           >
-            Out
-          </div>
+            <option value="">Select next batsman</option>
+            {availableBatsmen.map((p) => (
+              <option key={p} value={p}>{p}</option>
+            ))}
+          </select>
         </div>
       )}
 
-      {showSummary && summary && (
-        <div className='mt-10 p-5 bg-gray-100 rounded-lg'>
-          <h2 className='text-2xl font-bold text-center mb-4'>Match Summary</h2>
-          <div className='mb-4'>
-            <h3 className='font-bold'>First Innings:</h3>
-            <p>{summary.firstSummary.battingTeam} - {summary.firstSummary.runs}/{summary.firstSummary.wickets} in {summary.firstSummary.totalOver} overs</p>
-          </div>
-          <div>
-            <h3 className='font-bold'>Second Innings:</h3>
-            <p>{summary.secondSummary.battingTeam} - {summary.secondSummary.runs}/{summary.secondSummary.wickets} in {summary.secondSummary.totalOver} overs</p>
-          </div>
-          <div>
-            <h1>{`${summary.secondSummary.matchWinner} won the match${difference}`}</h1>
-          </div>
-        </div>
-      )}
+      {/* ✅ bowler input */}
+      {/* ✅ bowler input */}
+{(!bowler || balls % 6 === 0) && (
+  <div className="mt-4 flex gap-2 items-center justify-center">
+    <select
+      value={newBowler}
+      onChange={(e) => setNewBowler(e.target.value)}
+      className="border px-2 py-1 rounded"
+    >
+      <option value="">Select Bowler</option>
+      {availableBowlers.map((p) => (
+        <option key={p} value={p}>{p}</option>
+      ))}
+    </select>
+    <button
+      className="bg-blue-500 text-white px-3 py-1 rounded"
+      onClick={() => {
+        if (newBowler.trim()) {
+          setBowler(newBowler.trim());   // ✅ properly set bowler
+          setNewBowler("");
+        }
+      }}
+    >
+      Set Bowler
+    </button>
+  </div>
+)}
+
     </div>
   );
 };

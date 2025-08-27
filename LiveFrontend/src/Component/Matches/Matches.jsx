@@ -13,7 +13,7 @@ const Matches = () => {
       const fetchMatch = async ()=>{
         try {
           
-          const response = await axios.get('https://cric-scoreboard.onrender.com/user/get')
+          const response = await axios.get('http://localhost:9000/user/get')
           console.log(response.data)
           setMatches(response.data)
 

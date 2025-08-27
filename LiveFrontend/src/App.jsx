@@ -10,7 +10,7 @@ const App = () => {
     <Routes>
       <Route path='/' element={<Matches/>}/>
       <Route path='/Live/:id' element={<LivePage/>}/>
-      <Route path='/Live-second/:id' element={<LiveSecondInnings/>}/>
+      <Route path='/Live-sec/:id' element={<LiveSecondInnings/>}/>
     </Routes>
     </BrowserRouter>
   )
