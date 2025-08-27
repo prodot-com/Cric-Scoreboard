@@ -126,34 +126,32 @@ const addToss = async(req, res)=>{
     }
 }
 
-const addFirstSummary = async (req, res)=>{
-    try {
-        
-        const {id}= req.params;
-        const  firstSummary = req.body;
-        
-        if (!firstSummary) {
-            return res.status(400).json({ error: "Missing summaries" });
-        }
+const addFirstSummary = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const firstSummary = req.body;
 
-        const match = await Match.findByIdAndUpdate(
+    if (!firstSummary) {
+      return res.status(400).json({ error: "Missing summary" });
+    }
+
+    const match = await Match.findByIdAndUpdate(
       id,
       { firstSummary },
-      { new: true } // return updated match
+      { new: true, runValidators: true }
     );
 
-        match.firstSummary = firstSummary;
-        await match.save();
-
-        res.status(200).json({ message: "Successfully saved", match });
-
-    } catch (error) {
-        
-        console.error(error);
-        res.status(500).json({ error: "Something went wrong" });
-
+    if (!match) {
+      return res.status(404).json({ error: "Match not found" });
     }
-}
+
+    res.status(200).json({ message: "Successfully saved", match });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+};
+
 
 const fetchFirstSummary = async(req, res)=>{
     try {

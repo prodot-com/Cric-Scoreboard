@@ -1,5 +1,21 @@
 import mongoose from 'mongoose';
 
+const batsmanSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  runs: { type: Number, default: 0 },
+  balls: { type: Number, default: 0 },
+  out: { type: Boolean, default: false }
+}, { _id: false });
+
+
+const bowlerSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  runs: { type: Number, default: 0 },
+  balls: { type: Number, default: 0 },
+  out: { type: Boolean, default: false }
+}, { _id: false });
+
+
 const inningsSchema = new mongoose.Schema({
   battingTeam: { type: String, required: true },
   bowlingTeam: { type: String, required: true },
@@ -8,7 +24,10 @@ const inningsSchema = new mongoose.Schema({
   balls: { type: Number, default: 0 },
   wickets: { type: Number, default: 0 },
   target: {type: Number, default: 0},
-  // matchWinner: { type: String, required: true }  
+  // inningsOver: {type: Boolean, default: false},
+  batsman: [batsmanSchema],
+  bowler: [bowlerSchema],
+  matchWinner: { type: String}  
 }, { _id: false });
 
 const matchSchema = new mongoose.Schema({

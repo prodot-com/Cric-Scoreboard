@@ -26,14 +26,16 @@ const AdminPage = () => {
   const [nonStriker, setNonStriker] = useState('')
   const [bowler, setBowler] = useState('')
   const [newBowler, setNewBowler] = useState("");
-  const [nextBatsman, setNextBatsman] = useState('')
-  const [availableBatsmen, setAvailableBatsmen] = useState([])
-  const [availableBowlers, setAvailableBowlers] = useState([])
   const [newBatsman, setNewBatsman] = useState("")
 
-  const [batsmanStats, setBatsmanStats] = useState({})
-  const [bowlerStats, setBowlerStats] = useState({})
+  const [availableBatsmen, setAvailableBatsmen] = useState([])
+  const [availableBowlers, setAvailableBowlers] = useState([])
 
+  // ✅ keep stats as arrays
+  const [batsmanStats, setBatsmanStats] = useState([])
+  const [bowlerStats, setBowlerStats] = useState([])
+
+  // socket connect
   useEffect(() => {
     socketRef.current = io("http://localhost:9000/")
     socketRef.current.on("connect", () => {
@@ -49,10 +51,7 @@ const AdminPage = () => {
     } catch (error) { console.log(error) }
   }
 
-
-  useEffect(() => { 
-    getMatch() 
-  }, [])
+  useEffect(() => { getMatch() }, [])
 
   useEffect(() => {
     if (!matchData) return
@@ -81,14 +80,16 @@ const AdminPage = () => {
       setBowler(matchData.bowler)
       setAvailableBowlers(prev => [...prev, matchData.bowler.trim()])
 
-      setBatsmanStats({
-        [matchData.batsman1]: { runs: 0, balls: 0, out: false },
-        [matchData.batsman2]: { runs: 0, balls: 0, out: false }
-      })
+      // ✅ push initial batsmen
+      setBatsmanStats([
+        { name: matchData.batsman1, runs: 0, balls: 0, out: false },
+        { name: matchData.batsman2, runs: 0, balls: 0, out: false }
+      ])
 
-      setBowlerStats({
-        [matchData.bowler]: { runs: 0, balls: 0, wickets: 0 }
-      })
+      // ✅ push initial bowler
+      setBowlerStats([
+        { name: matchData.bowler, runs: 0, balls: 0, wickets: 0 }
+      ])
     }
   }, [matchData])
 
@@ -98,71 +99,45 @@ const AdminPage = () => {
     setOvers(`${over}.${balls}`)
   }, [totalBalls])
 
+  // helpers
+  const updateBatsman = (name, updater) => {
+    setBatsmanStats(prev =>
+      prev.map(b => b.name === name ? { ...b, ...updater(b) } : b)
+    )
+  }
+
+  const updateBowler = (name, updater) => {
+    setBowlerStats(prev =>
+      prev.map(bw => bw.name === name ? { ...bw, ...updater(bw) } : bw)
+    )
+  }
+
   const changeRun = (value) => {
     if (iningsOver) return
 
     if (value === 'wide' || value === 'no') {
-      setCurrentRun(prev => prev + 1)
-      if (bowler) {
-        setBowlerStats(prev => ({
-          ...prev,
-          [bowler]: { ...prev[bowler], runs: (prev[bowler]?.runs || 0) + 1 }
-        }))
-      }
+      setCurrentRun(r => r + 1)
+      if (bowler) updateBowler(bowler, bw => ({ runs: bw.runs + 1 }))
       return
     }
 
     if (value === "W") {
-      setCurrentWicket(prev => {
-        const newWickets = prev + 1
-        if (newWickets === 10) setIningsOver(true)
+      setCurrentWicket(w => {
+        const newW = w + 1
+        if (newW === 10) setIningsOver(true)
 
-        setBatsmanStats(prev => ({
-          ...prev,
-          [striker]: { ...prev[striker], out: true, balls: (prev[striker]?.balls || 0) + 1 }
-        }))
+        updateBatsman(striker, b => ({ balls: b.balls + 1, out: true }))
+        updateBowler(bowler, bw => ({ balls: bw.balls + 1, wickets: bw.wickets + 1 }))
 
-        setBowlerStats(prev => ({
-          ...prev,
-          [bowler]: { 
-            ...prev[bowler], 
-            balls: (prev[bowler]?.balls || 0) + 1, 
-            wickets: (prev[bowler]?.wickets || 0) + 1 
-          }
-        }))
-
-        if (nextBatsman) {
-          setStriker(nextBatsman)
-          setAvailableBatsmen(prev => prev.filter(p => p !== nextBatsman))
-          setBatsmanStats(prev => ({
-            ...prev,
-            [nextBatsman]: { runs: 0, balls: 0, out: false }
-          }))
-          setNextBatsman('')
-        }
-        return newWickets
+        return newW
       })
-      setTotalBalls(prev => prev + 1)
+      setTotalBalls(b => b + 1)
       return
     }
 
-    setCurrentRun(prev => prev + value)
-    setBatsmanStats(prev => ({
-      ...prev,
-      [striker]: {
-        ...prev[striker],
-        runs: (prev[striker]?.runs || 0) + value,
-        balls: (prev[striker]?.balls || 0) + 1
-      }
-    }))
-    setBowlerStats(prev => ({
-      ...prev,
-      [bowler]: {
-        ...prev[bowler],
-        runs: (prev[bowler]?.runs || 0) + value,
-        balls: (prev[bowler]?.balls || 0) + 1
-      }
-    }))
+    setCurrentRun(r => r + value)
+    updateBatsman(striker, b => ({ runs: b.runs + value, balls: b.balls + 1 }))
+    updateBowler(bowler, bw => ({ runs: bw.runs + value, balls: bw.balls + 1 }))
 
     setTotalBalls(prev => {
       const newBalls = prev + 1
@@ -183,10 +158,11 @@ const AdminPage = () => {
     })
   }
 
+  // socket emit
   useEffect(() => {
     const firstInnings = {
-      bowlingteam,
       battingteam,
+      bowlingteam,
       runs: currentRun,
       balls: totalBalls,
       wickets: currentWicket,
@@ -204,7 +180,6 @@ const AdminPage = () => {
   }, [totalBalls, currentRun, currentWicket, iningsOver, secondInningsStart, secondInningsStarted, bowlingStarted, striker, nonStriker, bowler, batsmanStats, bowlerStats])
 
   const handleSubmit = async () => {
-
     const firstSummary = {
       battingTeam: battingteam,
       bowlingTeam: bowlingteam,
@@ -212,21 +187,19 @@ const AdminPage = () => {
       runs: currentRun,
       balls: totalBalls,
       wickets: currentWicket,
-      target: currentRun + 1
+      target: currentRun + 1,
+      batsman: batsmanStats, 
+      bowler: bowlerStats    
     }
     try {
-      
       const res = await axios.post(`http://localhost:9000/user/addFirst/${id}`, firstSummary)
       console.log(res)
-
       setSecondInningsStart(true)
-    setSecondInningsStarted(true)
-    navigate(`/second-innings/${id}`)
-
+      setSecondInningsStarted(true)
+      navigate(`/second-innings/${id}`)
     } catch (error) {
       console.log('error', error)
     }
-    
   }
 
   return (
@@ -273,15 +246,11 @@ const AdminPage = () => {
                   className='bg-green-500 text-white px-3 py-1 rounded'
                   onClick={() => {
                     if (newBatsman.trim()) {
-                      const batsman = newBatsman.trim();
-                      setAvailableBatsmen(prev => [...prev, batsman]);
-                      setStriker(batsman);
-                      setBatsmanStats(prev => ({
-                        ...prev,
-                        [batsman]: { runs: 0, balls: 0, out: false }
-                      }))
-                      setNextBatsman("");
-                      setNewBatsman("");
+                      const batsman = newBatsman.trim()
+                      setAvailableBatsmen(prev => [...prev, batsman])
+                      setStriker(batsman)
+                      setBatsmanStats(prev => [...prev, { name: batsman, runs: 0, balls: 0, out: false }])
+                      setNewBatsman("")
                     }
                   }}
                 >Add</button>
@@ -315,13 +284,10 @@ const AdminPage = () => {
                   className='bg-blue-500 text-white px-3 py-1 rounded'
                   onClick={() => {
                     if (newBowler.trim()) {
-                      setAvailableBowlers(prev => [...prev, newBowler.trim()]);
-                      setBowler(newBowler.trim());
-                      setBowlerStats(prev => ({
-                        ...prev,
-                        [newBowler.trim()]: { runs:0, balls:0, wickets:0 }
-                      }))
-                      setNewBowler("");
+                      setAvailableBowlers(prev => [...prev, newBowler.trim()])
+                      setBowler(newBowler.trim())
+                      setBowlerStats(prev => [...prev, { name: newBowler.trim(), runs:0, balls:0, wickets:0 }])
+                      setNewBowler("")
                     }
                   }}
                 >Add</button>
@@ -340,12 +306,12 @@ const AdminPage = () => {
 
           <div className="mt-5">
             <h1 className="font-bold text-2xl">Batsmen Scorecard</h1>
-            {Object.entries(batsmanStats).map(([name, stats]) => (
-              <p key={name}>{name} - {stats.runs} ({stats.balls}) {stats.out ? "out" : "not out"}</p>
+            {batsmanStats.map(b => (
+              <p key={b.name}>{b.name} - {b.runs} ({b.balls}) {b.out ? "out" : "not out"}</p>
             ))}
             <h1 className="font-bold text-2xl mt-3">Bowler Stats</h1>
-            {Object.entries(bowlerStats).map(([name, stats]) => (
-              <p key={name}>{name} - {stats.overs || Math.floor(stats.balls/6)}.{stats.balls%6} overs, {stats.runs} runs, {stats.wickets} wickets</p>
+            {bowlerStats.map(bw => (
+              <p key={bw.name}>{bw.name} - {Math.floor(bw.balls/6)}.{bw.balls%6} overs, {bw.runs} runs, {bw.wickets} wickets</p>
             ))}
           </div>
         </div>
@@ -354,12 +320,12 @@ const AdminPage = () => {
       <div className='flex justify-around mt-5 '>
         <div>
           <h1 className='font-bold text-2xl'>Batsmen</h1>
-          <p>{`${striker || '-'}`} : {batsmanStats[striker]?.runs || 0} ({batsmanStats[striker]?.balls || 0})</p>
-          <p>{`${nonStriker || '-'}`} : {batsmanStats[nonStriker]?.runs || 0} ({batsmanStats[nonStriker]?.balls || 0})</p>
+          <p>{`${striker || '-'}`} : {batsmanStats.find(b=>b.name===striker)?.runs || 0} ({batsmanStats.find(b=>b.name===striker)?.balls || 0})</p>
+          <p>{`${nonStriker || '-'}`} : {batsmanStats.find(b=>b.name===nonStriker)?.runs || 0} ({batsmanStats.find(b=>b.name===nonStriker)?.balls || 0})</p>
         </div>
         <div>
           <h1 className='font-bold text-2xl'>Bowler</h1>
-          <p>{`${bowler || '-'}`}:{bowlerStats[bowler]?.wickets || 0}-{bowlerStats[bowler]?.runs||0}</p>
+          <p>{`${bowler || '-'}`} : {bowlerStats.find(bw=>bw.name===bowler)?.wickets || 0}-{bowlerStats.find(bw=>bw.name===bowler)?.runs || 0}</p>
         </div>
       </div>
     </div>
