@@ -173,6 +173,11 @@ const updateBowler = (name, cb) => {
       }
       return newBalls
     })
+
+
+    if(secondInningsStarts){
+
+    }
   }
 
   const startSecondInnings = () => {
@@ -198,8 +203,13 @@ const updateBowler = (name, cb) => {
   setIsFirstInnings(false)
 
   // reset player stats for new innings
-  setBatsmanStats({})
-  setBowlerStats({})
+  setBatsmanStats({
+      [bats[0]]: { runs: 0, balls: 0, out: false },
+      [bats[1]]: { runs: 0, balls: 0, out: false },
+    })
+    setBowlerStats({
+      [bowls[0]]: { runs: 0, balls: 0, wickets: 0 },
+    })
 }
 
 
