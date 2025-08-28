@@ -25,7 +25,6 @@ const SecondInnings = () => {
   const [newBowler, setNewBowler] = useState("");
   const [awaitingNewBatsman, setAwaitingNewBatsman] = useState(false);
 
-
   // stats
   const [batsmanStats, setBatsmanStats] = useState({});
   const [bowlerStats, setBowlerStats] = useState({});
@@ -112,35 +111,34 @@ const SecondInnings = () => {
 
     // wicket
     if (value === "W") {
-  setWickets((prev) => {
-    const newW = prev + 1;
-    if (newW === 10) setInningsOver(true);
-    return newW;
-  });
+      setWickets((prev) => {
+        const newW = prev + 1;
+        if (newW === 10) setInningsOver(true);
+        return newW;
+      });
 
-  setBatsmanStats((prev) => ({
-    ...prev,
-    [striker]: {
-      ...(prev[striker] || { runs: 0, balls: 0, out: false }),
-      balls: (prev[striker]?.balls || 0) + 1,
-      out: true,
-    },
-  }));
+      setBatsmanStats((prev) => ({
+        ...prev,
+        [striker]: {
+          ...(prev[striker] || { runs: 0, balls: 0, out: false }),
+          balls: (prev[striker]?.balls || 0) + 1,
+          out: true,
+        },
+      }));
 
-  if (bowler) {
-    setBowlerStats((prev) => ({
-      ...prev,
-      [bowler]: {
-        ...(prev[bowler] || { overs: 0, runs: 0, wickets: 0 }),
-        wickets: (prev[bowler]?.wickets || 0) + 1,
-      },
-    }));
-  }
+      if (bowler) {
+        setBowlerStats((prev) => ({
+          ...prev,
+          [bowler]: {
+            ...(prev[bowler] || { overs: 0, runs: 0, wickets: 0 }),
+            wickets: (prev[bowler]?.wickets || 0) + 1,
+          },
+        }));
+      }
 
-  setAwaitingNewBatsman(true); // lock scoring until new batsman is added
-  return;
-}
-
+      setAwaitingNewBatsman(true);
+      return;
+    }
 
     // normal runs
     const n = Number(value);
@@ -203,6 +201,48 @@ const SecondInnings = () => {
     return newBalls;
   };
 
+  // ---- Save Second Innings Summary ----
+  const saveSecondInningsSummary = async () => {
+    try {
+      const secondSummary = {
+      battingTeam: matchData.team1, // adjust if needed
+      bowlingTeam: matchData.team2,
+      runs,
+      balls,
+      wickets,
+      target,
+
+      // 🔥 FIX: convert objects to arrays with `name`
+      batsman: Object.entries(batsmanStats).map(([name, stats]) => ({
+        name,
+        runs: stats.runs,
+        balls: stats.balls,
+        out: stats.out,
+      })),
+      bowler: Object.entries(bowlerStats).map(([name, stats]) => ({
+        name,
+        runs: stats.runs,
+        balls: stats.balls,
+        wickets: stats.wickets,
+      })),
+
+      winner:
+        runs >= target
+          ? matchData.team1
+          : inningsOver
+          ? matchData.team2
+          : null,
+    };
+
+    console.log("Submitting secondSummary:", secondSummary);
+
+      const res = await axios.post(`http://localhost:9000/user/addSecond/${id}`, secondSummary);
+      console.log("✅ Second innings summary saved:", res.data);
+    } catch (err) {
+      console.error("❌ Error saving second innings summary:", err);
+    }
+  };
+
   // ---- winner logic ----
   useEffect(() => {
     if (!target || !battingTeam || !bowlingTeam) return;
@@ -211,6 +251,7 @@ const SecondInnings = () => {
       const wktsInHand = 10 - wickets;
       setWinnerMsg(`${battingTeam} won by ${wktsInHand} wicket${wktsInHand === 1 ? "" : "s"} 🎉`);
       setInningsOver(true);
+      saveSecondInningsSummary();
       return;
     }
 
@@ -218,6 +259,7 @@ const SecondInnings = () => {
       const defendingRuns = target - 1;
       const margin = Math.max(0, defendingRuns - runs);
       setWinnerMsg(`${bowlingTeam} won by ${margin} run${margin === 1 ? "" : "s"} 🏆`);
+      saveSecondInningsSummary();
     }
   }, [runs, wickets, inningsOver, target, battingTeam, bowlingTeam, winnerMsg]);
 
@@ -265,16 +307,15 @@ const SecondInnings = () => {
 
   // confirm new batsman
   const confirmNewBatsman = () => {
-  if (!nextBatsman) return;
-  setStriker(nextBatsman);
-  setBatsmanStats((prev) => ({
-    ...prev,
-    [nextBatsman]: { runs: 0, balls: 0, out: false },
-  }));
-  setNextBatsman("");
-  setAwaitingNewBatsman(false); // unlock scoring
-};
-
+    if (!nextBatsman) return;
+    setStriker(nextBatsman);
+    setBatsmanStats((prev) => ({
+      ...prev,
+      [nextBatsman]: { runs: 0, balls: 0, out: false },
+    }));
+    setNextBatsman("");
+    setAwaitingNewBatsman(false);
+  };
 
   return (
     <div className="font-mono p-5">
@@ -372,39 +413,36 @@ const SecondInnings = () => {
         </div>
       )}
 
-      
       {/* Scoring buttons */}
-{openersSelected && (
-  <div className="flex flex-col items-center mt-6">
-    <div className="flex justify-center flex-wrap gap-2">
-      {[0, 1, 2, 3, 4, 5, 6, "wide", "no"].map((val) => (
-        <button
-          key={val}
-          onClick={() => changeRun(val)}
-          disabled={inningsOver || Boolean(winnerMsg) || !bowler || awaitingNewBatsman}
-          className="bg-amber-400 px-4 py-2 rounded-xl disabled:opacity-50"
-        >
-          {val}
-        </button>
-      ))}
-      <button
-        onClick={() => changeRun("W")}
-        disabled={inningsOver || Boolean(winnerMsg) || !bowler}
-        className="bg-red-500 text-white px-4 py-2 rounded-xl disabled:opacity-50"
-      >
-        OUT
-      </button>
-    </div>
+      {openersSelected && (
+        <div className="flex flex-col items-center mt-6">
+          <div className="flex justify-center flex-wrap gap-2">
+            {[0, 1, 2, 3, 4, 5, 6, "wide", "no"].map((val) => (
+              <button
+                key={val}
+                onClick={() => changeRun(val)}
+                disabled={inningsOver || Boolean(winnerMsg) || !bowler || awaitingNewBatsman}
+                className="bg-amber-400 px-4 py-2 rounded-xl disabled:opacity-50"
+              >
+                {val}
+              </button>
+            ))}
+            <button
+              onClick={() => changeRun("W")}
+              disabled={inningsOver || Boolean(winnerMsg) || !bowler}
+              className="bg-red-500 text-white px-4 py-2 rounded-xl disabled:opacity-50"
+            >
+              OUT
+            </button>
+          </div>
 
-    {/* Warning if no bowler */}
-    {!bowler && !inningsOver && !winnerMsg && (
-      <p className="text-red-500 font-semibold mt-2">
-        Please set a bowler before scoring
-      </p>
-    )}
-  </div>
-)}
-
+          {!bowler && !inningsOver && !winnerMsg && (
+            <p className="text-red-500 font-semibold mt-2">
+              Please set a bowler before scoring
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Next batsman input */}
       {(batsmanStats[striker]?.out || batsmanStats[nonStriker]?.out) && (
@@ -480,7 +518,7 @@ const SecondInnings = () => {
       )}
 
       {inningsOver && !winnerMsg && (
-        <h2 className="text-red-600 font-bold text-2xl text-center mt-5">
+        <h2 className="text-red-600 text-lg font-bold text-center mt-4">
           Innings Over
         </h2>
       )}

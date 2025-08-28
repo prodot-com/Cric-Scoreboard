@@ -152,6 +152,32 @@ const addFirstSummary = async (req, res) => {
   }
 };
 
+const addSecondSummary = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const secondSummary = req.body;
+
+    if (!secondSummary) {
+      return res.status(400).json({ error: "Missing summary" });
+    }
+
+    const match = await Match.findByIdAndUpdate(
+      id,
+      { secondSummary },
+      { new: true, runValidators: true }
+    );
+
+    if (!match) {
+      return res.status(404).json({ error: "Match not found" });
+    }
+
+    res.status(200).json({ message: "Successfully saved", match });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Something went wrong", error });
+  }
+};
+
 
 const fetchFirstSummary = async(req, res)=>{
     try {
@@ -226,4 +252,4 @@ const fetchSummary = async(req, res)=>{
         throw new ApiError(400,'something Went Wrong')
     }
 }
-export { createMatch , deleteMatch, getmatch, findMatch, addToss,fetchSummary, fetchFirstSummary, addFirstSummary, setMatchComplete};
+export { createMatch , deleteMatch, getmatch, findMatch, addToss,fetchSummary, fetchFirstSummary, addFirstSummary, addSecondSummary, setMatchComplete};

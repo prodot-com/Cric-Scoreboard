@@ -1,5 +1,5 @@
 import { Router } from "express";
-import {addFirstSummary, addToss, createMatch, deleteMatch, fetchFirstSummary, fetchSummary, findMatch, getmatch, setMatchComplete } from "../Controllers/Match.controller.js";
+import {addFirstSummary, addSecondSummary, addToss, createMatch, deleteMatch, fetchFirstSummary, fetchSummary, findMatch, getmatch, setMatchComplete } from "../Controllers/Match.controller.js";
 
 const router = Router()
 
@@ -12,6 +12,7 @@ router.route('/addtoss/:id').post(addToss)
 router.route('/fetchsummary/:id').get(fetchSummary)
 router.route('/update/:id').put(setMatchComplete)
 router.route('/addFirst/:id').post(addFirstSummary)
+router.route('/addSecond/:id').post(addSecondSummary)
 router.route('/fetchFirst/:id').get(fetchFirstSummary)
 
 
