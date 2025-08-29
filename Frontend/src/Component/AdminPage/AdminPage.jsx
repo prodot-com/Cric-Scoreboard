@@ -153,7 +153,9 @@ const [openersSet, setOpenersSet] = useState(false);
     setTotalBalls(prev => {
       const newBalls = prev + 1
       if (newBalls === matchData.over * 6){ 
-        return setIningsOver(true)}
+        setIningsOver(true)
+      return newBalls
+    }
 
       const isEndOfOver = newBalls % 6 === 0
       if (isEndOfOver) {
@@ -168,7 +170,10 @@ const [openersSet, setOpenersSet] = useState(false);
       }
       return newBalls
     })
+    
   }
+
+  // useEffect(()=>{console.log(Overs)},[Overs])
 
   // ===== START 2nd INNINGS =====
   const startSecondInnings = () => {
@@ -307,20 +312,36 @@ const [openersSet, setOpenersSet] = useState(false);
 
   // ===== EMIT SCORE =====
   useEffect(() => {
-    const inningsData = {
-      inning: isFirstInnings ? 1 : 2,
-      battingTeam,
-      bowlingTeam,
-      runs: currentRun,
-      balls: totalBalls,
-      wickets: currentWicket,
-      iningsOver,
-      target,
-      batsmanStats,
-      bowlerStats
-    }
-    socketRef.current?.emit("scoreUpdate", { matchId: id, data: inningsData })
-  }, [totalBalls, currentRun, currentWicket, iningsOver, isFirstInnings, target, batsmanStats, bowlerStats])
+  const inningsData = {
+    inning: isFirstInnings ? 1 : 2,
+    battingTeam,
+    bowlingTeam,
+    runs: currentRun,
+    balls: totalBalls,
+    overs: Overs,                
+    totalOvers: matchData.over,   
+    wickets: currentWicket,
+    iningsOver,
+    target,
+    batsmanStats,
+    bowlerStats,
+    bowler
+  }
+  socketRef.current?.emit("scoreUpdate", { matchId: id, data: inningsData })
+}, [
+  totalBalls,
+  currentRun,
+  currentWicket,
+  Overs,             
+  iningsOver,
+  isFirstInnings,
+  target,
+  batsmanStats,
+  bowlerStats,
+  matchData.over,
+  bowler    
+])
+
 
   // ====== JSX ======
   return (
