@@ -99,10 +99,12 @@ const [openersSet, setOpenersSet] = useState(false);
 
   // update overs
   useEffect(() => {
-    const over = Math.floor(totalBalls / 6)
-    const balls = totalBalls % 6
-    setOvers(`${over}.${balls}`)
-  }, [totalBalls])
+  const ballsValue = Number.isFinite(totalBalls) ? totalBalls : 0; 
+  const over = Math.floor(ballsValue / 6);
+  const balls = ballsValue % 6;
+  setOvers(`${over}.${balls}`);
+}, [totalBalls]);
+
 
   // === helpers ===
   const updateBatsman = (name, cb) => {
@@ -623,6 +625,7 @@ const [openersSet, setOpenersSet] = useState(false);
       <Title text="Match Over" className="text-red-600" />
       <p className="mt-3 text-lg">
         {battingTeam} scored {currentRun}/{currentWicket} in {Overs} overs
+        {console.log(currentRun, currentWicket, Overs)}
       </p>
       <p className="mt-3 text-lg">
         {firstInningsBattingTeam} scored {firstInningsRuns}
