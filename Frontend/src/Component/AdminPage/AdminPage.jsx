@@ -22,6 +22,7 @@ const AdminPage = () => {
   const [isFirstInnings, setIsFirstInnings] = useState(true)
   const [target, setTarget] = useState(null)
   const [firstInningsRuns, setFirstInningsRuns] = useState(0)
+  const [firstInningsBattingTeam, setFirstInningsBattingTeam] = useState('')
 
   const [striker, setStriker] = useState('')
   const [nonStriker, setNonStriker] = useState('')
@@ -33,17 +34,12 @@ const AdminPage = () => {
   const [firstInningsBatsmanStats, setFirstInningsBatsmanStats] = useState({})
   const [firstInningsBowlerStats, setFirstInningsBowlerStats] = useState({})
 
+  const [openingBatsman1, setOpeningBatsman1] = useState("");
+const [openingBatsman2, setOpeningBatsman2] = useState("");
+const [openingBowler, setOpeningBowler] = useState("");
+const [openersSet, setOpenersSet] = useState(false);
+
   const [matchResult, setMatchResult] = useState(null)
-
-  const [team1Players] = useState([
-    "Bats1","Bats2","Bats3","Bats4","Bats5","Bats6","Bats7","Bats8","Bats9","Bats10","Bats11"
-  ])
-  const [team2Players] = useState([
-    "Bw1","Bw2","Bw3","Bw4","Bw5","Bw6","Bw7","Bw8","Bw9","Bw10","Bw11"
-  ])
-
-  const [batsmanList, setBatsmanList] = useState([])
-  const [bowlerList, setBowlerList] = useState([])
 
   // ==== STATE ====
   const [showBatsmanModal, setShowBatsmanModal] = useState(false)
@@ -70,42 +66,36 @@ const AdminPage = () => {
   useEffect(() => { getMatch() }, [])
 
   // ===== Initialise innings after match data load =====
-useEffect(() => {
-  if (!matchData || !matchData.team1) return
-  setTotalOver(matchData.over)
-  console.log(matchData)
+  useEffect(() => {
+    if (!matchData || !matchData.team1) return
+    setTotalOver(matchData.over)
 
-  const batting = matchData.decision === 'BAT'
-    ? matchData.tossWinner
-    : matchData.tossWinner === matchData.team1 ? matchData.team2 : matchData.team1
+    const batting = matchData.decision === 'BAT'
+      ? matchData.tossWinner
+      : matchData.tossWinner === matchData.team1 ? matchData.team2 : matchData.team1
 
-  const bowling = batting === matchData.team1 ? matchData.team2 : matchData.team1
+    const bowling = batting === matchData.team1 ? matchData.team2 : matchData.team1
 
-  setBattingTeam(batting)
-  setBowlingTeam(bowling)
+    setBattingTeam(batting)
+    setBowlingTeam(bowling)
 
-  // Player lists (assuming you fetch team1Players & team2Players separately)
-  const bats = batting === matchData.team1 ? team1Players : team2Players
-  const bowls = bowling === matchData.team1 ? team1Players : team2Players
+    // opening players from DB
+    const bats1 = matchData.batsman1 || ""
+    const bats2 = matchData.batsman2 || ""
+    const bowl = matchData.bowler || ""
 
-  setBatsmanList(bats)
-  setBowlerList(bowls)
+    setStriker(bats1)
+    setNonStriker(bats2)
+    setBowler(bowl)
 
-  // ✅ Opening batsmen & bowler from matchData
-  setStriker(matchData.batsman1)
-  setNonStriker(matchData.batsman2)
-  setBowler(matchData.bowler)
-
-  // ✅ Initialize stats
-  setBatsmanStats({
-    [matchData.batsman1]: { runs: 0, balls: 0, out: false },
-    [matchData.batsman2]: { runs: 0, balls: 0, out: false },
-  })
-  setBowlerStats({
-    [matchData.bowler]: { runs: 0, balls: 0, wickets: 0 },
-  })
-}, [matchData])
-
+    setBatsmanStats({
+      [bats1]: { runs: 0, balls: 0, out: false },
+      [bats2]: { runs: 0, balls: 0, out: false },
+    })
+    setBowlerStats({
+      [bowl]: { runs: 0, balls: 0, wickets: 0 },
+    })
+  }, [matchData])
 
   // update overs
   useEffect(() => {
@@ -160,7 +150,8 @@ useEffect(() => {
 
     setTotalBalls(prev => {
       const newBalls = prev + 1
-      if (newBalls === matchData.over * 6) setIningsOver(true)
+      if (newBalls === matchData.over * 6){ 
+        return setIningsOver(true)}
 
       const isEndOfOver = newBalls % 6 === 0
       if (isEndOfOver) {
@@ -179,9 +170,9 @@ useEffect(() => {
 
   // ===== START 2nd INNINGS =====
   const startSecondInnings = () => {
-    // save 1st innings stats
     setFirstInningsBatsmanStats(batsmanStats)
     setFirstInningsBowlerStats(bowlerStats)
+    setFirstInningsBattingTeam(battingTeam)
 
     setSecondInningsStarts(true)
     setIningsOver(false)
@@ -201,22 +192,36 @@ useEffect(() => {
     setOvers("0.0")
     setIsFirstInnings(false)
 
-    // reset player stats for new innings
-    const bats = newBatting === matchData.team1 ? team1Players : team2Players
-    const bowls = newBowling === matchData.team1 ? team1Players : team2Players
-
-    setStriker(bats[0])
-    setNonStriker(bats[1])
-    setBowler(bowls[0])
-
-    setBatsmanStats({
-      [bats[0]]: { runs: 0, balls: 0, out: false },
-      [bats[1]]: { runs: 0, balls: 0, out: false },
-    })
-    setBowlerStats({
-      [bowls[0]]: { runs: 0, balls: 0, wickets: 0 },
-    })
+    // clear players, force admin to enter openers & bowler
+    setStriker("")
+    setNonStriker("")
+    setBowler("")
+    setBatsmanStats({})
+    setBowlerStats({})
+    // setShowBatsmanModal(true)
+    // setShowBowlerModal(true)
+    console.log(batsmanStats)
+    console.log(bowlerStats)
   }
+
+  const handleSetOpeners = () => {
+  if (!openingBatsman1 || !openingBatsman2 || !openingBowler) {
+    alert("Please enter all players");
+    return;
+  }
+  // Initialize batsman & bowler in stats
+  setBatsmanStats({
+    [openingBatsman1]: { runs: 0, balls: 0, out: false },
+    [openingBatsman2]: { runs: 0, balls: 0, out: false },
+  });
+  setBowlerStats({
+    [openingBowler]: { runs: 0, balls: 0, wickets: 0 },
+  });
+  setStriker(openingBatsman1);
+  setNonStriker(openingBatsman2);
+  setBowler(openingBowler);
+  setOpenersSet(true);
+};
 
   // ===== TARGET CHECK =====
   useEffect(() => {
@@ -281,6 +286,7 @@ useEffect(() => {
         } else if (currentRun < target - 1) {
           setMatchResult(`${bowlingTeam} won by ${target - 1 - currentRun} runs`)
         }
+        return
       }
       const isEndOfOver = newBalls % 6 === 0
       if (isEndOfOver) {
@@ -308,14 +314,98 @@ useEffect(() => {
       wickets: currentWicket,
       iningsOver,
       target,
+      batsmanStats,
+      bowlerStats
     }
     socketRef.current?.emit("scoreUpdate", { matchId: id, data: inningsData })
-  }, [totalBalls, currentRun, currentWicket, iningsOver, isFirstInnings, target])
+  }, [totalBalls, currentRun, currentWicket, iningsOver, isFirstInnings, target, batsmanStats, bowlerStats])
 
   // ====== JSX ======
-    // ====== JSX ======
   return (
     <div className="font-mono m-5">
+
+      {/* Batsman Modal */}
+      {showBatsmanModal && (
+        <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black/50">
+          <div className="bg-white p-5 rounded-lg">
+            <h3 className="text-lg font-bold mb-3">Enter Next Batsman</h3>
+            <input
+              id="nextBatsmanInput"
+              type="text"
+              placeholder="Batsman name"
+              className="border p-2 rounded w-full"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && e.target.value) {
+                  setStriker(e.target.value)
+                  setBatsmanStats(prev => ({
+                    ...prev,
+                    [e.target.value]: { runs: 0, balls: 0, out: false }
+                  }))
+                  setShowBatsmanModal(false)
+                }
+              }}
+            />
+            <button
+              className="mt-3 px-4 py-2 bg-green-600 text-white rounded"
+              onClick={() => {
+                const input = document.querySelector("#nextBatsmanInput")
+                if (input.value) {
+                  setStriker(input.value)
+                  setBatsmanStats(prev => ({
+                    ...prev,
+                    [input.value]: { runs: 0, balls: 0, out: false }
+                  }))
+                  setShowBatsmanModal(false)
+                }
+              }}
+            >
+              Confirm
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Bowler Modal */}
+      {showBowlerModal && (
+        <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black/50">
+          <div className="bg-white p-5 rounded-lg">
+            <h3 className="text-lg font-bold mb-3">Enter Next Bowler</h3>
+            <input
+              id="nextBowlerInput"
+              type="text"
+              placeholder="Bowler name"
+              className="border p-2 rounded w-full"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && e.target.value) {
+                  setBowler(e.target.value)
+                  setBowlerStats(prev => ({
+                    ...prev,
+                    [e.target.value]: { runs: 0, balls: 0, wickets: 0 }
+                  }))
+                  setShowBowlerModal(false)
+                }
+              }}
+            />
+            <button
+              className="mt-3 px-4 py-2 bg-green-600 text-white rounded"
+              onClick={() => {
+                const input = document.querySelector("#nextBowlerInput")
+                if (input.value) {
+                  setBowler(input.value)
+                  setBowlerStats(prev => ({
+                    ...prev,
+                    [input.value]: { runs: 0, balls: 0, wickets: 0 }
+                  }))
+                  setShowBowlerModal(false)
+                }
+              }}
+            >
+              Confirm
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ================== FIRST INNINGS ================== */}
       {!secondInningsStarts ? (
         !iningsOver ? (
@@ -325,7 +415,7 @@ useEffect(() => {
               {battingTeam} vs {bowlingTeam}
             </p>
             <p className="mt-2 text-lg">
-              Score: {currentRun}/{currentWicket} in {Overs} overs
+              {battingTeam}: {currentRun}/{currentWicket} in {Overs} overs
             </p>
 
             {/* Run Buttons */}
@@ -342,7 +432,7 @@ useEffect(() => {
             </div>
 
             {/* Live Batsman Stats */}
-            <h3 className="mt-6 text-lg font-bold">Batting Scorecard</h3>
+            <h3 className="mt-5 text-lg font-bold">Batting Stats</h3>
             <table className="table-auto border-collapse border border-gray-400 mt-2">
               <thead>
                 <tr>
@@ -353,8 +443,10 @@ useEffect(() => {
                 </tr>
               </thead>
               <tbody>
-                {Object.keys(batsmanStats).map((b) => (
-                  <tr key={b}>
+                {Object.keys(batsmanStats).filter((b) => !batsmanStats[b].out).map((b) => (
+                  <tr 
+                  key={b}
+                  className={b === striker ? "bg-gray-200 font-bold text-green-600" : ""}>
                     <td className="border px-3">{b}</td>
                     <td className="border px-3">{batsmanStats[b].runs}</td>
                     <td className="border px-3">{batsmanStats[b].balls}</td>
@@ -367,7 +459,7 @@ useEffect(() => {
             </table>
 
             {/* Live Bowler Stats */}
-            <h3 className="mt-6 text-lg font-bold">Bowling Scorecard</h3>
+            <h3 className="mt-5 text-lg font-bold">Bowling Stats</h3>
             <table className="table-auto border-collapse border border-gray-400 mt-2">
               <thead>
                 <tr>
@@ -378,7 +470,7 @@ useEffect(() => {
                 </tr>
               </thead>
               <tbody>
-                {Object.keys(bowlerStats).map((b) => (
+                {Object.keys(bowlerStats).filter((b) => b === bowler).map((b) => (
                   <tr key={b}>
                     <td className="border px-3">{b}</td>
                     <td className="border px-3">{bowlerStats[b].runs}</td>
@@ -388,87 +480,106 @@ useEffect(() => {
                 ))}
               </tbody>
             </table>
-            {/* ========= BATSMAN MODAL ========= */}
-{showBatsmanModal && (
-  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60">
-    <div className="bg-white p-6 rounded-lg w-96">
-      <h2 className="text-lg font-bold mb-3">Select Next Batsman</h2>
-      <select
-        className="border px-3 py-2 rounded w-full"
-        onChange={(e) => {
-          const newBatsman = e.target.value
-          if (!newBatsman) return
-          setStriker(newBatsman)
-          setBatsmanStats(prev => ({
-            ...prev,
-            [newBatsman]: { runs: 0, balls: 0, out: false }
-          }))
-          setShowBatsmanModal(false)
-        }}
-      >
-        <option value="">-- Select Batsman --</option>
-        {(battingTeam === matchData.team1 ? team1Players : team2Players)
-          .filter(p => !batsmanStats[p]?.out && p !== striker && p !== nonStriker)
-          .map(p => (
-            <option key={p} value={p}>{p}</option>
-          ))}
-      </select>
-    </div>
-  </div>
-)}
-
-{/* ========= BOWLER MODAL ========= */}
-{showBowlerModal && (
-  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60">
-    <div className="bg-white p-6 rounded-lg w-96">
-      <h2 className="text-lg font-bold mb-3">Select Next Bowler</h2>
-      <select
-        className="border px-3 py-2 rounded w-full"
-        onChange={(e) => {
-          const newBowler = e.target.value
-          if (!newBowler) return
-          setBowler(newBowler)
-          setBowlerStats(prev => ({
-            ...prev,
-            [newBowler]: { runs: 0, balls: 0, wickets: 0 }
-          }))
-          setShowBowlerModal(false)
-        }}
-      >
-        <option value="">-- Select Bowler --</option>
-        {(bowlingTeam === matchData.team1 ? team1Players : team2Players).map(p => (
-          <option key={p} value={p}>{p}</option>
-        ))}
-      </select>
-    </div>
-  </div>
-)}
-
           </div>
         ) : (
           <div>
-            <h2 className="text-2xl font-bold text-red-600">End of First Innings</h2>
+            <Title text="First Innings Over" className="text-red-600" />
             <p className="mt-3 text-lg">
               {battingTeam} scored {currentRun}/{currentWicket} in {Overs} overs
             </p>
-            <p className="mt-2 text-xl font-semibold text-green-700">
-              Target for {bowlingTeam}: {currentRun + 1} runs
-            </p>
+            <button
+              onClick={startSecondInnings}
+              className="mt-4 px-4 py-2 bg-green-700 text-white rounded"
+            >
+              Start Second Innings
+            </button>
+          </div>
+        )
+      ) : (
+        // ================ SECOND INNINGS ===================
+       
+// ================ SECOND INNINGS ===================
+<div>
+  {!iningsOver ? (
+    <div>
+      <Title text="Second Innings Admin Panel" className="text-indigo-700" />
+      <p className="mt-3 text-xl font-bold">
+        {battingTeam} chasing {target} vs {bowlingTeam}
+      </p>
 
-            {/* Final Batsman Stats */}
-            <h3 className="mt-5 text-lg font-bold">Batting Scorecard</h3>
-            <table className="table-auto border-collapse border border-gray-400 mt-2">
-              <thead>
-                <tr>
-                  <th className="border px-3">Batsman</th>
-                  <th className="border px-3">Runs</th>
-                  <th className="border px-3">Balls</th>
-                  <th className="border px-3">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.keys(batsmanStats).map((b) => (
-                  <tr key={b}>
+      {/* Opening Setup */}
+      {!openersSet ? (
+        <div className="mt-5">
+          <h3 className="text-lg font-bold mb-3">Enter Opening Players</h3>
+          <div className="flex gap-3">
+            <input
+              type="text"
+              placeholder="Opening Batsman 1"
+              value={openingBatsman1}
+              onChange={(e) => setOpeningBatsman1(e.target.value)}
+              className="border px-3 py-2 rounded"
+            />
+            <input
+              type="text"
+              placeholder="Opening Batsman 2"
+              value={openingBatsman2}
+              onChange={(e) => setOpeningBatsman2(e.target.value)}
+              className="border px-3 py-2 rounded"
+            />
+            <input
+              type="text"
+              placeholder="Opening Bowler"
+              value={openingBowler}
+              onChange={(e) => setOpeningBowler(e.target.value)}
+              className="border px-3 py-2 rounded"
+            />
+            <button
+              onClick={handleSetOpeners}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg"
+            >
+              Start Innings
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Score Info */}
+          <p className="mt-2 text-lg">
+            {battingTeam} {currentRun}/{currentWicket} in {Overs} overs
+          </p>
+
+          {/* Run Buttons */}
+          <div className="grid grid-cols-4 gap-2 mt-5">
+            {[0, 1, 2, 3, 4, 6, "W", "wide", "no"].map((v) => (
+              <button
+                key={v}
+                onClick={() => secChangeRun(v)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+              >
+                {v}
+              </button>
+            ))}
+          </div>
+
+          {/* Live Batsman Stats */}
+          <h3 className="mt-5 text-lg font-bold">Batting Stats</h3>
+          <table className="table-auto border-collapse border border-gray-400 mt-2">
+            <thead>
+              <tr>
+                <th className="border px-3">Batsman</th>
+                <th className="border px-3">Runs</th>
+                <th className="border px-3">Balls</th>
+                <th className="border px-3">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.keys(batsmanStats)
+                .filter((b) => !batsmanStats[b].out)
+                .map((b) => (
+                  <tr
+                    key={b}
+                    className={b === striker ? "bg-yellow-200 font-bold" : ""}
+                  >
                     <td className="border px-3">{b}</td>
                     <td className="border px-3">{batsmanStats[b].runs}</td>
                     <td className="border px-3">{batsmanStats[b].balls}</td>
@@ -477,136 +588,55 @@ useEffect(() => {
                     </td>
                   </tr>
                 ))}
-              </tbody>
-            </table>
+            </tbody>
+          </table>
 
-            {/* Final Bowler Stats */}
-            <h3 className="mt-5 text-lg font-bold">Bowling Scorecard</h3>
-            <table className="table-auto border-collapse border border-gray-400 mt-2">
-              <thead>
-                <tr>
-                  <th className="border px-3">Bowler</th>
-                  <th className="border px-3">Runs</th>
-                  <th className="border px-3">Balls</th>
-                  <th className="border px-3">Wickets</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.keys(bowlerStats).map((b) => (
-                  <tr key={b}>
+          {/* Live Bowler Stats */}
+          <h3 className="mt-5 text-lg font-bold">Bowling Stats</h3>
+          <table className="table-auto border-collapse border border-gray-400 mt-2">
+            <thead>
+              <tr>
+                <th className="border px-3">Bowler</th>
+                <th className="border px-3">Runs</th>
+                <th className="border px-3">Balls</th>
+                <th className="border px-3">Wickets</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.keys(bowlerStats)
+                .filter((b) => b === bowler)
+                .map((b) => (
+                  <tr key={b} className="bg-green-100 font-bold">
                     <td className="border px-3">{b}</td>
                     <td className="border px-3">{bowlerStats[b].runs}</td>
                     <td className="border px-3">{bowlerStats[b].balls}</td>
                     <td className="border px-3">{bowlerStats[b].wickets}</td>
                   </tr>
                 ))}
-              </tbody>
-            </table>
-
-            <button
-              className="mt-6 px-5 py-2 bg-green-600 text-white rounded-lg"
-              onClick={startSecondInnings}
-            >
-              Start Second Innings
-            </button>
-          </div>
-        )
-      ) : (
-        /* ================== SECOND INNINGS ================== */
-        <div>
-          <Title text="Second Innings Admin Panel" className="text-indigo-700" />
-          <p className="mt-3 text-xl font-bold">
-            {battingTeam} chasing {target} vs {bowlingTeam}
-          </p>
-          <p className="mt-2 text-lg">
-            Score: {currentRun}/{currentWicket} in {Overs} overs
-          </p>
-
-          {!iningsOver ? (
-            <div>
-              <div className="grid grid-cols-4 gap-2 mt-5">
-                {[0, 1, 2, 3, 4, 6, "W", "wide", "no"].map((v) => (
-                  <button
-                    key={v}
-                    onClick={() => secChangeRun(v)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg"
-                  >
-                    {v}
-                  </button>
-                ))}
-              </div>
-
-              {/* Live Batsman Stats */}
-              <h3 className="mt-6 text-lg font-bold">Batting Scorecard</h3>
-              <table className="table-auto border-collapse border border-gray-400 mt-2">
-                <thead>
-                  <tr>
-                    <th className="border px-3">Batsman</th>
-                    <th className="border px-3">Runs</th>
-                    <th className="border px-3">Balls</th>
-                    <th className="border px-3">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Object.keys(batsmanStats).map((b) => (
-                    <tr key={b}>
-                      <td className="border px-3">{b}</td>
-                      <td className="border px-3">{batsmanStats[b].runs}</td>
-                      <td className="border px-3">{batsmanStats[b].balls}</td>
-                      <td className="border px-3">
-                        {batsmanStats[b].out ? "Out" : "Not Out"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              {/* Live Bowler Stats */}
-              <h3 className="mt-6 text-lg font-bold">Bowling Scorecard</h3>
-              <table className="table-auto border-collapse border border-gray-400 mt-2">
-                <thead>
-                  <tr>
-                    <th className="border px-3">Bowler</th>
-                    <th className="border px-3">Runs</th>
-                    <th className="border px-3">Balls</th>
-                    <th className="border px-3">Wickets</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Object.keys(bowlerStats).map((b) => (
-                    <tr key={b}>
-                      <td className="border px-3">{b}</td>
-                      <td className="border px-3">{bowlerStats[b].runs}</td>
-                      <td className="border px-3">{bowlerStats[b].balls}</td>
-                      <td className="border px-3">{bowlerStats[b].wickets}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="mt-6">
-              <h2 className="text-2xl font-bold text-green-700">{matchResult}</h2>
-
-              {/* First Innings Summary */}
-              <h3 className="mt-6 text-lg font-bold">First Innings Summary</h3>
-              <p className="mt-2">
-                {bowlingTeam} scored {firstInningsRuns}
-              </p>
-
-              {/* Second Innings Summary */}
-              <h3 className="mt-6 text-lg font-bold">Second Innings Summary</h3>
-              <p className="mt-2">
-                {battingTeam} scored {currentRun}/{currentWicket} in {Overs} overs
-              </p>
-            </div>
-          )}
-        </div>
+            </tbody>
+          </table>
+        </>
       )}
     </div>
+  ) : (
+    <div>
+      <Title text="Match Over" className="text-red-600" />
+      <p className="mt-3 text-lg">
+        {battingTeam} scored {currentRun}/{currentWicket} in {Overs} overs
+      </p>
+      <p className="mt-3 text-lg">
+        {firstInningsBattingTeam} scored {firstInningsRuns}
+      </p>
+      <h2 className="mt-5 text-xl font-bold">{matchResult}</h2>
+    </div>
+  )}
+</div>
+
+
+      )
+      } 
+    </div>
   )
-
-
 }
 
 export default AdminPage
