@@ -22,6 +22,43 @@ const createMatch = async (req, res) => {
     }
 };
 
+const addOpeners = async(req, res) =>{
+    try {
+        const {id}= req.params
+        const {batsman1, batsman2, bowler} = req.body;
+        if(!batsman1 || !batsman2 || !bowler){
+            return res.status(400).json({
+                message: "All fields are required"
+            })
+        }
+
+        const match = await Match.findByIdAndUpdate(id,{
+            batsman1: batsman1,
+            batsman2: batsman2,
+            bowler: bowler
+        },
+    {
+        new: true,
+        runValidators: true
+    })
+
+    if(!match){
+        return res.status(400).json({
+            message: "Can't find data"
+        })
+    }
+
+    res.status(200).json({
+      message: "User updated successfully",
+      data: match,
+    });
+
+
+    } catch (error) {
+        console.log("Can't add openers", error)
+    }
+}
+
 const setMatchComplete = async (req, res)=>{
     try {
         
@@ -252,4 +289,4 @@ const fetchSummary = async(req, res)=>{
         throw new ApiError(400,'something Went Wrong')
     }
 }
-export { createMatch , deleteMatch, getmatch, findMatch, addToss,fetchSummary, fetchFirstSummary, addFirstSummary, addSecondSummary, setMatchComplete};
+export { createMatch , deleteMatch, getmatch, findMatch, addOpeners,addToss,fetchSummary, fetchFirstSummary, addFirstSummary, addSecondSummary, setMatchComplete};

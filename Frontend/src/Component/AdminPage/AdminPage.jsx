@@ -8,6 +8,12 @@ const AdminPage = () => {
   const socketRef = useRef(null)
   const { id } = useParams()
 
+  const [input, setInput] = useState({
+    batsman1: '',
+    batsman2: '',
+    bowler: ''
+  });
+
   const [matchData, setMatchData] = useState({})
   const [totalOver, setTotalOver] = useState(0)
   const [battingTeam, setBattingTeam] = useState('')
@@ -173,6 +179,10 @@ const AdminPage = () => {
       return newBalls
     })
     
+  }
+
+  const handleSubmit =()=>{
+
   }
 
   // useEffect(()=>{console.log(Overs)},[Overs])
@@ -397,13 +407,45 @@ const AdminPage = () => {
                    Choose Opening Batsman & Bowler
               </h2>
               
-              
+              <form onSubmit={handleSubmit} className="flex flex-col justify-evenly items-center h-50">
+          
 
-              <button onClick={() => setShowSuccessModal(false)}
-                      className="mt-4 px-4 py-2 bg-indigo-600 text-white border-2 border-black hover:bg-indigo-700 shadow-md"
-                  >
-                Close
-              </button>
+          <label>
+            Striker:
+            <input
+              placeholder="Enter Team-1 name"
+              className="bg-blue-400 rounded-xl"
+              type="text"
+              value={input.batsman1}
+              onChange={(e) => setInput({ ...input, batsman1: e.target.value })}
+            />
+          </label>
+
+          <label>
+            NonStriker:
+            <input
+              placeholder="Enter Team-1 name"
+              className="bg-blue-400 rounded-xl"
+              type="text"
+              value={input.batsman2}
+              onChange={(e) => setInput({ ...input, batsman2: e.target.value })}
+            />
+          </label>
+
+          <label>
+            Bowler:
+            <input
+              placeholder="Enter Team-1 name"
+              className="bg-blue-400 rounded-xl"
+              type="text"
+              value={input.bowler}
+              onChange={(e) => setInput({ ...input, bowler: e.target.value })}
+            />
+          </label>
+
+          <input type="submit" className="bg-blue-400 rounded-sm px-4 py-2 mt-4 cursor-pointer" />
+        </form>
+
             </div>
         </div>
 
