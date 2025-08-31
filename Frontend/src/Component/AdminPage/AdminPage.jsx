@@ -35,11 +35,13 @@ const AdminPage = () => {
   const [firstInningsBowlerStats, setFirstInningsBowlerStats] = useState({})
 
   const [openingBatsman1, setOpeningBatsman1] = useState("");
-const [openingBatsman2, setOpeningBatsman2] = useState("");
-const [openingBowler, setOpeningBowler] = useState("");
-const [openersSet, setOpenersSet] = useState(false);
+  const [openingBatsman2, setOpeningBatsman2] = useState("");
+  const [openingBowler, setOpeningBowler] = useState("");
+  const [openersSet, setOpenersSet] = useState(false);
 
   const [matchResult, setMatchResult] = useState(null)
+  const [openersSelected, setOpenersSelected] = useState(false)
+
 
   // ==== STATE ====
   const [showBatsmanModal, setShowBatsmanModal] = useState(false)
@@ -387,6 +389,25 @@ const [openersSet, setOpenersSet] = useState(false);
           </div>
         </div>
       )}
+
+      {!openersSelected && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm z-50">
+            <div className="bg-white/65 backdrop-blur-lg border-4  shadow-xl p-6 text-center w-96 border-bl">
+              <h2 className="text-2xl font-bold text-green-600 drop-shadow-sm">
+                   Choose Opening Batsman & Bowler
+              </h2>
+              
+              
+
+              <button onClick={() => setShowSuccessModal(false)}
+                      className="mt-4 px-4 py-2 bg-indigo-600 text-white border-2 border-black hover:bg-indigo-700 shadow-md"
+                  >
+                Close
+              </button>
+            </div>
+        </div>
+
+        )}
 
       {/* Bowler Modal */}
       {showBowlerModal && (

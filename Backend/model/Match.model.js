@@ -35,9 +35,7 @@ const matchSchema = new mongoose.Schema({
   team1: { type: String, required: true },
   team2: { type: String, required: true },
   over: { type: Number, required: true },
-  batsman1: { type: String, required: true },
-  batsman2: { type: String, required: true },
-  bowler: { type: String, required: true },
+
   tossWinner: { type: String },
   decision: { type: String },
   completed: { type: Boolean, default: false },

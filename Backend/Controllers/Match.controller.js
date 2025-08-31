@@ -3,14 +3,14 @@ import { Match } from '../model/Match.model.js';
 
 const createMatch = async (req, res) => {
     try {
-        const { name, team1, team2, over, batsman1, batsman2, bowler } = req.body; // ← FIXED
-        console.log(name, team1, team2, over, batsman1, batsman2, bowler)
+        const { name, team1, team2, over} = req.body; // ← FIXED
+        console.log(name, team1, team2, over)
 
-        if (!name || !team1 || !team2 || !over || !batsman1 || !batsman2 || !bowler) {
+        if (!name || !team1 || !team2 || !over ) {
             return res.status(400).json({ error: 'All fields are required' });
         }
 
-        const match = await Match.create({ name, team1, team2, over, batsman1, batsman2, bowler});
+        const match = await Match.create({ name, team1, team2, over});
 
         res.status(201).json(match);
         
