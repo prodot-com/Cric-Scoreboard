@@ -22,42 +22,38 @@ const createMatch = async (req, res) => {
     }
 };
 
-const addOpeners = async(req, res) =>{
-    try {
-        const {id}= req.params
-        const {batsman1, batsman2, bowler} = req.body;
-        if(!batsman1 || !batsman2 || !bowler){
-            return res.status(400).json({
-                message: "All fields are required"
-            })
-        }
+const addOpeners = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { batsman1, batsman2, bowler } = req.body;
 
-        const match = await Match.findByIdAndUpdate(id,{
-            batsman1: batsman1,
-            batsman2: batsman2,
-            bowler: bowler
-        },
-    {
-        new: true,
-        runValidators: true
-    })
-
-    if(!match){
-        return res.status(400).json({
-            message: "Can't find data"
-        })
+    if (!batsman1 || !batsman2 || !bowler) {
+      return res.status(400).json({ message: "All fields are required" });
     }
 
-    res.status(200).json({
-      message: "User updated successfully",
+    const match = await Match.findByIdAndUpdate(
+      id,
+      { batsman1, batsman2, bowler },
+      { new: true, runValidators: true }
+    );
+
+    if (!match) {
+      return res.status(404).json({ message: "Match not found" });
+    }
+
+    return res.status(200).json({
+      message: "Openers & bowler updated successfully",
       data: match,
     });
+  } catch (error) {
+    console.error("Can't add openers", error);
+    return res.status(500).json({
+      message: "Server error while adding openers",
+      error: error.message,
+    });
+  }
+};
 
-
-    } catch (error) {
-        console.log("Can't add openers", error)
-    }
-}
 
 const setMatchComplete = async (req, res)=>{
     try {

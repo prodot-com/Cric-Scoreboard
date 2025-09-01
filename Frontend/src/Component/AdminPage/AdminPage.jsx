@@ -88,9 +88,38 @@ const AdminPage = () => {
     setBowlingTeam(bowling)
 
     // opening players from DB
-    const bats1 = matchData.batsman1 || ""
-    const bats2 = matchData.batsman2 || ""
-    const bowl = matchData.bowler || ""
+    // const bats1 = matchData.batsman1 || ""
+    // const bats2 = matchData.batsman2 || ""
+    // const bowl = matchData.bowler || ""
+
+    // setStriker(bats1)
+    // setNonStriker(bats2)
+    // setBowler(bowl)
+
+    // setBatsmanStats({
+    //   [bats1]: { runs: 0, balls: 0, out: false },
+    //   [bats2]: { runs: 0, balls: 0, out: false },
+    // })
+    // setBowlerStats({
+    //   [bowl]: { runs: 0, balls: 0, wickets: 0 },
+    // })
+  }, [matchData])
+
+    const handleSubmit = async (e) => {
+    e.preventDefault(); 
+  try {
+    const res = await axios.put(
+      `http://localhost:9000/user/addOpeners/${id}`,
+      input
+    );
+
+    const matchDetails = res.data.data
+    console.log(matchDetails)
+
+    console.log();
+    const bats1 = matchDetails.batsman1 || ""
+    const bats2 = matchDetails.batsman2 || ""
+    const bowl = matchDetails.bowler || ""
 
     setStriker(bats1)
     setNonStriker(bats2)
@@ -103,7 +132,17 @@ const AdminPage = () => {
     setBowlerStats({
       [bowl]: { runs: 0, balls: 0, wickets: 0 },
     })
-  }, [matchData])
+
+    setOpenersSelected(true)
+    // console.log(res) // will print a huge axios object
+  } catch (error) {
+    if (error.response) {
+      console.error("Backend error:", error.response.data);
+    } else {
+      console.error("Network error:", error.message);
+    }
+  }
+};
 
   // update overs
   useEffect(() => {
@@ -181,9 +220,8 @@ const AdminPage = () => {
     
   }
 
-  const handleSubmit =()=>{
 
-  }
+
 
   // useEffect(()=>{console.log(Overs)},[Overs])
 
