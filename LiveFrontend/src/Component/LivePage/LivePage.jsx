@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
-import { io } from 'socket.io-client';
-import { useParams } from 'react-router';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router";
+import { io } from "socket.io-client";
+import axios from "axios";
 
 const socket = io("http://localhost:9000/");
 
@@ -10,8 +9,8 @@ const LiveFirstInnings = () => {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const [battingteam, setBattingTeam] = useState("Loading...");
-  const [bowlingteam, setBowlingTeam] = useState("Loading...");
+  const [battingTeam, setBattingTeam] = useState("Loading...");
+  const [bowlingTeam, setBowlingTeam] = useState("Loading...");
   const [currentRun, setCurrentRun] = useState(0);
   const [currentWicket, setCurrentWicket] = useState(0);
   const [totalBalls, setTotalBalls] = useState(0);
@@ -34,17 +33,18 @@ const LiveFirstInnings = () => {
     socket.emit("joinMatch", id);
   }, [id]);
 
-  // fetch match details
+  // fetch match details once
   useEffect(() => {
     const getDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:9000/user/one/${id}`);
+        const response = await axios.get(
+          `http://localhost:9000/user/one/${id}`
+        );
         const result = response.data.result;
 
         if (result.completed) {
-  navigate(`/live-second/${id}`, { replace: true })   // lowercase
-}
-
+          navigate(`/live-second/${id}`, { replace: true });
+        }
 
         setBattingTeam(result.team1);
         setBowlingTeam(result.team2);
@@ -62,6 +62,8 @@ const LiveFirstInnings = () => {
   useEffect(() => {
     const data = JSON.parse(localStorage.getItem("liveFirstInningsData"));
     if (data) {
+      setBattingTeam(data.battingTeam || "Loading...");
+      setBowlingTeam(data.bowlingTeam || "Loading...");
       setCurrentRun(data.runs || 0);
       setCurrentWicket(data.wickets || 0);
       setTotalBalls(data.balls || 0);
@@ -73,8 +75,8 @@ const LiveFirstInnings = () => {
     const handleMessage = (data) => {
       console.log("LIVE PAGE UPDATE:", data);
 
-      setBattingTeam(data.battingteam);
-      setBowlingTeam(data.bowlingteam);
+      setBattingTeam(data.battingTeam);
+      setBowlingTeam(data.bowlingTeam);
       setCurrentRun(data.runs || 0);
       setCurrentWicket(data.wickets || 0);
       setTotalBalls(data.balls || 0);
@@ -86,13 +88,12 @@ const LiveFirstInnings = () => {
       setNonStriker(data.nonStriker || "");
       setBowler(data.bowler || "");
 
-      // now directly use stats objects sent from admin
       setBatsmanStats(data.batsmanStats || {});
       setBowlerStats(data.bowlerStats || {});
 
       const liveFirstInningsData = {
-        battingteam: data.battingteam,
-        bowlingteam: data.bowlingteam,
+        battingTeam: data.battingTeam,
+        bowlingTeam: data.bowlingTeam,
         runs: data.runs,
         balls: data.balls,
         wickets: data.wickets,
@@ -120,13 +121,13 @@ const LiveFirstInnings = () => {
       {bowlingStarted ? (
         <div className="text-3xl font-bold flex flex-col justify-around gap-7 mt-7 m-4">
           <div className="flex justify-around">
-            <div>{battingteam}</div>
+            <div>{battingTeam}</div>
             <div>{`${currentRun}/${currentWicket}`}</div>
             <div>{`Balls: ${totalBalls} (${overs})`}</div>
-            <div>{bowlingteam}</div>
+            <div>{bowlingTeam}</div>
           </div>
 
-          <div className="text-3xl font-bold flex  justify-between gap-7 mt-7">
+          <div className="text-3xl font-bold flex justify-between gap-7 mt-7">
             <div>
               <h1>
                 {striker && batsmanStats[striker] ? (
@@ -165,10 +166,10 @@ const LiveFirstInnings = () => {
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center text-4xl font-bold mt-12 text-indigo-700">
-          <h2>{`Team1: ${battingteam}`}</h2>
-          <h2>{`Team2: ${bowlingteam}`}</h2>
+          <h2>{`Team1: ${battingTeam}`}</h2>
+          <h2>{`Team2: ${bowlingTeam}`}</h2>
           <h3>Match not yet started</h3>
-          <h2 className="text-amber-500 text-2xl mt-7 ">{`Team ${tossWinner} choose to ${decision} first`}</h2>
+          <h2 className="text-amber-500 text-2xl mt-7">{`Team ${tossWinner} choose to ${decision} first`}</h2>
         </div>
       )}
 

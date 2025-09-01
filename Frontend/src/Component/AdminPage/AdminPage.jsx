@@ -24,6 +24,7 @@ const AdminPage = () => {
   const [Overs, setOvers] = useState('0.0')
   const [iningsOver, setIningsOver] = useState(false)
   const [secondInningsStarts, setSecondInningsStarts] = useState(false)
+  const [bowlingStarted, setBowlingStarted] = useState(false);
 
   const [isFirstInnings, setIsFirstInnings] = useState(true)
   const [target, setTarget] = useState(null)
@@ -173,6 +174,8 @@ const AdminPage = () => {
   // ===== MAIN RUN HANDLER (FIRST INNINGS) =====
   const changeRun = (value) => {
     if (!bowler || !striker) return alert("Select batsmen and bowler first!")
+    
+      setBowlingStarted(true)
 
     if (value === "W") {
       setCurrentWicket(w => {
@@ -375,7 +378,8 @@ const AdminPage = () => {
     target,
     batsmanStats,
     bowlerStats,
-    bowler
+    bowler,
+    bowlingStarted
   }
   socketRef.current?.emit("scoreUpdate", { matchId: id, data: inningsData })
 }, [
