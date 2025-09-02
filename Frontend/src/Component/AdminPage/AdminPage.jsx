@@ -300,7 +300,7 @@ const AdminPage = () => {
   // ===== SECOND INNINGS RUN HANDLER =====
   const secChangeRun = (value) => {
     if (!bowler || !striker) return alert("Select batsmen and bowler first!")
-      setBatsmanStats(true)
+      setBowlingStarted(true)
 
     if (value === "W") {
       setCurrentWicket(w => {
@@ -349,7 +349,7 @@ const AdminPage = () => {
         if (currentRun === target - 1) {
           setMatchResult("Match tied")
         } else if (currentRun < target - 1) {
-          setMatchResult(`${bowlingTeam} won by ${target - 1 - currentRun} runs`)
+          setMatchResult(`${bowlingTeam} won by ${target -  currentRun} runs`)
         }
         return
       }

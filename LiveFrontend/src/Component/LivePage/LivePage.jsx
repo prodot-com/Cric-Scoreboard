@@ -33,6 +33,8 @@ const LiveFirstInnings = () => {
 
   const [target, setTarget] = useState(null);
   const [winner, setWinner] = useState(null);
+  const [matchResult, setMatchResult] = useState(null);
+
 
   // join match room
   useEffect(() => {
@@ -76,50 +78,76 @@ const LiveFirstInnings = () => {
 
   // socket listener
   useEffect(() => {
-    const handleMessage = (data) => {
-      console.log("LIVE PAGE UPDATE:", data);
+  const handleMessage = (data) => {
+    console.log("LIVE PAGE UPDATE:", data);
 
-      setBattingTeam(data.battingTeam);
-      setBowlingTeam(data.bowlingTeam);
-      setCurrentRun(data.runs || 0);
-      setCurrentWicket(data.wickets || 0);
-      setTotalBalls(data.balls || 0);
-      setIningsOver(data.iningsOver || false);
-      setSecondInningsStart(data.secondInningsStart || false);
-      setBowlingStarted(data.bowlingStarted || false);
-      setInning(data.inning || 1);
+    setBattingTeam(data.battingTeam);
+    setBowlingTeam(data.bowlingTeam);
+    setCurrentRun(data.runs || 0);
+    setCurrentWicket(data.wickets || 0);
+    setTotalBalls(data.balls || 0);
+    setIningsOver(data.iningsOver || false);
+    setSecondInningsStart(data.secondInningsStart || false);
+    setBowlingStarted(data.bowlingStarted || false);
+    setInning(data.inning || 1);
 
-      setStriker(data.striker || "");
-      setNonStriker(data.nonStriker || "");
-      setBowler(data.bowler || "");
+    setStriker(data.striker || "");
+    setNonStriker(data.nonStriker || "");
+    setBowler(data.bowler || "");
 
-      setBatsmanStats(data.batsmanStats || {});
-      setBowlerStats(data.bowlerStats || {});
+    setBatsmanStats(data.batsmanStats || {});
+    setBowlerStats(data.bowlerStats || {});
 
-      if (data.iningsOver) {
-        setTarget((data.runs || 0) + 1);
+    if (data.iningsOver && data.inning === 1) {
+      setTarget((data.runs || 0) + 1);
+    }
+
+    // Winning logic for second innings
+    if (data.inning === 2 && data.bowlingStarted && target) {
+      if (data.runs >= target) {
+        setWinner(data.battingTeam); // chasing team won
+      } else if (data.iningsOver) {
+        if (data.runs < target - 1) {
+          setWinner(data.bowlingTeam); // defending team won
+        } else if (data.runs === target - 1) {
+          setWinner("Match Tied");
+        }
       }
-      if (data.winner) {
-        setWinner(data.winner);
-      }
+    }
 
-      const liveFirstInningsData = {
-        battingTeam: data.battingTeam,
-        bowlingTeam: data.bowlingTeam,
-        runs: data.runs,
-        balls: data.balls,
-        wickets: data.wickets,
-      };
+    // const liveFirstInningsData = {
+    //   battingTeam: data.battingTeam,
+    //   bowlingTeam: data.bowlingTeam,
+    //   runs: data.runs,
+    //   balls: data.balls,
+    //   wickets: data.wickets,
+    // };
+    // localStorage.setItem(
+    //   "liveFirstInningsData",
+    //   JSON.stringify(liveFirstInningsData)
+    // );
+  };
 
-      localStorage.setItem(
-        "liveFirstInningsData",
-        JSON.stringify(liveFirstInningsData)
-      );
-    };
+  socket.on("scoreUpdate", handleMessage);
+  return () => socket.off("scoreUpdate", handleMessage);
+}, [navigate, target]);
 
-    socket.on("scoreUpdate", handleMessage);
-    return () => socket.off("scoreUpdate", handleMessage);
-  }, [navigate]);
+useEffect(() => {
+  if (inning === 2 && bowlingStarted) {
+    // Case 1: Batting team successfully chased target
+    if (currentRun >= target) {
+      const wicketsRemaining = 10 - currentWicket;
+      setMatchResult(`${battingTeam} won by ${wicketsRemaining} wicket${wicketsRemaining !== 1 ? "s" : ""}`);
+    }
+    // Case 2: All wickets lost or overs finished
+    else if (currentWicket === 10 || iningsOver) {
+      const runsDefended = target - currentRun;
+      setMatchResult(`${bowlingTeam} won by ${runsDefended} run${runsDefended !== 1 ? "s" : ""}`);
+    }
+  }
+}, [currentRun, currentWicket, iningsOver, inning, bowlingStarted, target, battingTeam, bowlingTeam]);
+
+
 
   // overs calculation
   useEffect(() => {
@@ -184,7 +212,65 @@ const LiveFirstInnings = () => {
 
       <div>
 
-          <p>second</p>
+          {!bowlingStarted ? (
+            <div>
+
+              <h1>Second Innings Will start shortly.</h1>
+              <h2>Target: {target}</h2>
+
+            </div>
+            )
+            :(
+            <div className="text-3xl font-bold flex flex-col gap-6">
+          {/* Scoreboard */}
+          <div className="flex justify-around">
+            <div>{battingTeam}</div>
+            <div>{`${currentRun}/${currentWicket}`}</div>
+            <div>{`Balls: ${totalBalls} (${overs})`}</div>
+            <div>{bowlingTeam}</div>
+          </div>
+
+          {/* Batsman Summary */}
+          <div className="mt-6">
+            <h2 className="text-2xl font-bold mb-2">Batting</h2>
+            {Object.keys(batsmanStats).length > 0 ? (
+              Object.entries(batsmanStats).filter(([name, stats]) => !stats.out)
+              .map(([name, stats]) => (
+                <div key={name} className="flex justify-between text-lg">
+                  <span>
+                    {name} {name === striker ? "*" : ""}
+                  </span>
+                  <span>
+                    {stats.runs} ({stats.balls})
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p>No batting data yet</p>
+            )}
+          </div>
+
+          {/* Bowler Summary */}
+          <div className="mt-6">
+            <h2 className="text-2xl font-bold mb-2">Bowling</h2>
+            {Object.keys(bowlerStats).length > 0 ? (
+              
+              Object.entries(bowlerStats)
+              .filter(([name])=> name === bowler)
+              .map(([name, stats]) => (
+                <div key={name} className="flex justify-between text-lg">
+                  <span>{name}</span>
+                  <span>
+                    {stats.wickets}-{stats.runs} 
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p>No bowling data yet</p>
+            )}
+          </div>
+        </div>
+            )}
 
       </div>
 
@@ -204,11 +290,17 @@ const LiveFirstInnings = () => {
       {iningsOver && (
         <div className="flex flex-col items-center mt-9 text-indigo-700">
           <h3>Innings Over</h3>
-          <h2>{`Target: ${target}`}</h2>
           {winner && <h2 className="mt-3">Winner: {winner}</h2>}
-          {!winner && <h2>Second Innings will start soon</h2>}
         </div>
       )}
+
+      {matchResult && (
+  <div className="flex flex-col items-center mt-9 text-green-700 text-2xl font-bold">
+    <h2>🏆 {matchResult}</h2>
+  </div>
+)}
+
+
     </div>
   );
 };
