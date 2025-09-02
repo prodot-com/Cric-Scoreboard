@@ -180,7 +180,10 @@ const AdminPage = () => {
     if (value === "W") {
       setCurrentWicket(w => {
         const newW = w + 1
-        if (newW === 10) setIningsOver(true)
+        if (newW === 10) {
+          setIningsOver(true);
+        setBowlingStarted(false)
+      }
         return newW
       })
       setTotalBalls(b => b + 1)
@@ -204,6 +207,7 @@ const AdminPage = () => {
       const newBalls = prev + 1
       if (newBalls === matchData.over * 6){ 
         setIningsOver(true)
+        setBowlingStarted(false)
       return newBalls
     }
 
@@ -296,6 +300,7 @@ const AdminPage = () => {
   // ===== SECOND INNINGS RUN HANDLER =====
   const secChangeRun = (value) => {
     if (!bowler || !striker) return alert("Select batsmen and bowler first!")
+      setBatsmanStats(true)
 
     if (value === "W") {
       setCurrentWicket(w => {
@@ -379,7 +384,8 @@ const AdminPage = () => {
     batsmanStats,
     bowlerStats,
     bowler,
-    bowlingStarted
+    bowlingStarted,
+    striker
   }
   socketRef.current?.emit("scoreUpdate", { matchId: id, data: inningsData })
 }, [
