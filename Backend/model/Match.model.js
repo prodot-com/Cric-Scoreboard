@@ -12,7 +12,7 @@ const bowlerSchema = new mongoose.Schema({
   name: { type: String, required: true },
   runs: { type: Number, default: 0 },
   balls: { type: Number, default: 0 },
-  out: { type: Boolean, default: false }
+  wickets: { type: Number, default: 0 }
 }, { _id: false });
 
 

@@ -12,8 +12,8 @@ router.route('/addOpeners/:id').put(addOpeners)
 // router.route('/addsummary/:id').post(addSummary)
 router.route('/fetchsummary/:id').get(fetchSummary)
 router.route('/update/:id').put(setMatchComplete)
-router.route('/addFirst/:id').post(addFirstSummary)
-router.route('/addSecond/:id').post(addSecondSummary)
+router.route('/addFirstSummary/:id').put(addFirstSummary)
+router.route('/addSecondSummary/:id').put(addSecondSummary)
 router.route('/fetchFirst/:id').get(fetchFirstSummary)
 
 

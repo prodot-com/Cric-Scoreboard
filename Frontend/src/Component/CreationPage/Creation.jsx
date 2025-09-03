@@ -106,38 +106,7 @@ const Creation = () => {
             />
           </label>
 
-          <label>
-            Striker:
-            <input
-              placeholder="Enter Team-1 name"
-              className="bg-blue-400 rounded-xl"
-              type="text"
-              value={input.batsman1}
-              onChange={(e) => setInput({ ...input, batsman1: e.target.value })}
-            />
-          </label>
-
-          <label>
-            NonStriker:
-            <input
-              placeholder="Enter Team-1 name"
-              className="bg-blue-400 rounded-xl"
-              type="text"
-              value={input.batsman2}
-              onChange={(e) => setInput({ ...input, batsman2: e.target.value })}
-            />
-          </label>
-
-          <label>
-            Bowler:
-            <input
-              placeholder="Enter Team-1 name"
-              className="bg-blue-400 rounded-xl"
-              type="text"
-              value={input.bowler}
-              onChange={(e) => setInput({ ...input, bowler: e.target.value })}
-            />
-          </label>
+          
 
           <input type="submit" className="bg-blue-400 rounded-sm px-4 py-2 mt-4 cursor-pointer" />
         </form>

@@ -233,40 +233,63 @@ const AdminPage = () => {
   // useEffect(()=>{console.log(Overs)},[Overs])
 
   // ===== START 2nd INNINGS =====
-  const startSecondInnings = () => {
-    setFirstInningsBatsmanStats(batsmanStats)
-    setFirstInningsBowlerStats(bowlerStats)
-    setFirstInningsBattingTeam(battingTeam)
+  const startSecondInnings = async () => {
+  try {
+    // prepare summary payload
+    const summary = {
+      battingTeam,
+      bowlingTeam,
+      totalOver: matchData.over,
+      runs: currentRun,
+      balls: totalBalls,
+      wickets: currentWicket,
+      target: currentRun + 1,
+      batsman: Object.entries(batsmanStats).map(([name, stats]) => ({
+        name,
+        runs: stats.runs,
+        balls: stats.balls,
+        out: stats.out
+      })),
+      bowler: Object.entries(bowlerStats).map(([name, stats]) => ({
+        name,
+        runs: stats.runs,
+        balls: stats.balls,
+        wickets: stats.wickets
+      }))
+    };
 
-    setSecondInningsStarts(true)
-    setIningsOver(false)
-    setFirstInningsRuns(currentRun)
-    setTarget(currentRun + 1)
+    await axios.put(`http://localhost:9000/user/addFirstSummary/${id}`, summary);
+
+    // local state updates
+    setFirstInningsBatsmanStats(batsmanStats);
+    setFirstInningsBowlerStats(bowlerStats);
+    setFirstInningsBattingTeam(battingTeam);
+
+    setSecondInningsStarts(true);
+    setIningsOver(false);
+    setFirstInningsRuns(currentRun);
+    setTarget(currentRun + 1);
 
     // switch sides
-    const newBatting = bowlingTeam
-    const newBowling = battingTeam
-    setBattingTeam(newBatting)
-    setBowlingTeam(newBowling)
+    setBattingTeam(bowlingTeam);
+    setBowlingTeam(battingTeam);
 
-    // reset score
-    setCurrentRun(0)
-    setTotalBalls(0)
-    setCurrentWicket(0)
-    setOvers("0.0")
-    setIsFirstInnings(false)
-
-    // clear players, force admin to enter openers & bowler
-    setStriker("")
-    setNonStriker("")
-    setBowler("")
-    setBatsmanStats({})
-    setBowlerStats({})
-    // setShowBatsmanModal(true)
-    // setShowBowlerModal(true)
-    console.log(batsmanStats)
-    console.log(bowlerStats)
+    // reset for 2nd innings
+    setCurrentRun(0);
+    setTotalBalls(0);
+    setCurrentWicket(0);
+    setOvers("0.0");
+    setIsFirstInnings(false);
+    setStriker("");
+    setNonStriker("");
+    setBowler("");
+    setBatsmanStats({});
+    setBowlerStats({});
+  } catch (error) {
+    console.error("Error saving first innings summary:", error);
   }
+};
+
 
   const handleSetOpeners = () => {
   if (!openingBatsman1 || !openingBatsman2 || !openingBowler) {
@@ -367,6 +390,44 @@ const AdminPage = () => {
       return newBalls
     })
   }
+
+  useEffect(() => {
+  if (iningsOver && !isFirstInnings) {
+    const saveSecondInnings = async () => {
+      try {
+        const summary = {
+          battingTeam,
+          bowlingTeam,
+          totalOver: matchData.over,
+          runs: currentRun,
+          balls: totalBalls,
+          wickets: currentWicket,
+          target,
+          batsman: Object.entries(batsmanStats).map(([name, stats]) => ({
+            name,
+            runs: stats.runs,
+            balls: stats.balls,
+            out: stats.out
+          })),
+          bowler: Object.entries(bowlerStats).map(([name, stats]) => ({
+            name,
+            runs: stats.runs,
+            balls: stats.balls,
+            wickets: stats.wickets
+          })),
+          matchWinner: matchResult
+        };
+
+        await axios.put(`http://localhost:9000/user/addSecondSummary/${id}`, summary);
+      } catch (error) {
+        console.error("Error saving second innings summary:", error);
+      }
+    };
+
+    saveSecondInnings();
+  }
+}, [iningsOver, isFirstInnings, battingTeam, bowlingTeam, currentRun, currentWicket, totalBalls, batsmanStats, bowlerStats, matchResult]);
+
 
   // ===== EMIT SCORE =====
   useEffect(() => {
