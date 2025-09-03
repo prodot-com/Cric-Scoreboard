@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { io } from "socket.io-client";
 import axios from "axios";
@@ -9,6 +9,7 @@ const LiveFirstInnings = () => {
   const navigate = useNavigate();
   const { id } = useParams();
 
+  const [matchData, setMatchData] = useState({})
   const [battingTeam, setBattingTeam] = useState("Loading...");
   const [bowlingTeam, setBowlingTeam] = useState("Loading...");
   const [currentRun, setCurrentRun] = useState(0);
@@ -34,6 +35,9 @@ const LiveFirstInnings = () => {
   const [target, setTarget] = useState(null);
   const [winner, setWinner] = useState(null);
   const [matchResult, setMatchResult] = useState(null);
+  const [matchCompleted, setmatchCompleted]= useState(false);
+  const [showSummary, setShowSummary] = useState(false);
+  const [summary, setSummary] =useState({})
 
 
   // join match room
@@ -47,9 +51,10 @@ const LiveFirstInnings = () => {
       try {
         const response = await axios.get(`http://localhost:9000/user/one/${id}`);
         const result = response.data.result;
+        setMatchData(result)
 
         if (result.completed) {
-          navigate(`/live-second/${id}`, { replace: true });
+          setmatchCompleted(true)
         }
 
         setBattingTeam(result.team1);
@@ -156,9 +161,30 @@ useEffect(() => {
     setOvers(`${over}.${balls}`);
   }, [totalBalls]);
 
+
+  const watchSummary = async()=>{
+    try {
+      setShowSummary(true)
+
+      const res = await axios.get(`http://localhost:9000/user/fetchsummary/${id}`)
+      console.log(res.data)
+      setSummary(res.data)
+
+    } catch (error) {
+      console.log(Error)
+    }
+
+  }
+
+  useEffect(()=>{console.log(summary)},[summary])
+
+
+
   return (
     <div className="p-6 font-mono">
-      {bowlingStarted && inning === 1 ? (
+      {!matchCompleted ? (
+        <div>
+        {bowlingStarted && inning === 1 ? (
         <div className="text-3xl font-bold flex flex-col gap-6">
           {/* Scoreboard */}
           <div className="flex justify-around">
@@ -285,6 +311,18 @@ useEffect(() => {
           </h2>
         </div>
       )}
+      </div>
+        ):(
+        
+        <div className="flex flex-col gap-4 items-center mt-7 text-indigo-700">
+          <h1 className="font-bold text-4xl">Match Completed</h1>
+
+          <h2 className=" text-xl">{`${matchData.team1} vs ${matchData.team2}`}</h2>
+
+          <button className="font-bold bg-amber-500 p-3 text-white rounded-xl" onClick={watchSummary}>Watch Summary</button>
+
+        </div>
+        )}
 
       {/* Innings Over / Result */}
       {iningsOver && (
@@ -295,11 +333,27 @@ useEffect(() => {
       )}
 
       {matchResult && (
-  <div className="flex flex-col items-center mt-9 text-green-700 text-2xl font-bold">
-    <h2>🏆 {matchResult}</h2>
-  </div>
-)}
+      <div className="flex flex-col items-center mt-9 text-green-700 text-2xl font-bold">
+        <h2>🏆 {matchResult}</h2>
+      </div>
+    )}
 
+    {showSummary &&  (
+          <div className="fixed inset-0 flex items-center justify-center backdrop-blur-xs z-50"
+          onClick={()=>{
+            setShowSummary(false)
+          }}>
+            <div className="bg-white/65 border-2 rounded-xl backdrop-blur-lg  shadow-xl p-6 text-center w-96 border-bl">
+              <h2 className="text-2xl font-bold text-green-600 drop-shadow-sm">
+                  Match Summary
+              </h2>
+              
+
+
+            </div>
+        </div>
+
+        )}
 
     </div>
   );
