@@ -157,7 +157,7 @@ useEffect(() => {
   }, [totalBalls]);
 
   return (
-    <div className="p-6">
+    <div className="p-6 font-mono">
       {bowlingStarted && inning === 1 ? (
         <div className="text-3xl font-bold flex flex-col gap-6">
           {/* Scoreboard */}
@@ -289,7 +289,7 @@ useEffect(() => {
       {/* Innings Over / Result */}
       {iningsOver && (
         <div className="flex flex-col items-center mt-9 text-indigo-700">
-          <h3>Innings Over</h3>
+          <h3 className="font-bold text-2xl">Innings Over</h3>
           {winner && <h2 className="mt-3">Winner: {winner}</h2>}
         </div>
       )}

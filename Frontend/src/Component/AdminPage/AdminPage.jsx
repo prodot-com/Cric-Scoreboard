@@ -402,6 +402,17 @@ const AdminPage = () => {
   bowler    
 ])
 
+  if(matchResult){
+    try {
+      
+      const res = axios.put(`http://localhost:9000/user/update/${id}`)
+      console.log(res)
+
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
 
   // ====== JSX ======
   return (
