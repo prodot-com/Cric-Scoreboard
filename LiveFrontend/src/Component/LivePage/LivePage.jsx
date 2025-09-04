@@ -37,8 +37,9 @@ const LiveFirstInnings = () => {
   const [matchResult, setMatchResult] = useState(null);
   const [matchCompleted, setmatchCompleted]= useState(false);
   const [showSummary, setShowSummary] = useState(false);
-  const [summary, setSummary] =useState({})
-
+  const [firstSummary, setFirstSummary] =useState({})
+  const [secondSummary, setsecondSummary] =useState({})
+  
 
   // join match room
   useEffect(() => {
@@ -168,7 +169,8 @@ useEffect(() => {
 
       const res = await axios.get(`http://localhost:9000/user/fetchsummary/${id}`)
       console.log(res.data)
-      setSummary(res.data)
+      setFirstSummary(res.data.firstSummary)
+      setsecondSummary(res.data.secondSummary)
 
     } catch (error) {
       console.log(Error)
@@ -176,7 +178,10 @@ useEffect(() => {
 
   }
 
-  useEffect(()=>{console.log(summary)},[summary])
+  useEffect(()=>{console.log("FirstSummary:", firstSummary);
+  console.log("SecondSummary:", secondSummary)
+
+  },[firstSummary, secondSummary])
 
 
 
@@ -338,22 +343,185 @@ useEffect(() => {
       </div>
     )}
 
-    {showSummary &&  (
-          <div className="fixed inset-0 flex items-center justify-center backdrop-blur-xs z-50"
-          onClick={()=>{
-            setShowSummary(false)
-          }}>
-            <div className="bg-white/65 border-2 rounded-xl backdrop-blur-lg  shadow-xl p-6 text-center w-96 border-bl">
-              <h2 className="text-2xl font-bold text-green-600 drop-shadow-sm">
-                  Match Summary
-              </h2>
-              
+{showSummary && (
+  <div
+    className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/30 z-50"
+    onClick={() => setShowSummary(false)}
+  >
+    <div
+      className="flex flex-col w-[95%] sm:w-[85%] max-w-5xl bg-white border-2 rounded-2xl 
+      backdrop-blur-lg shadow-xl p-4 sm:p-6 text-center max-h-[90vh] overflow-y-auto"
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Title */}
+      <h2 className="text-2xl sm:text-3xl font-bold text-green-700 drop-shadow mb-4">
+        Match Summary
+      </h2>
 
+      {/* Grid for innings (stack on mobile, side by side on larger screens) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+        {/* First Innings */}
+        {firstSummary && (
+          <div className="border rounded-xl p-3 sm:p-4 shadow-md bg-white/90">
+            <h3 className="text-lg sm:text-xl font-bold text-indigo-700 mb-2">
+              1st Innings: {firstSummary.battingTeam}
+            </h3>
+            <p className="font-semibold text-sm sm:text-base mb-1">
+              {firstSummary.runs}/{firstSummary.wickets || 0} 
+              ({firstSummary.totalOver} ov, {firstSummary.balls} balls)
+            </p>
+            <p className="text-xs sm:text-sm text-gray-600 mb-2">
+              Bowling: {firstSummary.bowlingTeam}
+            </p>
 
-            </div>
-        </div>
+            {/* Batting Table */}
+            {firstSummary.batsman && Object.keys(firstSummary.batsman).length > 0 && (
+              <div className="overflow-x-auto mb-3">
+                <h4 className="text-left font-semibold text-sm sm:text-base">Batting</h4>
+                <table className="w-full text-xs sm:text-sm border mt-1">
+                  <thead>
+                    <tr className="bg-gray-200">
+                      <th className="p-1 text-left">Batsman</th>
+                      <th className="p-1">R</th>
+                      <th className="p-1">B</th>
+                      <th className="p-1">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(firstSummary.batsman).map(([_, stats]) => (
+                      <tr key={stats.name} className="border-b">
+                        <td className="p-1 text-left">{stats.name}</td>
+                        <td className="p-1">{stats.runs}</td>
+                        <td className="p-1">{stats.balls}</td>
+                        <td className="p-1">{stats.out ? "Out ❌" : "Not Out ✅"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
 
+            {/* Bowling Table */}
+            {firstSummary.bowler && Object.keys(firstSummary.bowler).length > 0 && (
+              <div className="overflow-x-auto">
+                <h4 className="text-left font-semibold text-sm sm:text-base">Bowling</h4>
+                <table className="w-full text-xs sm:text-sm border mt-1">
+                  <thead>
+                    <tr className="bg-gray-200">
+                      <th className="p-1 text-left">Bowler</th>
+                      <th className="p-1">Wkts</th>
+                      <th className="p-1">Runs</th>
+                      <th className="p-1">Balls</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(firstSummary.bowler).map(([_, stats]) => (
+                      <tr key={stats.name} className="border-b">
+                        <td className="p-1 text-left">{stats.name}</td>
+                        <td className="p-1">{stats.wickets}</td>
+                        <td className="p-1">{stats.runs}</td>
+                        <td className="p-1">{stats.balls || "0"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         )}
+
+        {/* Second Innings */}
+        {secondSummary && (
+          <div className="border rounded-xl p-3 sm:p-4 shadow-md bg-white/90">
+            <h3 className="text-lg sm:text-xl font-bold text-indigo-700 mb-2">
+              2nd Innings: {secondSummary.battingTeam}
+            </h3>
+            <p className="font-semibold text-sm sm:text-base mb-1">
+              {secondSummary.runs}/{secondSummary.wickets || 0} 
+              ({secondSummary.totalOver} ov, {secondSummary.balls} balls)
+            </p>
+            <p className="text-xs sm:text-sm text-gray-600 mb-2">
+              Bowling: {secondSummary.bowlingTeam}
+            </p>
+
+            {/* Batting Table */}
+            {secondSummary.batsman && Object.keys(secondSummary.batsman).length > 0 && (
+              <div className="overflow-x-auto mb-3">
+                <h4 className="text-left font-semibold text-sm sm:text-base">Batting</h4>
+                <table className="w-full text-xs sm:text-sm border mt-1">
+                  <thead>
+                    <tr className="bg-gray-200">
+                      <th className="p-1 text-left">Batsman</th>
+                      <th className="p-1">R</th>
+                      <th className="p-1">B</th>
+                      <th className="p-1">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(secondSummary.batsman).map(([_, stats]) => (
+                      <tr key={stats.name} className="border-b">
+                        <td className="p-1 text-left">{stats.name}</td>
+                        <td className="p-1">{stats.runs}</td>
+                        <td className="p-1">{stats.balls}</td>
+                        <td className="p-1">{stats.out ? "Out ❌" : "Not Out ✅"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Bowling Table */}
+            {secondSummary.bowler && Object.keys(secondSummary.bowler).length > 0 && (
+              <div className="overflow-x-auto">
+                <h4 className="text-left font-semibold text-sm sm:text-base">Bowling</h4>
+                <table className="w-full text-xs sm:text-sm border mt-1">
+                  <thead>
+                    <tr className="bg-gray-200">
+                      <th className="p-1 text-left">Bowler</th>
+                      <th className="p-1">Wkts</th>
+                      <th className="p-1">Runs</th>
+                      <th className="p-1">Balls</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(secondSummary.bowler).map(([_, stats]) => (
+                      <tr key={stats.name} className="border-b">
+                        <td className="p-1 text-left">{stats.name}</td>
+                        <td className="p-1">{stats.wickets}</td>
+                        <td className="p-1">{stats.runs}</td>
+                        <td className="p-1">{stats.balls || "0"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Match Result */}
+      <div className="mt-4 sm:mt-6 border-t pt-3 sm:pt-4">
+        {secondSummary?.winner && (
+          <h3 className="text-lg sm:text-xl font-bold text-red-600">
+            Winner: {secondSummary.winner}
+          </h3>
+        )}
+        {secondSummary?.matchResult && (
+          <p className="text-gray-700 text-sm sm:text-base font-medium">
+            {secondSummary.matchResult}
+          </p>
+        )}
+      </div>
+    </div>
+  </div>
+)}
+
+
+
+
+
 
     </div>
   );
