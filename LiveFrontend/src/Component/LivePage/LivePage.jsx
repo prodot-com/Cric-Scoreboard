@@ -349,7 +349,7 @@ useEffect(() => {
     onClick={() => setShowSummary(false)}
   >
     <div
-      className="flex flex-col w-[95%] sm:w-[85%] max-w-5xl bg-white border-2 rounded-2xl 
+      className="flex flex-col w-[95%] sm:w-[85%] max-w-5xl bg-white border-2  
       backdrop-blur-lg shadow-xl p-4 sm:p-6 text-center max-h-[90vh] overflow-y-auto"
       onClick={(e) => e.stopPropagation()}
     >
@@ -499,10 +499,18 @@ useEffect(() => {
             )}
           </div>
         )}
+        <div>
+          <button onClick={()=>setShowSummary(false)} className="p-[3px] relative">
+  <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg" />
+  <div className="px-8 py-2  bg-black rounded-[6px]  relative group transition duration-200 text-white hover:bg-transparent">
+    Close
+  </div>
+</button>
+        </div>
       </div>
 
       {/* Match Result */}
-      <div className="mt-4 sm:mt-6 border-t pt-3 sm:pt-4">
+      <div className="mt-4 sm:mt-6  pt-3 sm:pt-4">
         {secondSummary?.winner && (
           <h3 className="text-lg sm:text-xl font-bold text-red-600">
             Winner: {secondSummary.winner}
