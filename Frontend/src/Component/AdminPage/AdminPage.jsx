@@ -48,6 +48,7 @@ const AdminPage = () => {
 
   const [matchResult, setMatchResult] = useState(null)
   const [openersSelected, setOpenersSelected] = useState(false)
+  const [matchWinner, setMatchWinner]  =useState('')
 
 
   // ==== STATE ====
@@ -358,6 +359,7 @@ const AdminPage = () => {
       const newR = r + value
       if (newR >= target) {
         setIningsOver(true)
+        setMatchWinner(battingTeam)
         setMatchResult(`${battingTeam} won by ${10 - currentWicket} wickets`)
       }
       return newR
@@ -372,6 +374,7 @@ const AdminPage = () => {
         if (currentRun === target - 1) {
           setMatchResult("Match tied")
         } else if (currentRun < target - 1) {
+          setMatchWinner(bowlingTeam)
           setMatchResult(`${bowlingTeam} won by ${target -  currentRun} runs`)
         }
         return
@@ -415,7 +418,8 @@ const AdminPage = () => {
             balls: stats.balls,
             wickets: stats.wickets
           })),
-          matchWinner: matchResult
+          matchResult,
+          matchWinner
         };
 
         await axios.put(`http://localhost:9000/user/addSecondSummary/${id}`, summary);

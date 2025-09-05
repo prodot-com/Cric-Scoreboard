@@ -27,7 +27,8 @@ const inningsSchema = new mongoose.Schema({
   // inningsOver: {type: Boolean, default: false},
   batsman: [batsmanSchema],
   bowler: [bowlerSchema],
-  matchWinner: { type: String}  
+  matchWinner: { type: String},
+  matchResult: {type:String}  
 }, { _id: false });
 
 const matchSchema = new mongoose.Schema({

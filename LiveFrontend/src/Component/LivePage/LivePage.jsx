@@ -511,9 +511,9 @@ useEffect(() => {
 
       {/* Match Result */}
       <div className="mt-4 sm:mt-6  pt-3 sm:pt-4">
-        {secondSummary?.winner && (
+        {secondSummary?.matchWinner && (
           <h3 className="text-lg sm:text-xl font-bold text-red-600">
-            Winner: {secondSummary.winner}
+            Winner: {secondSummary.matchWinner}
           </h3>
         )}
         {secondSummary?.matchResult && (
