@@ -16,6 +16,8 @@ const LiveFirstInnings = () => {
   const [currentWicket, setCurrentWicket] = useState(0);
   const [totalBalls, setTotalBalls] = useState(0);
   const [overs, setOvers] = useState("0.0");
+  const [CRR, setCRR] = useState(0)
+  const [RRR, setRRR] = useState(0)
 
   const [iningsOver, setIningsOver] = useState(false);
   const [secondInningsStart, setSecondInningsStart] = useState(false);
@@ -107,6 +109,9 @@ const LiveFirstInnings = () => {
     if (data.iningsOver && data.inning === 1) {
       setTarget((data.runs || 0) + 1);
     }
+    if(data.inning === 2){
+      setTarget(data.target)
+    }
 
     // Winning logic for second innings
     if (data.inning === 2 && data.bowlingStarted && target) {
@@ -162,6 +167,31 @@ useEffect(() => {
     setOvers(`${over}.${balls}`);
   }, [totalBalls]);
 
+  const calculateOver = (inputBalls)=>{
+    const over = Math.floor(inputBalls/6);
+    const balls = inputBalls % 6;
+    return `${over}.${balls}`
+  }
+
+  const calculateStrikeRate = (runs, balls)=>{
+    return ((runs/balls)*100).toFixed(2)
+  }
+
+  const calculateEconomy = (runs, over)=>{
+    return (runs/over).toFixed(1)
+  }
+
+  const calculateCurrentRunRate = (runs, balls) => {
+  if (balls === 0) return 0; // avoid division by zero
+  return ((runs / balls) * 6).toFixed(2); // 2 decimal places
+};
+
+  useEffect(()=>{
+    setCRR(calculateCurrentRunRate(currentRun, totalBalls))
+    const difference = target - currentRun
+    setRRR(calculateCurrentRunRate(difference, totalBalls))
+  },[totalBalls, currentRun])
+
 
   const watchSummary = async()=>{
     try {
@@ -196,7 +226,8 @@ useEffect(() => {
             <div>{battingTeam}</div>
             <div>{`${currentRun}/${currentWicket}`}</div>
             <div>{`Balls: ${totalBalls} (${overs})`}</div>
-            <div>{bowlingTeam}</div>
+            {/* <div>{bowlingTeam}</div> */}
+            <div>CRR:{CRR}</div>
           </div>
 
           {/* Batsman Summary */}
@@ -258,7 +289,17 @@ useEffect(() => {
             <div>{battingTeam}</div>
             <div>{`${currentRun}/${currentWicket}`}</div>
             <div>{`Balls: ${totalBalls} (${overs})`}</div>
-            <div>{bowlingTeam}</div>
+            {/* <div>{bowlingTeam}</div> */}
+            
+
+          </div>
+          <div>
+              <div>CRR:{CRR}</div>
+            <div>RRR:{RRR}</div>
+          </div>
+
+          <div>
+            <p>{`${battingTeam} need ${target - currentRun} runs`}</p>
           </div>
 
           {/* Batsman Summary */}
@@ -368,7 +409,7 @@ useEffect(() => {
             </h3>
             <p className="font-semibold text-sm sm:text-base mb-1">
               {firstSummary.runs}/{firstSummary.wickets || 0} 
-              ({firstSummary.totalOver} ov, {firstSummary.balls} balls)
+              ({calculateOver(firstSummary.balls)} Over)
             </p>
             <p className="text-xs sm:text-sm text-gray-600 mb-2">
               Bowling: {firstSummary.bowlingTeam}
@@ -382,8 +423,9 @@ useEffect(() => {
                   <thead>
                     <tr className="bg-gray-200">
                       <th className="p-1 text-left">Batsman</th>
-                      <th className="p-1">R</th>
-                      <th className="p-1">B</th>
+                      <th className="p-1">Runs</th>
+                      <th className="p-1">Balls</th>
+                      <th className="p-1">Strike rate</th>
                       <th className="p-1">Status</th>
                     </tr>
                   </thead>
@@ -393,6 +435,7 @@ useEffect(() => {
                         <td className="p-1 text-left">{stats.name}</td>
                         <td className="p-1">{stats.runs}</td>
                         <td className="p-1">{stats.balls}</td>
+                        <td className="p-1">{calculateStrikeRate(stats.runs, stats.balls)}</td>
                         <td className="p-1">{stats.out ? "Out ❌" : "Not Out ✅"}</td>
                       </tr>
                     ))}
@@ -411,7 +454,8 @@ useEffect(() => {
                       <th className="p-1 text-left">Bowler</th>
                       <th className="p-1">Wkts</th>
                       <th className="p-1">Runs</th>
-                      <th className="p-1">Balls</th>
+                      <th className="p-1">Overs</th>
+                      <th className="p-1">Economy</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -420,7 +464,8 @@ useEffect(() => {
                         <td className="p-1 text-left">{stats.name}</td>
                         <td className="p-1">{stats.wickets}</td>
                         <td className="p-1">{stats.runs}</td>
-                        <td className="p-1">{stats.balls || "0"}</td>
+                        <td className="p-1">{calculateOver(stats.balls) || "0"}</td>
+                        <td className="p-1">{calculateEconomy(stats.runs, calculateOver(stats.balls))}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -438,7 +483,7 @@ useEffect(() => {
             </h3>
             <p className="font-semibold text-sm sm:text-base mb-1">
               {secondSummary.runs}/{secondSummary.wickets || 0} 
-              ({secondSummary.totalOver} ov, {secondSummary.balls} balls)
+              ({calculateOver(secondSummary.balls)} Over)
             </p>
             <p className="text-xs sm:text-sm text-gray-600 mb-2">
               Bowling: {secondSummary.bowlingTeam}
@@ -452,8 +497,9 @@ useEffect(() => {
                   <thead>
                     <tr className="bg-gray-200">
                       <th className="p-1 text-left">Batsman</th>
-                      <th className="p-1">R</th>
-                      <th className="p-1">B</th>
+                      <th className="p-1">Runs</th>
+                      <th className="p-1">Balls</th>
+                      <th className="p-1">Strike rate</th>
                       <th className="p-1">Status</th>
                     </tr>
                   </thead>
@@ -463,6 +509,7 @@ useEffect(() => {
                         <td className="p-1 text-left">{stats.name}</td>
                         <td className="p-1">{stats.runs}</td>
                         <td className="p-1">{stats.balls}</td>
+                        <td className="p-1">{calculateStrikeRate(stats.runs, stats.balls)}</td>
                         <td className="p-1">{stats.out ? "Out ❌" : "Not Out ✅"}</td>
                       </tr>
                     ))}
@@ -481,7 +528,8 @@ useEffect(() => {
                       <th className="p-1 text-left">Bowler</th>
                       <th className="p-1">Wkts</th>
                       <th className="p-1">Runs</th>
-                      <th className="p-1">Balls</th>
+                      <th className="p-1">Overs</th>
+                      <th className="p-1">Economy</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -490,7 +538,8 @@ useEffect(() => {
                         <td className="p-1 text-left">{stats.name}</td>
                         <td className="p-1">{stats.wickets}</td>
                         <td className="p-1">{stats.runs}</td>
-                        <td className="p-1">{stats.balls || "0"}</td>
+                        <td className="p-1">{calculateOver(stats.balls) || "0"}</td>
+                        <td className="p-1">{calculateEconomy(stats.runs, calculateOver(stats.balls))}</td>
                       </tr>
                     ))}
                   </tbody>

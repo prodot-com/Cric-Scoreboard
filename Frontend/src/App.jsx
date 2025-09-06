@@ -6,6 +6,7 @@ import Toss from './Component/TossPage/UpperSection/Toss'
 import AdminPage from './Component/AdminPage/AdminPage'
 import SecondInnings from './Component/SecondInnings/SecondInnings'
 import { CricContext, CricProvider, useCric } from './Context/CricContext'
+import HomePage from './Component/Home.jsx'
 
 
 
@@ -21,7 +22,8 @@ const App = () => {
     <CricProvider value={{matchDetails, addMatchDetails}}>
       <BrowserRouter>
     <Routes>
-        <Route path='/' element={<Index/>}/>
+        <Route path='/' element={<HomePage/>}/>
+        <Route path='/index' element={<Index/>}/>
         <Route path='/creation' element={<Creation/>}/>
         <Route path='/toss/:id' element={<Toss/>}/>
         <Route path='/admin/:id' element={<AdminPage/>}/>
