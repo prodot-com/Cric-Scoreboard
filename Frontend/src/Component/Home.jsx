@@ -10,7 +10,10 @@ const Home = () => {
   return (
     <div className="font-mono min-h-screen bg-black text-white flex flex-col items-center">
   {/* Navbar */}
-  <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center w-full px-4 sm:px-10 pt-5 py-4 min-w-full">
+  <div className="mt-5 sm:bg-neutral-800/65 sm:max-w-[1330px] sm:fixed relative
+  flex flex-col sm:flex-row justify-between items-center w-full px-4 sm:px-10 pt-5 py-4 
+  rounded-2xl z-50 backdrop-blur-sm shadow-2xl
+  ">
     <div>
       <h1 className="text-3xl font-bold text-white cursor-pointer 
       
@@ -57,7 +60,7 @@ const Home = () => {
   </div>
 
   {/* Hero Section */}
-  <div className="min-h-[590px] sm:min-h-screen w-full relative flex flex-col justify-center items-center px-4 sm:px-6">
+  <div className="sm:mt-20 min-h-[590px] sm:min-h-screen w-full relative flex flex-col justify-center items-center px-4 sm:px-6">
     {/* Ember Glow Background */}
     <div
       className="absolute inset-0 z-0 opacity-90 animate-pulseMe"
@@ -70,7 +73,7 @@ const Home = () => {
       }}
     />
     {/* Content */}
-    <div className="relative z-10 flex flex-col justify-center items-center text-center">
+    <div className="relative  z-10 flex flex-col justify-center items-center text-center">
       <h1
         className="font-bold leading-tight text-5xl sm:text-7xl max-w-full sm:max-w-3xl tracking-tight
         bg-clip-text text-transparent bg-gradient-to-b from-white to-[#FFA600]"
