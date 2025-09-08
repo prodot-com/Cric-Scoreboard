@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+/* --- Custom Animations --- */
 @keyframes pulse-glow {
   0%, 100% { opacity: 0.6; filter: blur(40px); }
   50% { opacity: 1; filter: blur(80px); }
@@ -7,4 +8,29 @@
 
 .animate-pulseMe {
   animation: pulse-glow 10s ease-in-out infinite;
+}
+
+/* --- Tailwind Scrollbar Plugin --- */
+@plugin 'tailwind-scrollbar';
+
+/* Optional: customize scrollbar colors with CSS variables */
+.scrollbar-amber::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollbar-amber::-webkit-scrollbar-track {
+  background: #111827; /* dark background */
+  border-radius: 9999px;
+}
+
+.scrollbar-amber::-webkit-scrollbar-thumb {
+  background-color: #f59e0b; /* amber */
+  border-radius: 9999px;
+  border: 2px solid #111827;
+}
+
+/* Firefox */
+.scrollbar-amber {
+  scrollbar-width: thin;
+  scrollbar-color: #f59e0b #111827;
 }
