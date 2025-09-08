@@ -1,1 +1,10 @@
 @import "tailwindcss";
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.6; filter: blur(40px); }
+  50% { opacity: 1; filter: blur(80px); }
+}
+
+.animate-pulseMe {
+  animation: pulse-glow 10s ease-in-out infinite;
+}
