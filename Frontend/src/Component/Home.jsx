@@ -3,6 +3,7 @@ import mobileVersion from "../assets/MobileView.png";
 import { Star, BarChart, Zap, Heart, Github, Linkedin, Mail} from "lucide-react";
 import CountUp from "react-countup";
 import VisibilitySensor from "react-visibility-sensor";
+import LiveTime from "./LiveTime";
 
 const Home = () => {
   return (
@@ -10,32 +11,49 @@ const Home = () => {
       {/* Navbar */}
       
 
-<div className="flex justify-between items-center px-8 py-4 bg-black">
-  <h1 className="text-3xl font-bold text-white">CricScoreBoard</h1>
-  <div className="flex items-center space-x-8">
-    <a
-      href="https://github.com/yourusername"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="hover:text-amber-600 transition"
-    >
-      <Github className="w-6 h-6" />
-    </a>
-    <a
-      href="https://linkedin.com/in/yourprofile"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="hover:text-amber-600 transition"
-    >
-      <Linkedin className="w-6 h-6" />
-    </a>
-    <a
-      href="mailto:youremail@gmail.com"
-      className="hover:text-amber-600 transition"
-    >
-      <Mail className="w-6 h-6" />
-    </a>
+<div className="flex justify-between items-center px-25 pt-5 py-4 bg-black">
+  <h1 className=" text-3xl font-bold text-white cursor-pointer">CricScoreBoard</h1>
+  <div className="flex space-x-4">
+
+    <div className="flex items-center space-x-8">
+  {/* GitHub */}
+  <a
+    href="https://github.com/prodot-com/Cric-Scoreboard"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="hover:text-amber-600 transition"
+  >
+    <Github className="w-6 h-6" />
+  </a>
+
+  {/* LinkedIn */}
+  <a
+    href="https://www.linkedin.com/in/ghoshprobal/"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="hover:text-amber-600 transition"
+  >
+    <Linkedin className="w-6 h-6" />
+  </a>
+
+  {/* Mail */}
+  <a
+    href="https://mail.google.com/mail/?view=cm&fs=1&to=xprobal52@gmail.com"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="hover:text-amber-600 transition"
+  >
+    <Mail className="w-6 h-6 pointer-events-auto" />
+  </a>
   </div>
+
+    <div className="font-bold px-2 py-1 text-[21px]">
+    <LiveTime />
+  </div>
+
+  </div>
+  
+
 </div>
 
 
