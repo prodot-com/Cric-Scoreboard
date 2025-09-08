@@ -1,19 +1,43 @@
 import React from "react";
 import mobileVersion from "../assets/MobileView.png";
-import { Star, BarChart, Zap } from "lucide-react"; // icons for features
+import { Star, BarChart, Zap, Heart, Github, Linkedin, Mail} from "lucide-react";
+import CountUp from "react-countup";
+import VisibilitySensor from "react-visibility-sensor";
 
 const Home = () => {
   return (
     <div className="font-mono min-h-screen bg-black text-white flex flex-col">
       {/* Navbar */}
-      <div className="flex justify-between items-center px-8 py-4 bg-black">
-        <h1 className="text-3xl font-bold text-white">CricScoreBoard</h1>
-        <div className="space-x-6">
-          <button className="hover:text-green-400 cursor-pointer">Github</button>
-          <button className="hover:text-green-400 cursor-pointer">Email</button>
-          <button className="hover:text-green-400 cursor-pointer">LinkedIn</button>
-        </div>
-      </div>
+      
+
+<div className="flex justify-between items-center px-8 py-4 bg-black">
+  <h1 className="text-3xl font-bold text-white">CricScoreBoard</h1>
+  <div className="flex items-center space-x-8">
+    <a
+      href="https://github.com/yourusername"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="hover:text-amber-600 transition"
+    >
+      <Github className="w-6 h-6" />
+    </a>
+    <a
+      href="https://linkedin.com/in/yourprofile"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="hover:text-amber-600 transition"
+    >
+      <Linkedin className="w-6 h-6" />
+    </a>
+    <a
+      href="mailto:youremail@gmail.com"
+      className="hover:text-amber-600 transition"
+    >
+      <Mail className="w-6 h-6" />
+    </a>
+  </div>
+</div>
+
 
       {/* Hero Section */}
       <div className="min-h-screen w-full relative">
@@ -41,57 +65,97 @@ const Home = () => {
           </p>
 
           <div className="flex gap-6 mt-10">
-  <button className="px-6 py-3 bg-amber-600 text-white rounded-lg text-lg font-semibold shadow-md hover:bg-amber-500 hover:shadow-lg transition duration-300">
-    Get Started
-  </button>
-  <button className="px-6 py-3 border border-neutral-400 text-neutral-200 rounded-lg text-lg font-semibold hover:bg-neutral-800 hover:text-white transition duration-300">
-    Learn More
-  </button>
-</div>
-
+            <button
+              onClick={() =>
+                document
+                  .getElementById("about")
+                  .scrollIntoView({ behavior: "smooth" })
+              }
+              className="px-6 py-3 bg-amber-600 text-white rounded-lg text-lg font-semibold shadow-md hover:bg-amber-500 hover:shadow-lg transition duration-300"
+            >
+              Get Started
+            </button>
+            
+          </div>
         </div>
       </div>
 
       {/* About Section */}
-      <div className="p-10 max-w-[1430px] mx-auto grid lg:grid-cols-2 gap-12 items-center">
+      <div
+        id="about"
+        className="p-10 pt-3 max-w-[1430px] mx-auto grid lg:grid-cols-2 gap-12 items-center"
+      >
         {/* Text Content */}
         <div>
-          <h2 className="text-4xl sm:text-5xl font-bold tracking-tight">About Our App</h2>
-          <p className="mt-6 text-lg sm:text-xl text-neutral-300">
-            Our live cricket platform is built for fans who don’t just watch the game, but
-            <span className="text-white font-semibold"> feel every moment</span>.  
-            From ball-by-ball updates to smart insights powered by analytics, we bring the stadium atmosphere right to your screen.
+          <h2 className="text-4xl sm:text-5xl font-bold tracking-tight  from-white ">
+            About Our App
+          </h2>
+          <p className="mt-6 text-lg sm:text-xl text-neutral-300 leading-relaxed">
+            Our cricket scoring platform is designed to bring the excitement of
+            the game to everyone, whether you’re on the field or following from
+            home. <span className="text-amber-600 font-semibold">Match admins</span>{" "}
+            can easily create matches and update scores ball by ball, while{" "}
+            <span className="text-amber-600 font-semibold">fans</span> get to
+            experience real-time updates, insights, and complete match summaries
+            once the game ends.
           </p>
 
           {/* Features */}
-          <div className="mt-10 space-y-6">
-            <div className="flex items-start gap-4">
-              <Zap className="text-green-400 w-6 h-6" />
+          <div className="mt-10 space-y-8">
+            <div className="flex items-start gap-4 group">
+              <div className="p-2 rounded-full bg-amber-500/10 group-hover:bg-amber-500/20 transition">
+                <Zap className="text-amber-600 w-6 h-6" />
+              </div>
               <div>
-                <h3 className="text-xl font-semibold">Real-Time Updates</h3>
+                <h3 className="text-xl font-semibold text-white">
+                  Ball-by-Ball Scoring
+                </h3>
                 <p className="text-neutral-400">
-                  Never miss a ball. Follow every run, wicket, and over as it happens.
+                  Match admins can update scores every ball – runs, wickets,
+                  extras – all in real time.
                 </p>
               </div>
             </div>
-            <div className="flex items-start gap-4">
-              <BarChart className="text-green-400 w-6 h-6" />
+
+            <div className="flex items-start gap-4 group">
+              <div className="p-2 rounded-full bg-amber-500/10 group-hover:bg-amber-500/20 transition">
+                <BarChart className="text-amber-600 w-6 h-6" />
+              </div>
               <div>
-                <h3 className="text-xl font-semibold">Smart Analytics</h3>
+                <h3 className="text-xl font-semibold text-white">
+                  Live Scoreboard
+                </h3>
                 <p className="text-neutral-400">
-                  Player strike rates, run rates, and predictive match stats – all in one place.
+                  Fans can track every run, over, and wicket with instant live
+                  updates, just like a stadium scoreboard.
                 </p>
               </div>
             </div>
-            <div className="flex items-start gap-4">
-              <Star className="text-green-400 w-6 h-6" />
+
+            <div className="flex items-start gap-4 group">
+              <div className="p-2 rounded-full bg-amber-500/10 group-hover:bg-amber-500/20 transition">
+                <Star className="text-amber-600 w-6 h-6" />
+              </div>
               <div>
-                <h3 className="text-xl font-semibold">Match Summaries</h3>
+                <h3 className="text-xl font-semibold text-white">
+                  Match Summaries
+                </h3>
                 <p className="text-neutral-400">
-                  Get instant highlights with batting & bowling summaries and results.
+                  Once the game ends, get detailed summaries with batting &
+                  bowling stats, team performances, and the match result.
                 </p>
               </div>
             </div>
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="flex gap-6 mt-12">
+            <button className="px-6 py-3 bg-amber-600 hover:bg-amber-500 rounded-lg text-lg font-semibold shadow-lg transition">
+              Start a Match
+            </button>
+            <button className="px-6 py-3 border border-neutral-400 hover:bg-neutral-800 rounded-lg text-lg font-semibold transition">
+              View Live Scores
+            </button>
           </div>
         </div>
 
@@ -100,27 +164,42 @@ const Home = () => {
           <img
             src={mobileVersion}
             alt="Cricket App Preview"
-            className="w-96 h-auto object-contain drop-shadow-lg"
+            className="w-[350px] h-auto object-contain drop-shadow-2xl rounded-xl hover:scale-105 transition-transform"
           />
         </div>
       </div>
 
       {/* Stats / Trust Section */}
-      <div className="bg-neutral-900 py-16">
-        <div className="max-w-5xl mx-auto grid sm:grid-cols-3 gap-10 text-center">
-          <div>
-            <h3 className="text-5xl font-bold text-green-400">10K+</h3>
-            <p className="text-neutral-300 mt-2">Live Matches Covered</p>
-          </div>
-          <div>
-            <h3 className="text-5xl font-bold text-green-400">50K+</h3>
-            <p className="text-neutral-300 mt-2">Fans Connected</p>
-          </div>
-          <div>
-            <h3 className="text-5xl font-bold text-green-400">99.9%</h3>
-            <p className="text-neutral-300 mt-2">Accuracy in Data</p>
-          </div>
+      <div className="bg-neutral-900 py-20 relative overflow-hidden">
+        <div className="max-w-6xl mx-auto text-center mb-12 relative z-10">
+          <h2 className="text-3xl sm:text-4xl font-bold text-white">
+            Why Trust <span className="text-amber-600">CricScoreBoard</span>
+          </h2>
+          <p className="mt-4 text-lg text-neutral-400">
+            Powering live matches, connecting fans, and delivering accurate
+            stats — every time.
+          </p>
         </div>
+
+        <div className="max-w-5xl mx-auto grid sm:grid-cols-2 gap-12 text-center relative z-10">
+  
+        <div className="group flex flex-col items-center">
+          <Zap className="text-amber-600 w-10 h-10 group-hover:scale-110 transition-transform" />
+            <h3 className="text-neutral-300 mt-2">Low Latency</h3>
+
+        </div>
+
+        <div className="group">
+          <h3 className="text-5xl font-extrabold text-amber-600 group-hover:scale-110 transition-transform">
+            99.9%
+          </h3>
+          <p className="text-neutral-300 mt-2">Accurate Data Delivery</p>
+        </div>
+      </div>
+
+
+        {/* Glow background */}
+        <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 via-transparent to-green-500/5 blur-3xl"></div>
       </div>
 
       {/* Final CTA */}
@@ -129,22 +208,24 @@ const Home = () => {
           Ready to Experience Live Cricket Like Never Before?
         </h2>
         <p className="text-lg text-center max-w-2xl mb-8 text-indigo-100">
-          Get real-time updates, smart analytics, and live match summaries — all in one place.
+          Get real-time updates, smart analytics, and live match summaries — all
+          in one place.
         </p>
         <div className="flex gap-4">
-          <button className="px-6 py-3 bg-green-500 hover:bg-green-600 rounded-lg text-lg font-semibold shadow-lg transition">
+          <button className="px-6 py-3 bg-amber-600 hover:bg-amber-400 rounded-lg text-lg font-semibold shadow-lg transition">
             Start Watching
-          </button>
-          <button className="px-6 py-3 bg-white text-indigo-700 hover:bg-gray-200 rounded-lg text-lg font-semibold shadow-lg transition">
-            Learn More
           </button>
         </div>
       </div>
 
       {/* Footer */}
-      <footer className="mt-auto py-6 text-center text-gray-400 text-sm">
-        © 2025 CricScoreBoard | Built with ❤️
+      <footer className="mt-auto py-6 text-center text-gray-400 text-sm flex flex-col sm:flex-row items-center justify-center gap-4">
+        <span>
+        © 2025 CricScoreBoard | Built with
+        <Heart strokeWidth={4} className="inline-block w-4 h-4 text-amber-600 mx-1" /> 
+        </span>
       </footer>
+
     </div>
   );
 };
