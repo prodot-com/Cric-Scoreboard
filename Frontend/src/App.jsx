@@ -22,8 +22,8 @@ const App = () => {
     <CricProvider value={{matchDetails, addMatchDetails}}>
       <BrowserRouter>
     <Routes>
-        <Route path='/Home' element={<Home/>}/>
-        <Route path='/' element={<Index/>}/>
+        <Route path='/' element={<Home/>}/>
+        <Route path='/Home' element={<Index/>}/>
         <Route path='/creation' element={<Creation/>}/>
         <Route path='/toss/:id' element={<Toss/>}/>
         <Route path='/admin/:id' element={<AdminPage/>}/>

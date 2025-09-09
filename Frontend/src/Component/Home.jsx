@@ -4,23 +4,30 @@ import { Star, BarChart, Zap, Heart, Github, Linkedin, Mail} from "lucide-react"
 import CountUp from "react-countup";
 import VisibilitySensor from "react-visibility-sensor";
 import LiveTime from "./LiveTime";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
+
+  const navigate = useNavigate()
 
   return (
     <div className="font-mono min-h-screen bg-black text-white flex flex-col items-center">
   {/* Navbar */}
-  <div className="mt-5 sm:bg-neutral-800/65 sm:max-w-[1330px] sm:fixed relative
+  <div className="mt-5 bg-neutral-800/65 sm:max-w-[1330px] fixed max-w-[350px]
+  sm:max-h-[77px]
   flex flex-col sm:flex-row justify-between items-center w-full px-4 sm:px-10 pt-5 py-4 
   rounded-2xl z-50 backdrop-blur-sm shadow-2xl
   ">
     <div>
-      <h1 className="text-3xl font-bold text-white cursor-pointer 
-      
-      ">
-        CricScoreBoard</h1>
+      <h1
+  onClick={() => window.location.reload()}
+  className="text-2xl sm:text-3xl font-bold text-white cursor-pointer"
+>
+  CricScoreBoard
+</h1>
+
     </div>
-    <div className="flex flex-col sm:flex-row items-center sm:space-x-5 mt-4 sm:mt-0 gap-4">
+    <div className="flex flex-col sm:flex-row items-center  sm:space-x-5 mt-4 sm:mt-0 sm:gap-4">
       <div className="flex items-center space-x-6">
         {/* GitHub */}
         <a
@@ -53,14 +60,14 @@ const Home = () => {
         </a>
       </div>
 
-      <div className="font-bold px-2 py-1 text-[22px] text-neutral-500 mt-2 sm:mt-0">
+      <div className="sm:block hidden font-bold px-2 py-1 text-[22px] text-neutral-500 sm:mt-0">
         <LiveTime />
       </div>
     </div>
   </div>
 
   {/* Hero Section */}
-  <div className="sm:mt-20 min-h-[590px] sm:min-h-screen w-full relative flex flex-col justify-center items-center px-4 sm:px-6">
+  <div className="mt-[155px] sm:mt-20 min-h-[590px] sm:min-h-screen w-full relative flex flex-col justify-center items-center px-4 sm:px-6">
     {/* Ember Glow Background */}
     <div
       className="absolute inset-0 z-0 opacity-90 animate-pulseMe"
@@ -91,7 +98,7 @@ const Home = () => {
               .getElementById("about")
               .scrollIntoView({ behavior: "smooth" })
           }
-          className="px-6 py-3 bg-amber-600 text-white rounded-lg text-lg font-semibold shadow-md hover:bg-amber-500 hover:shadow-lg transition duration-300"
+          className="px-6 py-3 cursor-pointer bg-amber-600 text-white rounded-lg text-lg font-semibold shadow-md hover:bg-amber-500 hover:shadow-lg transition duration-300"
         >
           Get Started
         </button>
@@ -168,12 +175,24 @@ const Home = () => {
 
       {/* CTA Buttons */}
       <div className="flex flex-col sm:flex-row gap-4 mt-8 sm:mt-12">
-        <button className="px-6 py-3 bg-amber-600 hover:bg-amber-500 rounded-lg text-lg font-semibold shadow-lg transition">
+        <button className="px-6 py-3 cursor-pointer bg-amber-600 hover:bg-amber-500 rounded-lg text-lg font-semibold shadow-lg transition"
+        onClick={()=>{navigate('/creation')}}
+        >
           Start a Match
         </button>
-        <button className="px-6 py-3 border border-neutral-400 hover:bg-neutral-800 rounded-lg text-lg font-semibold transition">
-          View Live Scores
-        </button>
+
+        <a
+  href="http://localhost:5174/"
+  target="_blank"   // remove this if you want it in the same tab
+  rel="noopener noreferrer"
+>
+  <button className="px-6 py-3 cursor-pointer border border-neutral-400 hover:bg-neutral-800 rounded-lg text-lg font-semibold transition">
+    View Live Scores
+  </button>
+</a>
+
+
+
       </div>
     </div>
 
@@ -227,15 +246,24 @@ const Home = () => {
       in one place.
     </p>
     <div className="flex gap-4">
-      <button className="px-6 py-3 bg-amber-600 hover:bg-amber-400 rounded-lg text-lg font-semibold shadow-lg transition">
+
+      <a
+  href="http://localhost:5174/"
+  target="_blank"   // remove this if you want it in the same tab
+  rel="noopener noreferrer"
+>
+      <button className="px-6 py-3 cursor-pointer bg-amber-600 hover:bg-amber-400 rounded-lg text-lg font-semibold shadow-lg transition">
         Start Watching
       </button>
+      </a>
     </div>
   </div>
 
+  
+
   {/* Footer */}
   <footer className="mt-auto py-6 text-center text-gray-400 text-sm flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
-    <span className="text-[15px] ">
+    <span className="text-[12px] sm:text-[15px]">
       ©2025 CricScoreBoard | Built with 🧡
       {/* <Heart strokeWidth={4} className="inline-block w-4 h-4 text-amber-600 mx-1" /> */}
     </span>
