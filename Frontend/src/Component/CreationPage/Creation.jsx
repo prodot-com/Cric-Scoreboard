@@ -3,6 +3,7 @@ import { Github, Linkedin, Mail, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import LiveTime from "../LiveTime.jsx"
 import Cricket1 from "../../assets/Cricket1.jpeg"
+import axios from "axios"
 
 export default function CreateMatchPage() {
   const navigate = useNavigate();
@@ -15,15 +16,32 @@ export default function CreateMatchPage() {
     over: "",
   });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!input.name || !input.team1 || !input.team2 || !input.over) {
-      setAlert("Please fill all fields");
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    const res = await axios.post("http://localhost:9000/user/create", input);
+
+    if (!res || !res.data?._id) {
+      setAlert("Oops! Server is Busy");
       return;
     }
-    console.log("Match Created:", input);
-    setAlert("Match Created Successfully")
-  };
+
+    const matchId = res.data._id; 
+    console.log("Match Created:", matchId);
+
+    setAlert("Match Created Successfully");
+
+    setTimeout(() => {
+      navigate(`/toss/${matchId}`); 
+    }, 1500);
+
+  } catch (error) {
+    console.error(error);
+    setAlert("Something Went Wrong");
+  }
+};
+
+
 
   return (
 <div className="font-mono min-h-screen bg-black items-center
@@ -103,8 +121,9 @@ export default function CreateMatchPage() {
         <img
           src={Cricket1}
           alt="Cricket App Preview"
-          className="ring-2 sm:rotate-3 hover:scale-95 hover:-rotate-5 ring-amber-600 ring-offset-2 ring-offset-black shadow-lg transition
-    w-[330px] sm:w-[300px]  lg:w-[305px] sm:h-[540px] object-contain drop-shadow-2xl rounded-xl shadow-amber-600"
+          className="ring-2 sm:rotate-3 hover:scale-95 hover:-rotate-5 ring-amber-600 ring-offset-2 ring-offset-black shadow-lg 
+          transition-transform duration-500 delay-100
+          w-[330px] sm:w-[300px]  lg:w-[305px] sm:h-[540px] object-contain drop-shadow-2xl rounded-xl shadow-amber-600"
         />
       </div>
 
@@ -163,7 +182,7 @@ export default function CreateMatchPage() {
 
           <button
             type="submit"
-            className="w-full py-2 sm:py-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold text-base sm:text-lg rounded-xl shadow-lg transition"
+            className="w-full py-2 cursor-pointer sm:py-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold text-base sm:text-lg rounded-xl shadow-lg transition"
           >
             Start Match
           </button>
