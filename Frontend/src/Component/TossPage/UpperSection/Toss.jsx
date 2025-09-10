@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 
@@ -10,15 +10,22 @@ const Toss = () => {
   const [disable, setDisable] = useState(true);
   const [decision, setDecision] = useState("");
   const [isFlipping, setIsFlipping] = useState(false);
+  const [matchData, setMatchData] = useState({})
 
-  // 🔹 Get teams from localStorage
+  useEffect(()=>{
+    const local = JSON.parse(localStorage.getItem('matchDetails'));
+    setMatchData(local)
+  },[])
+
   const getElement = () => {
     const local = JSON.parse(localStorage.getItem('matchDetails'));
+    console.log(local)
     return [local?.team1, local?.team2];
   };
 
-  // 🔹 Toss Logic
+  
   const toss = () => {
+    console.log(matchData)
     setIsFlipping(true);
     setTossWinner("");
 
@@ -26,12 +33,12 @@ const Toss = () => {
       const [team1, team2] = getElement();
       const result = Math.random() < 0.5 ? team1 : team2;
       setTossWinner(result);
-      setDisable(false); // enable decision buttons
+      setDisable(false); 
       setIsFlipping(false);
     }, 2000);
   };
 
-  // 🔹 Save decision
+  
   const handleDecision = async (choice) => {
     const tossDetails = {
       tossWinner,
@@ -40,7 +47,7 @@ const Toss = () => {
 
     try {
       const res = await axios.post(
-        `https://cric-scoreboard.onrender.com/user/addtoss/${id}`,
+        `http://localhost:9000/user/addtoss/${id}`,
         tossDetails
       );
       console.log("Toss Data:::", res.data);
@@ -53,7 +60,7 @@ const Toss = () => {
     setDecision(choice);
   };
 
-  // 🔹 Navigate after Done
+  
   const routeChange = () => {
     navigate(`/admin/${id}`);
   };
@@ -76,24 +83,34 @@ const Toss = () => {
       <div className="relative z-10 w-full max-w-[420px] bg-neutral-900/90 border border-amber-500 backdrop-blur-lg shadow-2xl rounded-2xl p-8 flex flex-col items-center">
         <h1 className="text-3xl font-bold text-amber-500 mb-6">Toss Time 🎲</h1>
 
-        {/* Coin Animation (just visual) */}
+        
         <div className="w-32 h-32 perspective mb-6">
-          <div
-            className={`relative w-full h-full ${
-              isFlipping ? "coin-flip" : ""
-            }`}
-          >
-            <div className="absolute w-full h-full bg-amber-400 rounded-full flex items-center justify-center font-bold text-black text-xl backface-hidden">
-              TOSS
-            </div>
-            <div
-              className="absolute w-full h-full bg-blue-600 rounded-full flex items-center justify-center font-bold text-white text-xl backface-hidden"
-              style={{ transform: "rotateY(180deg)" }}
-            >
-              TOSS
-            </div>
-          </div>
-        </div>
+  {!tossWinner ? (
+    <div
+      className={`relative w-full h-full ${
+        isFlipping ? "coin-flip" : ""
+      }`}
+    >
+   
+      <div className="absolute w-full h-full bg-amber-400 rounded-full flex items-center justify-center font-bold text-black text-xl backface-hidden">
+        {matchData.team1}
+      </div>
+
+      <div
+        className="absolute w-full h-full bg-blue-600 rounded-full flex items-center justify-center font-bold text-white text-xl backface-hidden"
+        style={{ transform: "rotateY(180deg)" }}
+      >
+        {matchData.team2}
+      </div>
+    </div>
+  ) : (
+    /* After Toss Result → Show Winner Only */
+    <div className="absolute w-full h-full bg-emerald-500 rounded-full flex items-center justify-center font-bold text-white text-xl shadow-lg">
+      {tossWinner}
+    </div>
+  )}
+</div>
+
 
         {/* Toss Button */}
         <button
