@@ -1,104 +1,168 @@
-import React, { useEffect, useState } from 'react'
-import Title from '../../Title/Title'
-import { useNavigate } from 'react-router'
-import { useCric } from '../../../Context/CricContext'
-import axios from 'axios'
-import { useParams } from 'react-router'
+import React, { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import axios from 'axios';
 
 const Toss = () => {
-  
-    const {id}=useParams()
+  const { id } = useParams();
+  const navigate = useNavigate();
 
+  const [tossWinner, setTossWinner] = useState("");
+  const [disable, setDisable] = useState(true);
+  const [decision, setDecision] = useState("");
+  const [isFlipping, setIsFlipping] = useState(false);
 
-  const [tossWinner,setTossWinner] = useState('Game')
-  const [disable, setDisable] = useState(true)
-  const [decision, setDecision] = useState('')
+  // 🔹 Get teams from localStorage
+  const getElement = () => {
+    const local = JSON.parse(localStorage.getItem('matchDetails'));
+    return [local?.team1, local?.team2];
+  };
 
- 
-    let navigate = useNavigate()
-    const routeChange = ()=>{
-      // console.log(matchDetails.input)
-      const local = JSON.parse(localStorage.getItem('matchDetails'))
-      // console.log(local)
-      navigate(`/admin/${id}`)
-  }
+  // 🔹 Toss Logic
+  const toss = () => {
+    setIsFlipping(true);
+    setTossWinner("");
 
-  const getElement = ()=>{
-    const local = JSON.parse(localStorage.getItem('matchDetails'))
-    console.log(local)
-    return [local?.team1, local?.team2]
-  }
+    setTimeout(() => {
+      const [team1, team2] = getElement();
+      const result = Math.random() < 0.5 ? team1 : team2;
+      setTossWinner(result);
+      setDisable(false); // enable decision buttons
+      setIsFlipping(false);
+    }, 2000);
+  };
 
-  const randomPick=(str1, str2)=> {
-  return Math.random() < 0.5 ? str1 : str2;
-  }
-
-  const toss = ()=>{
-    const [team1, team2 ] = getElement()
-    const tossWinner = randomPick(team1, team2)
-    console.log(tossWinner)
-    setTossWinner(tossWinner)
-    setDisable(false)
-    return tossWinner
-  }
-
-  const handleDecision = async (choice)=>{
-    const tossDetails ={
+  // 🔹 Save decision
+  const handleDecision = async (choice) => {
+    const tossDetails = {
       tossWinner,
-      decision: choice
-    }
+      decision: choice,
+    };
+
     try {
-      const res = await axios.post(`https://cric-scoreboard.onrender.com/user/addtoss/${id}`,
-      {
-        tossWinner,
-        decision: choice
-      }
-      )
-      console.log('Toss Data:::',res.data)
+      const res = await axios.post(
+        `https://cric-scoreboard.onrender.com/user/addtoss/${id}`,
+        tossDetails
+      );
+      console.log("Toss Data:::", res.data);
     } catch (error) {
-      console.log('Something Went Wrong')
-      return
+      console.log("Something Went Wrong", error);
+      return;
     }
-      localStorage.setItem('tossDetails', JSON.stringify(tossDetails))
-      setDecision(choice)
-      console.log(tossDetails)
-  }
 
+    localStorage.setItem("tossDetails", JSON.stringify(tossDetails));
+    setDecision(choice);
+  };
 
-
-    const changehandaler = ()=>{}
-
+  // 🔹 Navigate after Done
+  const routeChange = () => {
+    navigate(`/admin/${id}`);
+  };
 
   return (
-    <div className="min-h-screen w-full relative">
-  {/* Radial Gradient Background from Bottom */}
-  <div
-    className="absolute inset-0 z-0"
-    style={{
-      background: "radial-gradient(125% 125% at 50% 90%, #fff 40%, #6366f1 100%)",
-    }}
-  />
-     <div className='relative z-10 font-mono'>
-      <div className='flex justify-around'>
-        {/* <Title text="TOSS" className="text-blue-800 text-5xl font-bold mt-0 pt-7 cursor-pointer" onClick={toss}/> */}
-        <button onClick={toss} className='text-blue-800 text-5xl font-bold mt-0 pt-7 cursor-pointer'>
-          Toss
+    <div className="font-mono min-h-screen bg-black text-white flex flex-col items-center justify-center relative">
+      {/* Background Glow */}
+      <div
+        className="absolute inset-0 z-0 opacity-80 animate-pulseMe"
+        style={{
+          backgroundImage: `
+            radial-gradient(circle at 50% 100%, rgba(255, 69, 0, 0.5) 0%, transparent 60%),
+            radial-gradient(circle at 0% 0%, rgba(255, 215, 0, 0.25) 0%, transparent 70%),
+            radial-gradient(circle at 100% 0%, rgba(255, 140, 0, 0.2) 0%, transparent 80%)
+          `,
+        }}
+      />
+
+      {/* Toss Card */}
+      <div className="relative z-10 w-full max-w-[420px] bg-neutral-900/90 border border-amber-500 backdrop-blur-lg shadow-2xl rounded-2xl p-8 flex flex-col items-center">
+        <h1 className="text-3xl font-bold text-amber-500 mb-6">Toss Time 🎲</h1>
+
+        {/* Coin Animation (just visual) */}
+        <div className="w-32 h-32 perspective mb-6">
+          <div
+            className={`relative w-full h-full ${
+              isFlipping ? "coin-flip" : ""
+            }`}
+          >
+            <div className="absolute w-full h-full bg-amber-400 rounded-full flex items-center justify-center font-bold text-black text-xl backface-hidden">
+              TOSS
+            </div>
+            <div
+              className="absolute w-full h-full bg-blue-600 rounded-full flex items-center justify-center font-bold text-white text-xl backface-hidden"
+              style={{ transform: "rotateY(180deg)" }}
+            >
+              TOSS
+            </div>
+          </div>
+        </div>
+
+        {/* Toss Button */}
+        <button
+          onClick={toss}
+          disabled={isFlipping}
+          className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-bold text-xl
+          shadow-lg hover:scale-95 hover:shadow-amber-400/50 transition-transform duration-300 disabled:opacity-50"
+        >
+          {isFlipping ? "Flipping..." : "Toss"}
         </button>
-        <input type="text" className='bg-amber-400 mt-7 rounded-xl text-center' value={tossWinner} onChange={changehandaler}/>
+
+        {/* Winner + Decision */}
+        {tossWinner && (
+          <div className="mt-6 flex flex-col items-center gap-4">
+            <h2 className="text-2xl font-bold text-amber-400 animate-bounce">
+              {tossWinner} won the toss!
+            </h2>
+
+            {/* Bat / Bowl Choice */}
+            <div className="flex gap-6 mt-3">
+              <button
+                disabled={disable}
+                onClick={() => handleDecision("BAT")}
+                className={`px-5 py-2 rounded-xl font-bold text-lg transition 
+                ${
+                  disable
+                    ? "bg-gray-600 text-gray-300 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-500 text-white shadow-lg"
+                }`}
+              >
+                Bat 🏏
+              </button>
+
+              <button
+                disabled={disable}
+                onClick={() => handleDecision("BOWL")}
+                className={`px-5 py-2 rounded-xl font-bold text-lg transition 
+                ${
+                  disable
+                    ? "bg-gray-600 text-gray-300 cursor-not-allowed"
+                    : "bg-green-600 hover:bg-green-500 text-white shadow-lg"
+                }`}
+              >
+                Bowl 🎯
+              </button>
+            </div>
+
+            {/* Show chosen decision */}
+            {decision && (
+              <h3 className="mt-4 text-lg text-gray-200">
+                {tossWinner} chose to{" "}
+                <span className="text-amber-400 font-bold">{decision}</span>
+              </h3>
+            )}
+
+            {/* Done Button */}
+            {decision && (
+              <button
+                onClick={routeChange}
+                className="mt-6 px-6 py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-lg shadow-lg"
+              >
+                Done ✅
+              </button>
+            )}
+          </div>
+        )}
       </div>
-      <div className='flex justify-around mt-7'>
-            <button className={disable?' text-4xl text-gray-400 bg-blue-300 rounded-xl p-1'
-              :'font-bold text-4xl bg-blue-700 rounded-xl p-1'}  onClick={()=> handleDecision("BAT")}>BAT</button>
-            
-            <button className={disable?' text-4xl text-gray-400 bg-blue-300 rounded-xl p-1'
-              :'font-bold text-4xl bg-blue-700 rounded-xl p-1'}  onClick={()=> handleDecision("BOWL")}>BOWL</button>
-      </div>
-      <button className='mt-9 bg-blue-600 p-3 rounded-xl text-center 
-      font-bold cursor-pointer ml-55' onClick={routeChange}>Done</button>
     </div>
-</div>
+  );
+};
 
-  )
-}
-
-export default Toss
+export default Toss;
