@@ -156,7 +156,7 @@ const Toss = () => {
       <div className="bg-neutral-800/67 mr-16 rounded-2xl h-full flex flex-col items-center justify-center w-2/3">
         <h1 className="text-3xl font-bold text-amber-500 mb-6">Toss Time 🎲</h1>
 
-        {/* Coin */}
+        {/* Coin */} 
         <div className="w-32 h-32 perspective mb-6">
           {!tossWinner ? (
             <div
