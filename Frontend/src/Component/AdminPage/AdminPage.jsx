@@ -37,6 +37,7 @@ const AdminPage = () => {
   const [bowler, setBowler] = useState('')
   const [batsmanStats, setBatsmanStats] = useState({})
   const [bowlerStats, setBowlerStats] = useState({})
+  const [value, setValue]= useState(null)
 
   // store first innings summary
   const [firstInningsBatsmanStats, setFirstInningsBatsmanStats] = useState({})
@@ -58,6 +59,7 @@ const AdminPage = () => {
   const [showBatsmanModal, setShowBatsmanModal] = useState(false)
   const [showBowlerModal, setShowBowlerModal] = useState(false)
   const [timeLine, setTimeLine] = useState([])
+  const [commentry, setCommentry] = useState('🏏 Match is about to begin')
 
   // ===== SOCKET =====
   useEffect(() => {
@@ -176,8 +178,43 @@ const AdminPage = () => {
   setTimeLine((prev) => [...prev, symbol]);
 };
 
+const updateCommentry = (eventType, batsmanName, bowlerName) => {
+  let commentary;
 
+  switch (eventType) {
+    case 0:
+      commentary = `${batsmanName} plays it safe — no run.`;
+      break;
+    case 1:
+      commentary = `${batsmanName} takes a quick single.`;
+      break;
+    case 2:
+      commentary = `${batsmanName} pushes for a couple of runs.`;
+      break;
+    case 3:
+      commentary = `${batsmanName} runs hard, and they get three!`;
+      break;
+    case 4:
+      commentary = `FOUR! ${batsmanName} finds the gap off ${bowlerName}.`;
+      break;
+    case 6:
+      commentary = `SIX! ${batsmanName} smashes it out of the ground!`;
+      break;
+    case "W":
+      commentary = `WICKET! ${batsmanName} is out, ${bowlerName} gets the breakthrough.`;
+      break;
+    case "wide":
+      commentary = `${bowlerName} bowls a wide — extra run for the batting side.`;
+      break;
+    case "no":
+      commentary = `No ball from ${bowlerName}! Free hit coming up.`;
+      break;
+    default:
+      commentary = "Something happened on the field...";
+  }
 
+  setCommentry(commentary);
+};
 
 
   // ===== MAIN RUN HANDLER (FIRST INNINGS) =====
@@ -185,8 +222,10 @@ const AdminPage = () => {
     if (!bowler || !striker) return alert("Select batsmen and bowler first!")
     
       setBowlingStarted(true)
+      setValue(value)
       
       updateTimeline(value);
+      updateCommentry(value, striker, bowler)
 
     if (value === "W") {
       if (isFreeHit) {
@@ -247,7 +286,7 @@ const AdminPage = () => {
     
   }
 
-  useEffect(()=>{console.log(timeLine)},[timeLine])
+  useEffect(()=>{console.log(commentry)},[commentry])
 
 
   // ===== START 2nd INNINGS =====
@@ -276,7 +315,7 @@ const startSecondInnings = async () => {
       }))
     };
 
-    // 🧹 clean out any invalid/empty entries
+    
     summary = {
       ...summary,
       batsman: summary.batsman.filter(b => b.name && b.name.trim() !== ""),
@@ -353,6 +392,7 @@ const startSecondInnings = async () => {
   const secChangeRun = (value) => {
   if (!bowler || !striker) return alert("Select batsmen and bowler first!");
   setBowlingStarted(true);
+  setValue(value)
 
   if (value === "no") {
     setCurrentRun((r) => {
@@ -732,12 +772,31 @@ const startSecondInnings = async () => {
                 <button onClick={() => changeRun("no")} className="cursor-pointer py-3 font-semibold text-white transition-all duration-200 border-2 rounded-lg bg-sky-800/50 border-sky-700 hover:bg-sky-700 hover:border-sky-600 hover:scale-105">NB</button>
               </div>
 
-              <div className='flex justify-center m-4'>
-                <p className='cursor-pointer py-3 px-4 font-semibold text-white transition-all duration-200 border-2 rounded-lg
-                 bg-white/10 border-neutral-600 hover:bg-amber-500 hover:border-amber-500 hover:scale-105'>
-                  Its a wide
-                  </p>
-              </div>
+
+              <div className="flex justify-center m-4">
+  <p
+    className={`cursor-pointer py-3 px-4 font-semibold transition-all duration-200 border-2 rounded-lg
+      ${
+        value === "W"
+          ? "bg-red-600 border-white text-white animate-bounce"     
+          : value === 4
+          ? "bg-blue-600 border-blue-700 text-white" 
+          : value === 6
+          ? "bg-green-600 border-green-700 text-neutral-900  animate-pulse" 
+          : value === "wide" 
+          ? "bg-amber-500 border-amber-600 text-black" 
+          : value === "no" 
+          ? "bg-amber-500 border-amber-600 text-black animate-bounce"
+          : "bg-neutral-800 border-neutral-600 text-gray-200" 
+      }
+      hover:scale-105
+    `}
+  >
+    {commentry}
+  </p>
+</div>
+
+
 
 
 <div className="flex justify-center mt-7">
