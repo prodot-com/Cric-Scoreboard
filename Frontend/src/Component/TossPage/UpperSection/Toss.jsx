@@ -189,7 +189,7 @@ const Toss = () => {
         {!tossMade && (<button
           onClick={toss}
           disabled={isFlipping}
-          className="px-5 sm:px-6 py-2 sm:py-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-bold text-lg sm:text-xl
+          className="px-5 sm:px-6 cursor-pointer py-2 sm:py-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-bold text-lg sm:text-xl
           shadow-lg hover:scale-95 hover:shadow-amber-400/50 transition-transform duration-300 disabled:opacity-50"
         >
           {isFlipping ? "Flipping..." : "Toss"}
@@ -207,7 +207,7 @@ const Toss = () => {
                 <button
                   disabled={disable}
                   onClick={() => handleDecision("BAT")}
-                  className={`px-5 py-2 rounded-xl font-bold text-base sm:text-lg transition 
+                  className={`px-5 py-2 rounded-xl font-bold text-base sm:text-lg transition cursor-pointer
                   ${
                     disable
                       ? "bg-gray-600 text-gray-300 cursor-not-allowed"
@@ -220,7 +220,7 @@ const Toss = () => {
                 <button
                   disabled={disable}
                   onClick={() => handleDecision("BOWL")}
-                  className={`px-5 py-2 rounded-xl font-bold text-base sm:text-lg transition 
+                  className={`px-5 py-2 rounded-xl font-bold text-base sm:text-lg transition cursor-pointer
                   ${
                     disable
                       ? "bg-gray-600 text-gray-300 cursor-not-allowed"
@@ -242,7 +242,7 @@ const Toss = () => {
             {decision && (
               <button
                 onClick={routeChange}
-                className="mt-5 px-5 sm:px-6 py-2 sm:py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-base sm:text-lg shadow-lg"
+                className="mt-5 px-5 sm:px-6 py-2 cursor-pointer sm:py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-base sm:text-lg shadow-lg"
               >
                 Done
               </button>
