@@ -163,6 +163,7 @@ const addFirstSummary = async (req, res) => {
   try {
     const { id } = req.params;
     const firstSummary = req.body;
+    console.log(fetchSummary)
 
     if (!firstSummary) {
       return res.status(400).json({ error: "Missing summary" });
