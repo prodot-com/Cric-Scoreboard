@@ -239,15 +239,19 @@ const updateCommentry = (eventType, batsmanName, bowlerName) => {
       setCurrentWicket(w => {
         const newW = w + 1
         if (newW === 10) {
-          setIningsOver(true);
+          setTimeout(()=>{
+            setIningsOver(true);
         setBowlingStarted(false)
+          },1000)
       }
         return newW
       })
       setTotalBalls(b => b + 1)
       updateBatsman(striker, b => ({ balls: b.balls + 1, out: true }))
       updateBowler(bowler, bw => ({ balls: bw.balls + 1, wickets: bw.wickets + 1 }))
-      setShowBatsmanModal(true)
+      setTimeout(()=>{
+        setShowBatsmanModal(true)
+      },1000)
       return
     }
 
@@ -265,8 +269,10 @@ const updateCommentry = (eventType, batsmanName, bowlerName) => {
     setTotalBalls(prev => {
       const newBalls = prev + 1
       if (newBalls === matchData.over * 6){ 
-        setIningsOver(true)
+        setTimeout(()=>{
+            setIningsOver(true);
         setBowlingStarted(false)
+          },1000)
       return newBalls
     }
 
@@ -352,6 +358,8 @@ const startSecondInnings = async () => {
     setBowler("");
     setBatsmanStats({});
     setBowlerStats({});
+    setCommentry("🏏 Match is about to begin")
+    setTimeLine([])
   } catch (error) {
     console.error("Error saving first innings summary:", error);
   }
@@ -383,109 +391,104 @@ const startSecondInnings = async () => {
     if (!isFirstInnings && target !== null) {
       if (currentRun >= target) {
         setIningsOver(true)
-        setMatchResult(`${battingTeam} won by ${10 - currentWicket} wickets`)
+        // setMatchResult(`${battingTeam} won by ${10 - currentWicket} wickets`)
       }
     }
   }, [currentRun, isFirstInnings, target])
 
   // ===== SECOND INNINGS RUN HANDLER =====
-  const secChangeRun = (value) => {
+const secChangeRun = (value) => {
   if (!bowler || !striker) return alert("Select batsmen and bowler first!");
+
   setBowlingStarted(true);
-  setValue(value)
+  setValue(value);
 
-  if (value === "no") {
-    setCurrentRun((r) => {
-      const newR = r + 1;
-      if (newR >= target) {
-        setIningsOver(true);
-        setMatchResult(`${battingTeam} won by ${10 - currentWicket} wickets`);
-      }
-      return newR;
-    });
-    updateBowler(bowler, (bw) => ({ runs: bw.runs + 1 }));
-    setIsFreeHit(true);
-    return;
-  }
+  updateTimeline(value);
+  updateCommentry(value, striker, bowler);
 
-  
-  if (value === "wide") {
-    setCurrentRun((r) => {
-      const newR = r + 1;
-      if (newR >= target) {
-        setIningsOver(true);
-        setMatchResult(`${battingTeam} won by ${10 - currentWicket} wickets`);
-      }
-      return newR;
-    });
-    updateBowler(bowler, (bw) => ({ runs: bw.runs + 1 }));
-    return;
-  }
-
-  //Handle Wicket
+  // Handle Wicket
   if (value === "W") {
     if (isFreeHit) {
-      // ✅ Free Hit: No wicket, just ball counts
-      setTotalBalls((b) => b + 1);
-      updateBatsman(striker, (b) => ({ balls: b.balls + 1 }));
-      updateBowler(bowler, (bw) => ({ balls: bw.balls + 1 }));
-      setIsFreeHit(false); // reset after delivery
+      setTotalBalls(b => b + 1);
+      updateBatsman(striker, b => ({ balls: b.balls + 1 }));
+      updateBowler(bowler, bw => ({ balls: bw.balls + 1 }));
+      setIsFreeHit(false);
       return;
     }
 
-    // Normal wicket
-    setCurrentWicket((w) => {
+    setCurrentWicket(w => {
       const newW = w + 1;
       if (newW === 10) {
         setIningsOver(true);
+        setBowlingStarted(false);
         setMatchResult(`${bowlingTeam} won by ${target - 1 - currentRun} runs`);
+        setMatchWinner(bowlingTeam);
       }
       return newW;
     });
-    setTotalBalls((b) => b + 1);
-    updateBatsman(striker, (b) => ({ balls: b.balls + 1, out: true }));
-    updateBowler(bowler, (bw) => ({
-      balls: bw.balls + 1,
-      wickets: bw.wickets + 1,
-    }));
-    setShowBatsmanModal(true);
+
+    setTotalBalls(b => b + 1);
+    updateBatsman(striker, b => ({ balls: b.balls + 1, out: true }));
+    updateBowler(bowler, bw => ({ balls: bw.balls + 1, wickets: bw.wickets + 1 }));
+
+    setTimeout(() => setShowBatsmanModal(true), 1000);
     return;
   }
 
-  // 🏏 Handle Runs
-  setCurrentRun((r) => {
+  // Handle Wide/No ball
+  if (value === "wide" || value === "no") {
+    setCurrentRun(r => {
+      const newR = r + 1;
+      if (newR >= target) {
+        setIningsOver(true);
+        setBowlingStarted(false);
+        setMatchResult(`${battingTeam} won by ${10 - currentWicket} wickets`);
+        setMatchWinner(battingTeam);
+      }
+      return newR;
+    });
+    updateBowler(bowler, bw => ({ runs: bw.runs + 1 }));
+    if (value === "no") setIsFreeHit(true);
+    return;
+  }
+
+  // Handle Runs
+  setCurrentRun(r => {
     const newR = r + value;
     if (newR >= target) {
       setIningsOver(true);
-      setMatchWinner(battingTeam);
+      setBowlingStarted(false);
       setMatchResult(`${battingTeam} won by ${10 - currentWicket} wickets`);
+      setMatchWinner(battingTeam);
     }
     return newR;
   });
-  updateBatsman(striker, (b) => ({
-    runs: b.runs + value,
-    balls: b.balls + 1,
-  }));
-  updateBowler(bowler, (bw) => ({
-    runs: bw.runs + value,
-    balls: bw.balls + 1,
-  }));
 
-  setTotalBalls((prev) => {
+  updateBatsman(striker, b => ({ runs: b.runs + value, balls: b.balls + 1 }));
+  updateBowler(bowler, bw => ({ runs: bw.runs + value, balls: bw.balls + 1 }));
+
+  setTotalBalls(prev => {
     const newBalls = prev + 1;
+
+    // Innings over by max balls
     if (newBalls === matchData.over * 6) {
-      setIningsOver(true);
-      if (currentRun === target - 1) {
-        setMatchResult("Match tied");
-      } else if (currentRun < target - 1) {
-        setMatchWinner(bowlingTeam);
-        setMatchResult(
-          `${bowlingTeam} won by ${target - currentRun} runs`
-        );
-      }
-      return;
+      setTimeout(() => {
+        setIningsOver(true);
+        setBowlingStarted(false);
+        if (currentRun >= target) {
+          setMatchResult(`${battingTeam} won by ${10 - currentWicket} wickets`);
+          setMatchWinner(battingTeam);
+        } else if (currentRun < target - 1) {
+          setMatchResult(`${bowlingTeam} won by ${target - currentRun - 1} runs`);
+          setMatchWinner(bowlingTeam);
+        } else {
+          setMatchResult("Match tied");
+        }
+      }, 1000);
+      return newBalls;
     }
 
+    // End of over → swap strike & show bowler modal
     const isEndOfOver = newBalls % 6 === 0;
     if (isEndOfOver) {
       const temp = striker;
@@ -497,10 +500,12 @@ const startSecondInnings = async () => {
       setStriker(nonStriker);
       setNonStriker(temp);
     }
-    setIsFreeHit(false); // ✅ Free hit resets if it wasn’t W
+
+    setIsFreeHit(false); // reset free hit if not "no"
     return newBalls;
   });
 };
+
 
 
   useEffect(() => {
@@ -826,9 +831,9 @@ const startSecondInnings = async () => {
 
 
               {/* Stats Tables */}
-              <div className="grid gap-8 mt-8 md:grid-cols-2">
+              <div className="grid gap-8 mt-10 md:grid-cols-2">
                 <div>
-                  <h3 className="text-xl font-bold text-neutral-300 mb-2">Batting</h3>
+                  <h3 className="text-xl font-bold text-neutral-300 mb-2">Batting Scoreboard</h3>
                   <div className="overflow-x-auto bg-black/30 backdrop-blur-sm border border-neutral-700 rounded-lg p-1">
                     <table className="w-full text-left">
                       <thead>
@@ -840,7 +845,7 @@ const startSecondInnings = async () => {
                       </thead>
                       <tbody>
                         {Object.keys(batsmanStats).filter((b) => !batsmanStats[b].out).map((b) => (
-                          <tr key={b} className={`border-t border-neutral-800 ${b === striker ? "bg-amber-500/10" : ""}`}>
+                          <tr key={b} className={`border-t border-neutral-800 ${b === striker ? "bg-amber-500/65" : ""}`}>
                             <td className="p-3 font-bold">{b}{b === striker ? " *" : ""}</td>
                             <td className="p-3 font-bold text-center">{batsmanStats[b].runs}</td>
                             <td className="p-3 text-center">{batsmanStats[b].balls}</td>
@@ -851,7 +856,7 @@ const startSecondInnings = async () => {
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-neutral-300 mb-2">Bowling</h3>
+                  <h3 className="text-xl font-bold text-neutral-300 mb-2">Bowling Scoreboard</h3>
                   <div className="overflow-x-auto bg-black/30 backdrop-blur-sm border border-neutral-700 rounded-lg p-1">
                     <table className="w-full text-left">
                       <thead>
@@ -943,13 +948,13 @@ const startSecondInnings = async () => {
                 ) : (
                   <>
                     <div className="text-center">
-                      <p className="mt-1 text-2xl font-bold text-white bg-black/30 rounded-lg px-4 py-2 inline-block">
-                        {currentRun}/{currentWicket} <span className="text-lg text-neutral-400">({Overs})</span>
+                      <p className="mt-4 text-2xl font-bold text-white bg-black/30 rounded-lg px-4 py-2 inline-block">
+                        {battingTeam}: {currentRun}/{currentWicket} <span className="text-lg text-neutral-400">({Overs})</span>
                       </p>
                     </div>
 
                     {/* Run Buttons */}
-                    <div className="grid grid-cols-5 sm:grid-cols-9 gap-2 sm:gap-3 mt-8 max-w-2xl mx-auto">
+                    <div className="grid grid-cols-5 sm:grid-cols-9 gap-2 sm:gap-3 mt-6 max-w-2xl mx-auto">
                       {[0, 1, 2, 3, 4, 6].map((v) => (
                         <button key={v} onClick={() => secChangeRun(v)} className="py-3 font-semibold text-white transition-all duration-200 border-2 rounded-lg bg-white/10 border-neutral-600 hover:bg-amber-500 hover:border-amber-500 hover:scale-105">
                           {v}
@@ -960,10 +965,60 @@ const startSecondInnings = async () => {
                       <button onClick={() => secChangeRun("no")} className="py-3 font-semibold text-white transition-all duration-200 border-2 rounded-lg bg-sky-800/50 border-sky-700 hover:bg-sky-700 hover:border-sky-600 hover:scale-105">NB</button>
                     </div>
 
+                                <div className="flex justify-center mt-6 m-3">
+  <p
+    className={`cursor-pointer py-3 px-4 font-semibold transition-all duration-200 border-2 rounded-lg
+      ${
+        value === "W"
+          ? "bg-red-600 border-white text-white animate-bounce"     
+          : value === 4
+          ? "bg-blue-600 border-blue-700 text-white" 
+          : value === 6
+          ? "bg-green-600 border-green-700 text-neutral-900  animate-pulse" 
+          : value === "wide" 
+          ? "bg-amber-500 border-amber-600 text-black" 
+          : value === "no" 
+          ? "bg-amber-500 border-amber-600 text-black animate-bounce"
+          : "bg-neutral-800 border-neutral-600 text-gray-200" 
+      }
+      hover:scale-105
+    `}
+  >
+    {commentry}
+  </p>
+</div>
+
+
+
+
+<div className="flex justify-center mt-7">
+  {timeLine.length === 0 ?(<div className='py-1.5 px-3 font-semibold text-white transition-all duration-200 border-2 rounded-lg
+                 bg-white/10 border-neutral-600 hover:bg-amber-500 hover:border-amber-500'>
+    <h1>Timeline will appear here</h1>
+  </div>):
+  (<div className="flex gap-2 ">
+    {timeLine.slice(-6).map((res, idx) => (
+      <div
+        key={idx}
+        className={`w-10 h-10 flex items-center justify-center rounded-full font-bold
+          ${res === "4" ? "bg-blue-600 text-white"
+          : res === "6" ? "bg-green-600 text-white"
+          : res === "W" ? "bg-red-600 text-white"
+          : (res === "Wd" || res === "Nb") ? "bg-amber-500 text-black"
+          : "bg-gray-700 text-white"}`}
+      >
+        {res}
+      </div>
+    ))}
+  </div>)}
+</div>
+
+
+
                     {/* Stats Tables */}
                     <div className="grid gap-8 mt-10 md:grid-cols-2">
                        <div>
-                        <h3 className="text-xl font-bold text-neutral-300 mb-2">Batting</h3>
+                        <h3 className="text-xl font-bold text-neutral-300 mb-2">Batting Scoreboard</h3>
                         <div className="overflow-x-auto bg-black/30 backdrop-blur-sm border border-neutral-700 rounded-lg p-1">
                           <table className="w-full text-left">
                             <thead>
@@ -975,7 +1030,7 @@ const startSecondInnings = async () => {
                             </thead>
                             <tbody>
                               {Object.keys(batsmanStats).filter((b) => !batsmanStats[b].out).map((b) => (
-                                <tr key={b} className={`border-t border-neutral-800 ${b === striker ? "bg-amber-500/10" : ""}`}>
+                                <tr key={b} className={`border-t border-neutral-800 ${b === striker ? "bg-amber-500/50" : ""}`}>
                                   <td className="p-3 font-bold">{b}{b === striker ? " *" : ""}</td>
                                   <td className="p-3 font-bold text-center">{batsmanStats[b].runs}</td>
                                   <td className="p-3 text-center">{batsmanStats[b].balls}</td>
@@ -986,7 +1041,7 @@ const startSecondInnings = async () => {
                         </div>
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold text-neutral-300 mb-2">Bowling</h3>
+                        <h3 className="text-xl font-bold text-neutral-300 mb-2">Bowling Scoreboard</h3>
                         <div className="overflow-x-auto bg-black/30 backdrop-blur-sm border border-neutral-700 rounded-lg p-1">
                           <table className="w-full text-left">
                             <thead>
