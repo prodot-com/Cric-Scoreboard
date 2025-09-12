@@ -45,6 +45,8 @@ const AdminPage = () => {
   const [openingBatsman2, setOpeningBatsman2] = useState("");
   const [openingBowler, setOpeningBowler] = useState("");
   const [openersSet, setOpenersSet] = useState(false);
+  const [isFreeHit, setIsFreeHit] = useState(false);
+
 
   const [matchResult, setMatchResult] = useState(null)
   const [openersSelected, setOpenersSelected] = useState(false)
@@ -136,7 +138,7 @@ const AdminPage = () => {
     })
 
     setOpenersSelected(true)
-    // console.log(res) // will print a huge axios object
+    // console.log(res)
   } catch (error) {
     if (error.response) {
       console.error("Backend error:", error.response.data);
@@ -181,6 +183,14 @@ const AdminPage = () => {
       setBowlingStarted(true)
 
     if (value === "W") {
+      if (isFreeHit) {
+        setTotalBalls(b => b + 1);
+        updateBatsman(striker, b => ({ balls: b.balls + 1 }));
+        updateBowler(bowler, bw => ({ balls: bw.balls + 1 }));
+        setIsFreeHit(false);   // Free hit used
+    return;
+  }
+
       setCurrentWicket(w => {
         const newW = w + 1
         if (newW === 10) {
@@ -197,8 +207,9 @@ const AdminPage = () => {
     }
 
     if (value === "wide" || value === "no") {
-      setCurrentRun(r => r + 1)
-      updateBowler(bowler, bw => ({ runs: bw.runs + 1 }))
+      setCurrentRun(r => r + 1);
+      updateBowler(bowler, bw => ({ runs: bw.runs + 1 }));
+      setIsFreeHit(true);
       return
     }
 
@@ -283,6 +294,7 @@ const AdminPage = () => {
     setCurrentWicket(0);
     setOvers("0.0");
     setIsFirstInnings(false);
+    setIsFreeHit(false)
     setStriker("");
     setNonStriker("");
     setBowler("");
@@ -325,76 +337,117 @@ const AdminPage = () => {
 
   // ===== SECOND INNINGS RUN HANDLER =====
   const secChangeRun = (value) => {
-    if (!bowler || !striker) return alert("Select batsmen and bowler first!")
-      setBowlingStarted(true)
+  if (!bowler || !striker) return alert("Select batsmen and bowler first!");
+  setBowlingStarted(true);
 
-    if (value === "W") {
-      setCurrentWicket(w => {
-        const newW = w + 1
-        if (newW === 10) {
-          setIningsOver(true)
-          setMatchResult(`${bowlingTeam} won by ${target - 1 - currentRun} runs`)
-        }
-        return newW
-      })
-      setTotalBalls(b => b + 1)
-      updateBatsman(striker, b => ({ balls: b.balls + 1, out: true }))
-      updateBowler(bowler, bw => ({ balls: bw.balls + 1, wickets: bw.wickets + 1 }))
-      setShowBatsmanModal(true)
-      return
-    }
-
-    if (value === "wide" || value === "no") {
-      setCurrentRun(r => {
-        const newR = r + 1
-        if (newR >= target) {
-          setIningsOver(true)
-          setMatchResult(`${battingTeam} won by ${10 - currentWicket} wickets`)
-        }
-        return newR
-      })
-      updateBowler(bowler, bw => ({ runs: bw.runs + 1 }))
-      return
-    }
-
-    setCurrentRun(r => {
-      const newR = r + value
+  if (value === "no") {
+    setCurrentRun((r) => {
+      const newR = r + 1;
       if (newR >= target) {
-        setIningsOver(true)
-        setMatchWinner(battingTeam)
-        setMatchResult(`${battingTeam} won by ${10 - currentWicket} wickets`)
+        setIningsOver(true);
+        setMatchResult(`${battingTeam} won by ${10 - currentWicket} wickets`);
       }
-      return newR
-    })
-    updateBatsman(striker, b => ({ runs: b.runs + value, balls: b.balls + 1 }))
-    updateBowler(bowler, bw => ({ runs: bw.runs + value, balls: bw.balls + 1 }))
-
-    setTotalBalls(prev => {
-      const newBalls = prev + 1
-      if (newBalls === matchData.over * 6) {
-        setIningsOver(true)
-        if (currentRun === target - 1) {
-          setMatchResult("Match tied")
-        } else if (currentRun < target - 1) {
-          setMatchWinner(bowlingTeam)
-          setMatchResult(`${bowlingTeam} won by ${target -  currentRun} runs`)
-        }
-        return
-      }
-      const isEndOfOver = newBalls % 6 === 0
-      if (isEndOfOver) {
-        const temp = striker
-        setStriker(nonStriker)
-        setNonStriker(temp)
-        setShowBowlerModal(true)
-      } else if (value % 2 === 1) {
-        const temp = striker
-        setStriker(nonStriker)
-        setNonStriker(temp)
-      }
-      return newBalls
-    })
+      return newR;
+    });
+    updateBowler(bowler, (bw) => ({ runs: bw.runs + 1 }));
+    setIsFreeHit(true);
+    return;
   }
+
+  
+  if (value === "wide") {
+    setCurrentRun((r) => {
+      const newR = r + 1;
+      if (newR >= target) {
+        setIningsOver(true);
+        setMatchResult(`${battingTeam} won by ${10 - currentWicket} wickets`);
+      }
+      return newR;
+    });
+    updateBowler(bowler, (bw) => ({ runs: bw.runs + 1 }));
+    return;
+  }
+
+  //Handle Wicket
+  if (value === "W") {
+    if (isFreeHit) {
+      // ✅ Free Hit: No wicket, just ball counts
+      setTotalBalls((b) => b + 1);
+      updateBatsman(striker, (b) => ({ balls: b.balls + 1 }));
+      updateBowler(bowler, (bw) => ({ balls: bw.balls + 1 }));
+      setIsFreeHit(false); // reset after delivery
+      return;
+    }
+
+    // Normal wicket
+    setCurrentWicket((w) => {
+      const newW = w + 1;
+      if (newW === 10) {
+        setIningsOver(true);
+        setMatchResult(`${bowlingTeam} won by ${target - 1 - currentRun} runs`);
+      }
+      return newW;
+    });
+    setTotalBalls((b) => b + 1);
+    updateBatsman(striker, (b) => ({ balls: b.balls + 1, out: true }));
+    updateBowler(bowler, (bw) => ({
+      balls: bw.balls + 1,
+      wickets: bw.wickets + 1,
+    }));
+    setShowBatsmanModal(true);
+    return;
+  }
+
+  // 🏏 Handle Runs
+  setCurrentRun((r) => {
+    const newR = r + value;
+    if (newR >= target) {
+      setIningsOver(true);
+      setMatchWinner(battingTeam);
+      setMatchResult(`${battingTeam} won by ${10 - currentWicket} wickets`);
+    }
+    return newR;
+  });
+  updateBatsman(striker, (b) => ({
+    runs: b.runs + value,
+    balls: b.balls + 1,
+  }));
+  updateBowler(bowler, (bw) => ({
+    runs: bw.runs + value,
+    balls: bw.balls + 1,
+  }));
+
+  setTotalBalls((prev) => {
+    const newBalls = prev + 1;
+    if (newBalls === matchData.over * 6) {
+      setIningsOver(true);
+      if (currentRun === target - 1) {
+        setMatchResult("Match tied");
+      } else if (currentRun < target - 1) {
+        setMatchWinner(bowlingTeam);
+        setMatchResult(
+          `${bowlingTeam} won by ${target - currentRun} runs`
+        );
+      }
+      return;
+    }
+
+    const isEndOfOver = newBalls % 6 === 0;
+    if (isEndOfOver) {
+      const temp = striker;
+      setStriker(nonStriker);
+      setNonStriker(temp);
+      setShowBowlerModal(true);
+    } else if (value % 2 === 1) {
+      const temp = striker;
+      setStriker(nonStriker);
+      setNonStriker(temp);
+    }
+    setIsFreeHit(false); // ✅ Free hit resets if it wasn’t W
+    return newBalls;
+  });
+};
+
 
   useEffect(() => {
   if (iningsOver && !isFirstInnings) {
@@ -452,7 +505,8 @@ const AdminPage = () => {
     bowlerStats,
     bowler,
     bowlingStarted,
-    striker
+    striker,
+    freeHit: isFreeHit
   }
   socketRef.current?.emit("scoreUpdate", { matchId: id, data: inningsData })
 }, [
@@ -483,8 +537,22 @@ const AdminPage = () => {
 
   // ====== JSX ======
   return (
-    <div className="font-mono m-5">
-
+    <div className="font-mono">
+      
+      <div className="border border-black min-h-screen w-full bg-black relative">
+    {/* Ember Glow Background */}
+    <div
+      className="absolute inset-0 z-0"
+      style={{
+        backgroundImage: `
+          radial-gradient(circle at 50% 100%, rgba(255, 69, 0, 0.6) 0%, transparent 60%),
+          radial-gradient(circle at 50% 100%, rgba(255, 140, 0, 0.4) 0%, transparent 70%),
+          radial-gradient(circle at 50% 100%, rgba(255, 215, 0, 0.3) 0%, transparent 80%)
+        `,
+      }}
+    />
+    {/* Your Content/Components */}
+    <div className='relative z-20'>
       {/* Batsman Modal */}
       {showBatsmanModal && (
         <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black/50">
@@ -527,53 +595,59 @@ const AdminPage = () => {
       )}
 
       {!openersSelected && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm z-50">
-            <div className="bg-white/65 backdrop-blur-lg border-4  shadow-xl p-6 text-center w-96 border-bl">
-              <h2 className="text-2xl font-bold text-green-600 drop-shadow-sm">
-                   Choose Opening Batsman & Bowler
-              </h2>
-              
-              <form onSubmit={handleSubmit} className="flex flex-col justify-evenly items-center h-50">
-          
+<div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
+  <div className="relative bg-neutral-700/20 backdrop-blur-xl border-2 border-amber-600 rounded-2xl p-8 text-center w-96">
+    
+    {/* Decorative Glow Ring */}
+    {/* <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-green-400/20 via-transparent to-green-600/20 blur-2xl -z-10"></div> */}
 
-          <label>
-            Striker:
-            <input
-              placeholder="Enter Team-1 name"
-              className="bg-blue-400 rounded-xl"
-              type="text"
-              value={input.batsman1}
-              onChange={(e) => setInput({ ...input, batsman1: e.target.value })}
-            />
-          </label>
+    <h2 className="text-3xl font-extrabold text-amber-600 drop-shadow-lg mb-6 tracking-wide">
+      Choose Opening Batsman & Bowler
+    </h2>
 
-          <label>
-            NonStriker:
-            <input
-              placeholder="Enter Team-1 name"
-              className="bg-blue-400 rounded-xl"
-              type="text"
-              value={input.batsman2}
-              onChange={(e) => setInput({ ...input, batsman2: e.target.value })}
-            />
-          </label>
+    <form onSubmit={handleSubmit} className="flex flex-col space-y-5">
+      <label className="flex flex-col items-start text-gray-200 font-semibold">
+        Striker:
+        <input
+          placeholder="Enter Striker name"
+          className="mt-2 w-full rounded-xl border border-amber-500 px-4 py-2 bg-black/40 text-white placeholder-amber-300/60 focus:ring-2 focus:ring-amber-400 focus:outline-none transition"
+          type="text"
+          value={input.batsman1}
+          onChange={(e) => setInput({ ...input, batsman1: e.target.value })}
+        />
+      </label>
 
-          <label>
-            Bowler:
-            <input
-              placeholder="Enter Team-1 name"
-              className="bg-blue-400 rounded-xl"
-              type="text"
-              value={input.bowler}
-              onChange={(e) => setInput({ ...input, bowler: e.target.value })}
-            />
-          </label>
+      <label className="flex flex-col items-start text-gray-200 font-semibold">
+        NonStriker:
+        <input
+          placeholder="Enter Non-Striker name"
+          className="mt-2 w-full rounded-xl border border-amber-500 px-4 py-2 bg-black/40 text-white placeholder-amber-300/60 focus:ring-2 focus:ring-amber-400 focus:outline-none transition"
+          type="text"
+          value={input.batsman2}
+          onChange={(e) => setInput({ ...input, batsman2: e.target.value })}
+        />
+      </label>
 
-          <input type="submit" className="bg-blue-400 rounded-sm px-4 py-2 mt-4 cursor-pointer" />
-        </form>
+      <label className="flex flex-col items-start text-gray-200 font-semibold">
+        Bowler:
+        <input
+          placeholder="Enter Opening Bowler name"
+          className="mt-2 w-full rounded-xl border border-amber-500 px-4 py-2 bg-black/40 text-white placeholder-amber-300/60 focus:ring-2 focus:ring-amber-400 focus:outline-none transition"
+          type="text"
+          value={input.bowler}
+          onChange={(e) => setInput({ ...input, bowler: e.target.value })}
+        />
+      </label>
 
-            </div>
-        </div>
+      <input
+        type="submit"
+        className="bg-gradient-to-r from-amber-700 to-amber-400 text-white font-bold rounded-xl px-6 py-2 mt-6 cursor-pointer shadow-lg hover:scale-105 hover:shadow-amber-600/40 transition-transform duration-200"
+      />
+    </form>
+  </div>
+</div>
+
+
 
         )}
 
@@ -621,7 +695,7 @@ const AdminPage = () => {
       {/* ================== FIRST INNINGS ================== */}
       {!secondInningsStarts ? (
         !iningsOver ? (
-          <div>
+          <div className=' w-full h-screen text-white'>
             <Title text="First Innings Admin Panel" className="text-indigo-700" />
             <p className="mt-3 text-xl font-bold">
               {battingTeam} vs {bowlingTeam}
@@ -629,6 +703,11 @@ const AdminPage = () => {
             <p className="mt-2 text-lg">
               {battingTeam}: {currentRun}/{currentWicket} in {Overs} overs
             </p>
+
+            {isFreeHit && (
+  <p className="text-green-600 font-bold mt-2">Free Hit!</p>
+)}
+
 
             {/* Run Buttons */}
             <div className="grid grid-cols-4 gap-2 mt-5">
@@ -709,9 +788,8 @@ const AdminPage = () => {
         )
       ) : (
         // ================ SECOND INNINGS ===================
-       
-// ================ SECOND INNINGS ===================
-<div>
+        
+      <div>
   {!iningsOver ? (
     <div>
       <Title text="Second Innings Admin Panel" className="text-indigo-700" />
@@ -843,11 +921,13 @@ const AdminPage = () => {
       <h2 className="mt-5 text-xl font-bold">{matchResult}</h2>
     </div>
   )}
-</div>
+      </div>)} 
 
+      </div>
+  </div>
 
-      )
-      } 
+  
+
     </div>
   )
 }
