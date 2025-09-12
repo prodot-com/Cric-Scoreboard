@@ -534,12 +534,10 @@ const AdminPage = () => {
     }
   }
 
-
-  // ====== JSX ======
   return (
     <div className="font-mono">
       
-      <div className="border border-black min-h-screen w-full bg-black relative">
+      <div className="border min-h-screen w-full bg-black relative">
     {/* Ember Glow Background */}
     <div
       className="absolute inset-0 z-0"
@@ -551,55 +549,59 @@ const AdminPage = () => {
         `,
       }}
     />
-    {/* Your Content/Components */}
+    
     <div className='relative z-20'>
       {/* Batsman Modal */}
       {showBatsmanModal && (
-        <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black/50">
-          <div className="bg-white p-5 rounded-lg">
-            <h3 className="text-lg font-bold mb-3">Enter Next Batsman</h3>
-            <input
-              id="nextBatsmanInput"
-              type="text"
-              placeholder="Batsman name"
-              className="border p-2 rounded w-full"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && e.target.value) {
-                  setStriker(e.target.value)
-                  setBatsmanStats(prev => ({
-                    ...prev,
-                    [e.target.value]: { runs: 0, balls: 0, out: false }
-                  }))
-                  setShowBatsmanModal(false)
-                }
-              }}
-            />
-            <button
-              className="mt-3 px-4 py-2 bg-green-600 text-white rounded"
-              onClick={() => {
-                const input = document.querySelector("#nextBatsmanInput")
-                if (input.value) {
-                  setStriker(input.value)
-                  setBatsmanStats(prev => ({
-                    ...prev,
-                    [input.value]: { runs: 0, balls: 0, out: false }
-                  }))
-                  setShowBatsmanModal(false)
-                }
-              }}
-            >
-              Confirm
-            </button>
-          </div>
-        </div>
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
+  <div className="relative bg-white/20 backdrop-blur-2xl border-2 border-amber-600  rounded-2xl p-6 w-96 text-center">
+
+    
+    <h3 className="text-2xl font-extrabold text-amber-400 drop-shadow-lg mb-5 tracking-wide">
+      Enter Next Batsman
+    </h3>
+
+    <input
+      id="nextBatsmanInput"
+      type="text"
+      placeholder="Batsman name"
+      className="w-full rounded-xl border border-amber-400/40 px-4 py-2 bg-black/40 text-amber-100 placeholder-amber-300/60 focus:ring-2 focus:ring-amber-400 focus:outline-none transition"
+      onKeyDown={(e) => {
+        if (e.key === "Enter" && e.target.value) {
+          setStriker(e.target.value)
+          setBatsmanStats(prev => ({
+            ...prev,
+            [e.target.value]: { runs: 0, balls: 0, out: false }
+          }))
+          setShowBatsmanModal(false)
+        }
+      }}
+    />
+
+    <button
+      className="mt-5 w-full bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold rounded-xl px-6 py-2 cursor-pointer shadow-lg hover:scale-105 hover:shadow-amber-400/40 transition-transform duration-200"
+      onClick={() => {
+        const input = document.querySelector("#nextBatsmanInput")
+        if (input.value) {
+          setStriker(input.value)
+          setBatsmanStats(prev => ({
+            ...prev,
+            [input.value]: { runs: 0, balls: 0, out: false }
+          }))
+          setShowBatsmanModal(false)
+        }
+      }}
+    >
+      Confirm
+    </button>
+  </div>
+</div>
+
       )}
 
       {!openersSelected && (
 <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
   <div className="relative bg-neutral-700/20 backdrop-blur-xl border-2 border-amber-600 rounded-2xl p-8 text-center w-96">
-    
-    {/* Decorative Glow Ring */}
-    {/* <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-green-400/20 via-transparent to-green-600/20 blur-2xl -z-10"></div> */}
 
     <h2 className="text-3xl font-extrabold text-amber-600 drop-shadow-lg mb-6 tracking-wide">
       Choose Opening Batsman & Bowler
@@ -653,53 +655,65 @@ const AdminPage = () => {
 
       {/* Bowler Modal */}
       {showBowlerModal && (
-        <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black/50">
-          <div className="bg-white p-5 rounded-lg">
-            <h3 className="text-lg font-bold mb-3">Enter Next Bowler</h3>
-            <input
-              id="nextBowlerInput"
-              type="text"
-              placeholder="Bowler name"
-              className="border p-2 rounded w-full"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && e.target.value) {
-                  setBowler(e.target.value)
-                  setBowlerStats(prev => ({
-                    ...prev,
-                    [e.target.value]: { runs: 0, balls: 0, wickets: 0 }
-                  }))
-                  setShowBowlerModal(false)
-                }
-              }}
-            />
-            <button
-              className="mt-3 px-4 py-2 bg-green-600 text-white rounded"
-              onClick={() => {
-                const input = document.querySelector("#nextBowlerInput")
-                if (input.value) {
-                  setBowler(input.value)
-                  setBowlerStats(prev => ({
-                    ...prev,
-                    [input.value]: { runs: 0, balls: 0, wickets: 0 }
-                  }))
-                  setShowBowlerModal(false)
-                }
-              }}
-            >
-              Confirm
-            </button>
-          </div>
-        </div>
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
+  <div className="relative bg-white/20 backdrop-blur-2xl border-2 border-amber-600 rounded-2xl p-6 w-96 text-center">
+
+    
+    <h3 className="text-2xl font-extrabold text-amber-400 drop-shadow-lg mb-5 tracking-wide">
+      Enter Next Bowler
+    </h3>
+
+    <input
+      id="nextBowlerInput"
+      type="text"
+      placeholder="Bowler name"
+      className="w-full rounded-xl border border-amber-400 px-4 py-2 bg-black/40 text-red-100 placeholder-amber-300 focus:ring-2 focus:ring-amber-400 focus:outline-none transition"
+      onKeyDown={(e) => {
+        if (e.key === "Enter" && e.target.value) {
+          setBowler(e.target.value)
+          setBowlerStats(prev => ({
+            ...prev,
+            [e.target.value]: { runs: 0, balls: 0, wickets: 0 }
+          }))
+          setShowBowlerModal(false)
+        }
+      }}
+    />
+
+    <button
+      className="mt-5 w-full bg-gradient-to-r from-amber-600 to-amber-400 text-white font-bold rounded-xl px-6 py-2 cursor-pointer shadow-lg hover:scale-105 hover:shadow-amber-500 transition-transform duration-200"
+      onClick={() => {
+        const input = document.querySelector("#nextBowlerInput")
+        if (input.value) {
+          setBowler(input.value)
+          setBowlerStats(prev => ({
+            ...prev,
+            [input.value]: { runs: 0, balls: 0, wickets: 0 }
+          }))
+          setShowBowlerModal(false)
+        }
+      }}
+    >
+      Confirm
+    </button>
+  </div>
+</div>
+
       )}
 
       {/* ================== FIRST INNINGS ================== */}
       {!secondInningsStarts ? (
         !iningsOver ? (
-          <div className=' w-full h-screen text-white'>
-            <Title text="First Innings Admin Panel" className="text-indigo-700" />
+          <div className=' w-full m-3 h-screen text-white'>
+            <div className='flex justify-center mt-7'>
+              <h1 className='font-bold text-4xl text-amber-700'>
+                First Innings Admin Panel</h1>
+            </div>
+            <div className='flex justify-center'>
             <p className="mt-3 text-xl font-bold">
               {battingTeam} vs {bowlingTeam}
             </p>
+            </div>
             <p className="mt-2 text-lg">
               {battingTeam}: {currentRun}/{currentWicket} in {Overs} overs
             </p>
@@ -924,9 +938,8 @@ const AdminPage = () => {
       </div>)} 
 
       </div>
+      
   </div>
-
-  
 
     </div>
   )
