@@ -4,9 +4,11 @@ import Title from '../Title/Title'
 import { io } from "socket.io-client"
 import axios from 'axios'
 import { ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router'
 
 const AdminPage = () => {
   const socketRef = useRef(null)
+  const navigate = useNavigate();
   const { id } = useParams()
 
   const [input, setInput] = useState({
@@ -37,7 +39,7 @@ const AdminPage = () => {
   const [bowler, setBowler] = useState('')
   const [batsmanStats, setBatsmanStats] = useState({})
   const [bowlerStats, setBowlerStats] = useState({})
-  const [value, setValue]= useState(null)
+  const [value, setValue]= useState("new")
 
   // store first innings summary
   const [firstInningsBatsmanStats, setFirstInningsBatsmanStats] = useState({})
@@ -60,6 +62,7 @@ const AdminPage = () => {
   const [showBowlerModal, setShowBowlerModal] = useState(false)
   const [timeLine, setTimeLine] = useState([])
   const [commentry, setCommentry] = useState('🏏 Match is about to begin')
+  const [toltalBallsInMatch, setToltalBallsInMatch] = useState(0)
 
   // ===== SOCKET =====
   useEffect(() => {
@@ -75,6 +78,7 @@ const AdminPage = () => {
     try {
       const res = await axios.get(`http://localhost:9000/user/one/${id}`)
       setMatchData(res.data.result)
+      setToltalBallsInMatch(res.data.result.over*6)
     } catch (error) {
       console.log(error)
     }
@@ -218,79 +222,121 @@ const updateCommentry = (eventType, batsmanName, bowlerName) => {
 
 
   // ===== MAIN RUN HANDLER (FIRST INNINGS) =====
-  const changeRun = (value) => {
-    if (!bowler || !striker) return alert("Select batsmen and bowler first!")
-    
-      setBowlingStarted(true)
-      setValue(value)
-      
-      updateTimeline(value);
-      updateCommentry(value, striker, bowler)
+const changeRun = (value) => {
+  if (!bowler || !striker) return alert("Select batsmen and bowler first!");
 
-    if (value === "W") {
-      if (isFreeHit) {
-        setTotalBalls(b => b + 1);
-        updateBatsman(striker, b => ({ balls: b.balls + 1 }));
-        updateBowler(bowler, bw => ({ balls: bw.balls + 1 }));
-        setIsFreeHit(false);   // Free hit used
+  setBowlingStarted(true);
+  setValue(value);
+
+  updateTimeline(value);
+  updateCommentry(value, striker, bowler);
+
+  // 🏏 WICKET CASE
+  if (value === "W") {
+    if (isFreeHit) {
+      // Free hit wicket → only counts as ball
+      setTotalBalls((b) => b + 1);
+      updateBatsman(striker, (b) => ({ balls: b.balls + 1 }));
+      updateBowler(bowler, (bw) => ({ balls: bw.balls + 1 }));
+      setIsFreeHit(false);
+      return;
+    }
+
+    setCurrentWicket((w) => {
+      const newW = w + 1;
+      if (newW === 10) {
+        // All out
+        setTimeout(() => {
+          setIningsOver(true);
+          setBowlingStarted(false);
+        }, 1000);
+      }
+      return newW;
+    });
+
+    setTotalBalls((b) => {
+      const newBalls = b + 1;
+
+      // update stats
+      updateBatsman(striker, (b) => ({ balls: b.balls + 1, out: true }));
+      updateBowler(bowler, (bw) => ({ balls: bw.balls + 1, wickets: bw.wickets + 1 }));
+
+      // 🏏 If last ball of the over
+      if (newBalls % 6 === 0) {
+        // Show batsman modal first
+        setTimeout(() => {
+          setShowBatsmanModal(true);
+        }, 500);
+
+        // Rotate strike (end of over rule)
+        const temp = striker;
+        setStriker(nonStriker);
+        setNonStriker(temp);
+
+        // Then select new bowler for next over
+        setTimeout(() => {
+          setShowBowlerModal(true);
+        }, 1200);
+      } else {
+        // Not last ball → just show new batsman modal
+        setTimeout(() => {
+          setShowBatsmanModal(true);
+        }, 500);
+      }
+
+      return newBalls;
+    });
     return;
   }
 
-      setCurrentWicket(w => {
-        const newW = w + 1
-        if (newW === 10) {
-          setTimeout(()=>{
-            setIningsOver(true);
-        setBowlingStarted(false)
-          },1000)
-      }
-        return newW
-      })
-      setTotalBalls(b => b + 1)
-      updateBatsman(striker, b => ({ balls: b.balls + 1, out: true }))
-      updateBowler(bowler, bw => ({ balls: bw.balls + 1, wickets: bw.wickets + 1 }))
-      setTimeout(()=>{
-        setShowBatsmanModal(true)
-      },1000)
-      return
-    }
-
-    if (value === "wide" || value === "no") {
-      setCurrentRun(r => r + 1);
-      updateBowler(bowler, bw => ({ runs: bw.runs + 1 }));
-      setIsFreeHit(true);
-      return
-    }
-
-    setCurrentRun(r => r + value)
-    updateBatsman(striker, b => ({ runs: b.runs + value, balls: b.balls + 1 }))
-    updateBowler(bowler, bw => ({ runs: bw.runs + value, balls: bw.balls + 1 }))
-
-    setTotalBalls(prev => {
-      const newBalls = prev + 1
-      if (newBalls === matchData.over * 6){ 
-        setTimeout(()=>{
-            setIningsOver(true);
-        setBowlingStarted(false)
-          },1000)
-      return newBalls
-    }
-
-      const isEndOfOver = newBalls % 6 === 0
-      if (isEndOfOver) {
-        const temp = striker
-        setStriker(nonStriker)
-        setNonStriker(temp)
-        setShowBowlerModal(true)
-      } else if (value % 2 === 1) {
-        const temp = striker
-        setStriker(nonStriker)
-        setNonStriker(temp)
-      }
-      return newBalls
-    })
-    
+  // 🏏 WIDE / NO BALL CASE
+  if (value === "wide" || value === "no") {
+    setCurrentRun((r) => r + 1);
+    updateBowler(bowler, (bw) => ({ runs: bw.runs + 1 }));
+    setIsFreeHit(true);
+    return;
   }
+
+  // 🏏 NORMAL RUNS
+  setCurrentRun((r) => r + value);
+  updateBatsman(striker, (b) => ({
+    runs: b.runs + value,
+    balls: b.balls + 1,
+  }));
+  updateBowler(bowler, (bw) => ({
+    runs: bw.runs + value,
+    balls: bw.balls + 1,
+  }));
+
+  setTotalBalls((prev) => {
+    const newBalls = prev + 1;
+
+    // End of innings check
+    if (newBalls === matchData.over * 6) {
+      setTimeout(() => {
+        setIningsOver(true);
+        setBowlingStarted(false);
+      }, 1000);
+      return newBalls;
+    }
+
+    // End of over check
+    if (newBalls % 6 === 0) {
+      const temp = striker;
+      setStriker(nonStriker);
+      setNonStriker(temp);
+      setShowBowlerModal(true);
+    } else if (value % 2 === 1) {
+      // Odd run rotation
+      const temp = striker;
+      setStriker(nonStriker);
+      setNonStriker(temp);
+    }
+
+    return newBalls;
+  });
+};
+
 
   useEffect(()=>{console.log(commentry)},[commentry])
 
@@ -360,6 +406,7 @@ const startSecondInnings = async () => {
     setBowlerStats({});
     setCommentry("🏏 Match is about to begin")
     setTimeLine([])
+    setValue("new")
   } catch (error) {
     console.error("Error saving first innings summary:", error);
   }
@@ -406,7 +453,7 @@ const secChangeRun = (value) => {
   updateTimeline(value);
   updateCommentry(value, striker, bowler);
 
-  // Handle Wicket
+  // 🏏 WICKET
   if (value === "W") {
     if (isFreeHit) {
       setTotalBalls(b => b + 1);
@@ -427,15 +474,37 @@ const secChangeRun = (value) => {
       return newW;
     });
 
-    setTotalBalls(b => b + 1);
-    updateBatsman(striker, b => ({ balls: b.balls + 1, out: true }));
-    updateBowler(bowler, bw => ({ balls: bw.balls + 1, wickets: bw.wickets + 1 }));
+    setTotalBalls(prev => {
+      const newBalls = prev + 1;
 
-    setTimeout(() => setShowBatsmanModal(true), 1000);
+      updateBatsman(striker, b => ({ balls: b.balls + 1, out: true }));
+      updateBowler(bowler, bw => ({ balls: bw.balls + 1, wickets: bw.wickets + 1 }));
+
+      // 🏏 If last ball of over
+      if (newBalls % 6 === 0) {
+        setTimeout(() => {
+          setShowBatsmanModal(true); // New batsman
+        }, 500);
+
+        // End of over → strike rotates
+        const temp = striker;
+        setStriker(nonStriker);
+        setNonStriker(temp);
+
+        setTimeout(() => {
+          setShowBowlerModal(true); // New bowler
+        }, 1200);
+      } else {
+        // Not last ball → just show new batsman
+        setTimeout(() => setShowBatsmanModal(true), 500);
+      }
+
+      return newBalls;
+    });
     return;
   }
 
-  // Handle Wide/No ball
+  // 🏏 WIDE / NO BALL
   if (value === "wide" || value === "no") {
     setCurrentRun(r => {
       const newR = r + 1;
@@ -452,7 +521,7 @@ const secChangeRun = (value) => {
     return;
   }
 
-  // Handle Runs
+  // 🏏 RUNS
   setCurrentRun(r => {
     const newR = r + value;
     if (newR >= target) {
@@ -470,7 +539,7 @@ const secChangeRun = (value) => {
   setTotalBalls(prev => {
     const newBalls = prev + 1;
 
-    // Innings over by max balls
+    // 🏏 Innings over by balls
     if (newBalls === matchData.over * 6) {
       setTimeout(() => {
         setIningsOver(true);
@@ -488,24 +557,23 @@ const secChangeRun = (value) => {
       return newBalls;
     }
 
-    // End of over → swap strike & show bowler modal
-    const isEndOfOver = newBalls % 6 === 0;
-    if (isEndOfOver) {
+    // 🏏 End of over
+    if (newBalls % 6 === 0) {
       const temp = striker;
       setStriker(nonStriker);
       setNonStriker(temp);
       setShowBowlerModal(true);
     } else if (value % 2 === 1) {
+      // Odd run → rotate strike
       const temp = striker;
       setStriker(nonStriker);
       setNonStriker(temp);
     }
 
-    setIsFreeHit(false); // reset free hit if not "no"
+    setIsFreeHit(false); // reset
     return newBalls;
   });
 };
-
 
 
   useEffect(() => {
@@ -751,7 +819,7 @@ const secChangeRun = (value) => {
             <div>
               <div className='text-center'>
                 <div className='flex'>
-                  <ArrowLeft className="w-6 cursor-pointer h-6 sm:w-7 sm:h-7 hover:scale-130 transition-transform duration-100 delay-50"/>
+                  <ArrowLeft onClick={()=>navigate(`/toss/${id}`)} className="w-6 cursor-pointer h-6 sm:w-7 sm:h-7 hover:scale-130 transition-transform duration-100 delay-50"/>
                 </div>
                 <h1 className='font-bold text-3xl sm:text-4xl text-amber-500 tracking-tight drop-shadow-lg'>
                   First Innings Admin Panel
@@ -792,6 +860,8 @@ const secChangeRun = (value) => {
           ? "bg-amber-500 border-amber-600 text-black" 
           : value === "no" 
           ? "bg-amber-500 border-amber-600 text-black animate-bounce"
+          :value === "new"
+          ? "bg-neutral-800 border-neutral-600 text-gray-200"
           : "bg-neutral-800 border-neutral-600 text-gray-200" 
       }
       hover:scale-105
@@ -950,6 +1020,12 @@ const secChangeRun = (value) => {
                     <div className="text-center">
                       <p className="mt-4 text-2xl font-bold text-white bg-black/30 rounded-lg px-4 py-2 inline-block">
                         {battingTeam}: {currentRun}/{currentWicket} <span className="text-lg text-neutral-400">({Overs})</span>
+                      </p>
+                    </div>
+
+                    <div className="text-center">
+                      <p className="mt-4 text-xl font-bold text-white bg-black/30 rounded-lg px-4 py-2 inline-block">
+                        {battingTeam} need {target - currentRun} in {toltalBallsInMatch - totalBalls} balls
                       </p>
                     </div>
 

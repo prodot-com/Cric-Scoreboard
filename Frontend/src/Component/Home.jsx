@@ -1,8 +1,6 @@
 import React from "react";
 import mobileVersion from "../assets/MobileView.png";
 import { Star, BarChart, Zap, Heart, Github, Linkedin, Mail} from "lucide-react";
-import CountUp from "react-countup";
-import VisibilitySensor from "react-visibility-sensor";
 import LiveTime from "./LiveTime";
 import { useNavigate } from "react-router-dom";
 

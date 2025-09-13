@@ -18,15 +18,26 @@ const Toss = () => {
   const [tossMade, setTossMade] = useState(false)
 
   useEffect(()=>{
-    const local = JSON.parse(localStorage.getItem('matchDetails'));
-    setMatchData(local)
+    
+    const getMatch = async ()=>{
+      try {
+        const res = await axios.get(`http://localhost:9000/user/one/${id}`)
+        console.log(res.data.result)
+        setMatchData(res.data.result)
+      } catch (error) {
+        console.log("Somethong went wrong: ",error)
+      }
+    }
+
+    getMatch()
+
   },[])
 
-  const getElement = () => {
-    const local = JSON.parse(localStorage.getItem('matchDetails'));
-    console.log(local)
-    return [local?.team1, local?.team2];
-  };
+  // const getElement = () => {
+  //   const local = JSON.parse(localStorage.getItem('matchDetails'));
+  //   console.log(local)
+  //   return [local?.team1, local?.team2];
+  // };
 
   
   const toss = () => {
@@ -35,8 +46,7 @@ const Toss = () => {
     setTossWinner("");
 
     setTimeout(() => {
-      const [team1, team2] = getElement();
-      const result = Math.random() < 0.5 ? team1 : team2;
+      const result = Math.random() < 0.5 ? matchData.team1 : matchData.team2;
       setTossWinner(result);
       setDisable(false); 
       setIsFlipping(false);
