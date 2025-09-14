@@ -147,7 +147,7 @@ export default function CreateMatchPage() {
             </h2>
             <form onSubmit={handleSubmit} className="space-y-5">
               {[
-                { label: "Your Name", key: "name", placeholder: "Akex Carey" },
+                { label: "Your Name", key: "name", placeholder: "Alex Carey" },
                 { label: "Team 1 Name", key: "team1", placeholder: "Royal Challengers" },
                 { label: "Team 2 Name", key: "team2", placeholder: "Knight Riders" },
                 { label: "Total Overs", key: "over", type: "number", placeholder: "20" },
