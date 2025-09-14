@@ -658,7 +658,13 @@ const calculateStrikeRate = (runs, balls)=>{
     bowler,
     bowlingStarted,
     striker,
-    freeHit: isFreeHit
+    freeHit: isFreeHit,
+    commentry,
+    timeLine,
+    toltalBallsInMatch,
+    CRR,
+    RRR,
+    value
   }
   socketRef.current?.emit("scoreUpdate", { matchId: id, data: inningsData })
 }, [

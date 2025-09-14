@@ -1,587 +1,375 @@
-import React, { use, useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router";
 import { io } from "socket.io-client";
 import axios from "axios";
+import { Github, Linkedin, Mail, ArrowLeft, X } from 'lucide-react';
 
-const socket = io("http://localhost:9000/");
+// In a real production app, this URL should come from an environment variable
+const SOCKET_URL = "http://localhost:9000/";
+const socket = io(SOCKET_URL);
 
-const LiveFirstInnings = () => {
-  const navigate = useNavigate();
+// --- Reusable UI Components ---
+
+const StatBox = ({ label, value }) => (
+  <div className="text-center">
+    <p className='text-lg sm:text-2xl font-bold text-white'>{value || "0.00"}</p>
+    <p className="text-xs sm:text-sm text-neutral-400 uppercase tracking-wider">{label}</p>
+  </div>
+);
+
+const TimelineBall = ({ ball }) => {
+    let style = "bg-neutral-600 border-neutral-500";
+    let content = ball;
+    if (typeof ball === 'object' && ball !== null) {
+        content = ball.run;
+        if (ball.type === "wicket") {
+            style = "bg-red-600 border-red-500";
+            content = "W";
+        } else if (ball.run === 4) style = "bg-blue-500 border-blue-400";
+        else if (ball.run === 6) style = "bg-purple-600 border-purple-500";
+        else if (ball.type === "wide" || ball.type === "noball") {
+             style = "bg-amber-500 border-amber-400 text-black";
+             content = ball.run > 0 ? `${ball.run}${ball.type.charAt(0).toUpperCase()}`: ball.type.charAt(0).toUpperCase();
+        }
+    }
+    return (
+        <div className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full font-bold text-sm border-2 ${style}`}>
+            {content}
+        </div>
+    );
+};
+
+const MatchSummaryModal = ({ first, second, onClose }) => {
+    const calculateSR = (r, b) => (b > 0 ? ((r / b) * 100).toFixed(2) : "0.00");
+    const calculateEcon = (r, b) => (b > 0 ? ((r / (b/6))).toFixed(2) : "0.00");
+    const renderOver = (b) => b > 0 ? `${Math.floor(b/6)}.${b%6}` : "0.0";
+
+    const renderInnings = (summary, title) => (
+        <div className="bg-neutral-900 border border-neutral-700 rounded-xl p-3 sm:p-4">
+            <h3 className="text-lg sm:text-xl font-bold text-amber-500 mb-2">{title}: {summary.battingTeam}</h3>
+            <p className="font-semibold text-sm sm:text-base mb-3 text-white">
+                {summary.runs}/{summary.wickets || 0} ({renderOver(summary.balls)} Overs)
+            </p>
+            <div className="space-y-4">
+                <div>
+                    <h4 className="text-left font-semibold text-sm sm:text-base text-neutral-300 mb-1">Batting</h4>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-xs sm:text-sm text-left">
+                           <thead className="text-neutral-400"><tr className="border-b border-neutral-600"><th className="p-1 font-normal">Batter</th><th className="p-1 font-normal text-center">R</th><th className="p-1 font-normal text-center">B</th><th className="p-1 font-normal text-center">SR</th></tr></thead>
+                            <tbody>
+                                {Object.values(summary.batsman || {}).map((p, index) => (
+                                    <tr key={`${p.name}-${index}`} className="border-b border-neutral-800">
+                                        <td className="p-1 font-semibold">{p.name} {p.out ? '' : '*'}</td>
+                                        <td className="p-1 text-center">{p.runs}</td>
+                                        <td className="p-1 text-center">{p.balls}</td>
+                                        <td className="p-1 text-center">{calculateSR(p.runs,p.balls)}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div>
+                    <h4 className="text-left font-semibold text-sm sm:text-base text-neutral-300 mb-1">Bowling</h4>
+                    <div className="overflow-x-auto">
+                         <table className="w-full text-xs sm:text-sm text-left">
+                           <thead className="text-neutral-400"><tr className="border-b border-neutral-600"><th className="p-1 font-normal">Bowler</th><th className="p-1 font-normal text-center">O</th><th className="p-1 font-normal text-center">R</th><th className="p-1 font-normal text-center">W</th><th className="p-1 font-normal text-center">Econ</th></tr></thead>
+                            <tbody>
+                                {Object.values(summary.bowler || {}).map((p, index) => (
+                                    <tr key={`${p.name}-${index}`} className="border-b border-neutral-800">
+                                        <td className="p-1 font-semibold">{p.name}</td>
+                                        <td className="p-1 text-center">{renderOver(p.balls)}</td>
+                                        <td className="p-1 text-center">{p.runs}</td>
+                                        <td className="p-1 text-center">{p.wickets}</td>
+                                        <td className="p-1 text-center">{calculateEcon(p.runs,p.balls)}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+    
+    return (
+        <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/60 z-50 p-4" onClick={onClose}>
+            <div className="w-full max-w-5xl bg-neutral-800/80 border-2 border-amber-600 rounded-2xl p-4 sm:p-6 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl sm:text-3xl font-bold text-amber-500">Match Summary</h2>
+                    <button onClick={onClose} className="text-neutral-400 hover:text-white"><X size={28}/></button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                    {first.battingTeam && renderInnings(first, "1st Innings")}
+                    {second.battingTeam && renderInnings(second, "2nd Innings")}
+                </div>
+                <div className="mt-6 text-center pt-4 border-t border-neutral-700">
+                    <h3 className="text-lg sm:text-xl font-bold text-green-500">{second?.matchWinner}</h3>
+                    <p className="text-neutral-300 text-sm sm:text-base font-medium">{second?.matchResult}</p>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
+// --- Main Page Component ---
+
+const LiveMatchPage = () => {
   const { id } = useParams();
 
-  const [matchData, setMatchData] = useState({})
-  const [battingTeam, setBattingTeam] = useState("Loading...");
-  const [bowlingTeam, setBowlingTeam] = useState("Loading...");
-  const [currentRun, setCurrentRun] = useState(0);
-  const [currentWicket, setCurrentWicket] = useState(0);
-  const [totalBalls, setTotalBalls] = useState(0);
-  const [overs, setOvers] = useState("0.0");
-  const [CRR, setCRR] = useState(0)
-  const [RRR, setRRR] = useState(0)
-
-  const [iningsOver, setIningsOver] = useState(false);
-  const [secondInningsStart, setSecondInningsStart] = useState(false);
-  const [bowlingStarted, setBowlingStarted] = useState(false);
-
-  const [tossWinner, setTossWinner] = useState("...");
-  const [decision, setDecision] = useState("...");
-  const [inning, setInning] = useState(1)
-
-  const [striker, setStriker] = useState("");
-  const [nonStriker, setNonStriker] = useState("");
-  const [bowler, setBowler] = useState("");
-
-  const [batsmanStats, setBatsmanStats] = useState({});
-  const [bowlerStats, setBowlerStats] = useState({});
-
-  const [target, setTarget] = useState(null);
-  const [winner, setWinner] = useState(null);
-  const [matchResult, setMatchResult] = useState(null);
-  const [matchCompleted, setmatchCompleted]= useState(false);
+  // Simplified state management
+  const [matchState, setMatchState] = useState({
+    battingTeam: "...", bowlingTeam: "...", score: "0/0", overs: "0.0",
+    inning: 1, target: null, crr: "0.00", rrr: "0.00", striker: "", nonStriker: "",
+    bowler: "", batsmanStats: {}, bowlerStats: {}, commentary: "Match is about to begin...",
+    timeline: [], isFreeHit: false, bowlingStarted: false, matchCompleted: false, 
+    totalOvers: 0, value: "new",
+  });
+  const [matchResult, setMatchResult] = useState("");
   const [showSummary, setShowSummary] = useState(false);
-  const [firstSummary, setFirstSummary] =useState({})
-  const [secondSummary, setsecondSummary] =useState({})
-  
+  const [firstSummary, setFirstSummary] = useState({});
+  const [secondSummary, setSecondSummary] = useState({});
 
-  // join match room
   useEffect(() => {
     socket.emit("joinMatch", id);
-  }, [id]);
 
-  // fetch match details
-  useEffect(() => {
-    const getDetails = async () => {
+    const getInitialDetails = async () => {
       try {
         const response = await axios.get(`http://localhost:9000/user/one/${id}`);
         const result = response.data.result;
-        setMatchData(result)
-
+        setMatchState(prev => ({...prev, totalOvers: result.over}));
         if (result.completed) {
-          setmatchCompleted(true)
+            setMatchState(prev => ({...prev, matchCompleted: true}));
+            fetchSummary(true);
         }
-
-        setBattingTeam(result.team1);
-        setBowlingTeam(result.team2);
-        setTossWinner(result.tossWinner);
-        setDecision(result.decision.toLowerCase());
       } catch (error) {
-        console.log(error);
+        console.log("Failed to fetch initial match details", error);
+        setMatchState(prev => ({...prev, commentary: "Error loading match data."}));
       }
     };
+    getInitialDetails();
+  }, [id]);
 
-    getDetails();
-  }, [id, navigate]);
-
-  // restore from localStorage
   useEffect(() => {
-    const data = JSON.parse(localStorage.getItem("liveFirstInningsData"));
-    if (data) {
-      setBattingTeam(data.battingTeam || "Loading...");
-      setBowlingTeam(data.bowlingTeam || "Loading...");
-      setCurrentRun(data.runs || 0);
-      setCurrentWicket(data.wickets || 0);
-      setTotalBalls(data.balls || 0);
-    }
+    const handleScoreUpdate = (data) => {
+      setMatchState(prev => ({
+            ...prev,
+            battingTeam: data.battingTeam,
+            bowlingTeam: data.bowlingTeam,
+            score: `${data.runs || 0}/${data.wickets || 0}`,
+            overs: data.overs || "0.0",
+            inning: data.inning,
+            target: data.target,
+            crr: data.CRR || "0.00",
+            rrr: data.RRR || "0.00",
+            striker: data.striker || "",
+            bowler: data.bowler || "",
+            batsmanStats: data.batsmanStats || {},
+            bowlerStats: data.bowlerStats || {},
+            commentary: data.commentry || "",
+            timeline: Array.isArray(data.timeLine) ? data.timeLine : [],
+            isFreeHit: data.freeHit || false,
+            bowlingStarted: data.bowlingStarted || false,
+            matchCompleted: (data.iningsOver && data.inning === 2) || prev.matchCompleted,
+            value: data.value || "new"
+        }));
+    };
+    socket.on("scoreUpdate", handleScoreUpdate);
+    return () => socket.off("scoreUpdate", handleScoreUpdate);
   }, []);
 
-  // socket listener
-  useEffect(() => {
-  const handleMessage = (data) => {
-    console.log("LIVE PAGE UPDATE:", data);
-
-    setBattingTeam(data.battingTeam);
-    setBowlingTeam(data.bowlingTeam);
-    setCurrentRun(data.runs || 0);
-    setCurrentWicket(data.wickets || 0);
-    setTotalBalls(data.balls || 0);
-    setIningsOver(data.iningsOver || false);
-    setSecondInningsStart(data.secondInningsStart || false);
-    setBowlingStarted(data.bowlingStarted || false);
-    setInning(data.inning || 1);
-
-    setStriker(data.striker || "");
-    setNonStriker(data.nonStriker || "");
-    setBowler(data.bowler || "");
-
-    setBatsmanStats(data.batsmanStats || {});
-    setBowlerStats(data.bowlerStats || {});
-
-    if (data.iningsOver && data.inning === 1) {
-      setTarget((data.runs || 0) + 1);
-    }
-    if(data.inning === 2){
-      setTarget(data.target)
-    }
-
-    // Winning logic for second innings
-    if (data.inning === 2 && data.bowlingStarted && target) {
-      if (data.runs >= target) {
-        setWinner(data.battingTeam); // chasing team won
-      } else if (data.iningsOver) {
-        if (data.runs < target - 1) {
-          setWinner(data.bowlingTeam); // defending team won
-        } else if (data.runs === target - 1) {
-          setWinner("Match Tied");
-        }
-      }
-    }
-
-    // const liveFirstInningsData = {
-    //   battingTeam: data.battingTeam,
-    //   bowlingTeam: data.bowlingTeam,
-    //   runs: data.runs,
-    //   balls: data.balls,
-    //   wickets: data.wickets,
-    // };
-    // localStorage.setItem(
-    //   "liveFirstInningsData",
-    //   JSON.stringify(liveFirstInningsData)
-    // );
+  
+  // --- Calculation Helpers ---
+  const calculateStrikeRate = (runs, balls) => {
+    if (!balls || balls === 0) return "0.00";
+    return ((runs / balls) * 100).toFixed(2);
   };
 
-  socket.on("scoreUpdate", handleMessage);
-  return () => socket.off("scoreUpdate", handleMessage);
-}, [navigate, target]);
+  const calculateEconomy = (runs, balls) => {
+    if (!balls || balls === 0) return "0.00";
+    const overs = balls / 6;
+    if (overs === 0) return "0.00";
+    return (runs / overs).toFixed(2);
+  };
 
-useEffect(() => {
-  if (inning === 2 && bowlingStarted) {
-    // Case 1: Batting team successfully chased target
-    if (currentRun >= target) {
-      const wicketsRemaining = 10 - currentWicket;
-      setMatchResult(`${battingTeam} won by ${wicketsRemaining} wicket${wicketsRemaining !== 1 ? "s" : ""}`);
-    }
-    // Case 2: All wickets lost or overs finished
-    else if (currentWicket === 10 || iningsOver) {
-      const runsDefended = target - currentRun;
-      setMatchResult(`${bowlingTeam} won by ${runsDefended} run${runsDefended !== 1 ? "s" : ""}`);
-    }
+  const renderOver = (balls) => {
+    if (!balls || balls === 0) return "0.0";
+    return `${Math.floor(balls/6)}.${balls%6}`;
   }
-}, [currentRun, currentWicket, iningsOver, inning, bowlingStarted, target, battingTeam, bowlingTeam]);
 
-
-
-  // overs calculation
   useEffect(() => {
-    const over = Math.floor(totalBalls / 6);
-    const balls = totalBalls % 6;
-    setOvers(`${over}.${balls}`);
-  }, [totalBalls]);
-
-  const calculateOver = (inputBalls)=>{
-    const over = Math.floor(inputBalls/6);
-    const balls = inputBalls % 6;
-    return `${over}.${balls}`
-  }
-
-  const calculateStrikeRate = (runs, balls)=>{
-    return ((runs/balls)*100).toFixed(2)
-  }
-
-  const calculateEconomy = (runs, over)=>{
-    return (runs/over).toFixed(1)
-  }
-
-  const calculateCurrentRunRate = (runs, balls) => {
-  if (balls === 0) return 0; // avoid division by zero
-  return ((runs / balls) * 6).toFixed(2); // 2 decimal places
-};
-
-  useEffect(()=>{
-    setCRR(calculateCurrentRunRate(currentRun, totalBalls))
-    const difference = target - currentRun
-    setRRR(calculateCurrentRunRate(difference, totalBalls))
-  },[totalBalls, currentRun])
-
-
-  const watchSummary = async()=>{
-    try {
-      setShowSummary(true)
-
-      const res = await axios.get(`http://localhost:9000/user/fetchsummary/${id}`)
-      console.log(res.data)
-      setFirstSummary(res.data.firstSummary)
-      setsecondSummary(res.data.secondSummary)
-
-    } catch (error) {
-      console.log(Error)
+    if (matchState.matchCompleted) {
+        fetchSummary(true);
     }
+  }, [matchState.matchCompleted]);
 
-  }
+  const fetchSummary = async (autoShow = false) => {
+    try {
+      if(!autoShow) setShowSummary(true);
+      const res = await axios.get(`http://localhost:9000/user/fetchsummary/${id}`);
+      setFirstSummary(res.data.firstSummary);
+      setSecondSummary(res.data.secondSummary);
+      if(res.data.secondSummary.matchWinner) {
+          setMatchResult(`${res.data.secondSummary.matchWinner} - ${res.data.secondSummary.matchResult}`);
+      }
+    } catch (error) {
+      console.log("Failed to fetch summary", error);
+      if(!autoShow) setShowSummary(false);
+    }
+  };
+  
+  const routeChange = (path) => { window.location.href = path; };
 
-  useEffect(()=>{console.log("FirstSummary:", firstSummary);
-  console.log("SecondSummary:", secondSummary)
-
-  },[firstSummary, secondSummary])
-
-
+  const { battingTeam, bowlingTeam, score, overs, totalOvers, inning, target, crr, rrr, striker, bowler, batsmanStats, bowlerStats, commentary, timeline, isFreeHit, matchCompleted } = matchState;
 
   return (
-    <div className="p-6 font-mono">
-      {!matchCompleted ? (
-        <div>
-        {bowlingStarted && inning === 1 ? (
-        <div className="text-3xl font-bold flex flex-col gap-6">
-          {/* Scoreboard */}
-          <div className="flex justify-around">
-            <div>{battingTeam}</div>
-            <div>{`${currentRun}/${currentWicket}`}</div>
-            <div>{`Balls: ${totalBalls} (${overs})`}</div>
-            {/* <div>{bowlingTeam}</div> */}
-            <div>CRR:{CRR}</div>
-          </div>
-
-          {/* Batsman Summary */}
-          <div className="mt-6">
-            <h2 className="text-2xl font-bold mb-2">Batting</h2>
-            {Object.keys(batsmanStats).length > 0 ? (
-              Object.entries(batsmanStats).filter(([name, stats]) => !stats.out)
-              .map(([name, stats]) => (
-                <div key={name} className="flex justify-between text-lg">
-                  <span>
-                    {name} {name === striker ? "*" : ""}
-                  </span>
-                  <span>
-                    {stats.runs} ({stats.balls})
-                  </span>
-                </div>
-              ))
-            ) : (
-              <p>No batting data yet</p>
-            )}
-          </div>
-
-          {/* Bowler Summary */}
-          <div className="mt-6">
-            <h2 className="text-2xl font-bold mb-2">Bowling</h2>
-            {Object.keys(bowlerStats).length > 0 ? (
-              
-              Object.entries(bowlerStats)
-              .filter(([name])=> name === bowler)
-              .map(([name, stats]) => (
-                <div key={name} className="flex justify-between text-lg">
-                  <span>{name}</span>
-                  <span>
-                    {stats.wickets}-{stats.runs} 
-                  </span>
-                </div>
-              ))
-            ) : (
-              <p>No bowling data yet</p>
-            )}
-          </div>
-        </div>
-      ) : inning === 2 ? (
-
-      <div>
-
-          {!bowlingStarted ? (
-            <div>
-
-              <h1>Second Innings Will start shortly.</h1>
-              <h2>Target: {target}</h2>
-
+    <div className='font-mono bg-black text-white min-h-screen w-full flex flex-col'>
+      {showSummary && <MatchSummaryModal first={firstSummary} second={secondSummary} onClose={() => setShowSummary(false)} />}
+      
+      <header className="fixed top-0 sm:top-5 left-0 right-0 flex justify-center z-40 pointer-events-none">
+        <div className="border-b sm:border-2 border-amber-600 bg-neutral-900/90 w-full sm:w-[95%] sm:max-w-[1330px] flex justify-between items-center px-4 sm:px-10 py-4 sm:rounded-2xl backdrop-blur-sm shadow-2xl pointer-events-auto">
+          <h1 onClick={() => routeChange('/')} className="text-xl sm:text-3xl font-bold text-white cursor-pointer">CricScoreBoard</h1>
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            <button onClick={() => routeChange('/matches')} className="flex items-center space-x-2 text-neutral-300 hover:text-amber-500 transition">
+              <ArrowLeft className="w-5 h-5" />
+              <span className="hidden sm:inline">All Matches</span>
+            </button>
+            <div className="flex items-center space-x-3 sm:space-x-6">
+              <a href="https://github.com/prodot-com/Cric-Scoreboard" target="_blank" rel="noopener noreferrer" className="hover:text-amber-600 transition"><Github className="w-5 h-5 sm:w-6 sm:h-6" /></a>
+              <a href="https://www.linkedin.com/in/ghoshprobal/" target="_blank" rel="noopener noreferrer" className="hover:text-amber-600 transition"><Linkedin className="w-5 h-5 sm:w-6 sm:h-6" /></a>
+              <a href="https://mail.google.com/mail/?view=cm&fs=1&to=xprobal52@gmail.com" target="_blank" rel="noopener noreferrer" className="hover:text-amber-600 transition"><Mail className="w-5 h-5 sm:w-6 sm:h-6" /></a>
             </div>
-            )
-            :(
-            <div className="text-3xl font-bold flex flex-col gap-6">
-          {/* Scoreboard */}
-          <div className="flex justify-around">
-            <div>{battingTeam}</div>
-            <div>{`${currentRun}/${currentWicket}`}</div>
-            <div>{`Balls: ${totalBalls} (${overs})`}</div>
-            {/* <div>{bowlingTeam}</div> */}
+          </div>
+        </div>
+      </header>
+      
+      <main className='w-full relative pt-24 sm:pt-32 pb-10 px-4 flex-grow'>
+         <div className="absolute inset-0 z-0 opacity-80" style={{ backgroundImage: `radial-gradient(circle at 50% 0%, rgba(217, 119, 6, 0.4) 0%, transparent 50%), radial-gradient(circle at 10% 20%, rgba(217, 119, 6, 0.2) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(217, 119, 6, 0.2) 0%, transparent 40%)`}}/>
+         <div className='relative z-10 max-w-5xl mx-auto'>
             
-
-          </div>
-          <div>
-              <div>CRR:{CRR}</div>
-            <div>RRR:{RRR}</div>
-          </div>
-
-          <div>
-            <p>{`${battingTeam} need ${target - currentRun} runs`}</p>
-          </div>
-
-          {/* Batsman Summary */}
-          <div className="mt-6">
-            <h2 className="text-2xl font-bold mb-2">Batting</h2>
-            {Object.keys(batsmanStats).length > 0 ? (
-              Object.entries(batsmanStats).filter(([name, stats]) => !stats.out)
-              .map(([name, stats]) => (
-                <div key={name} className="flex justify-between text-lg">
-                  <span>
-                    {name} {name === striker ? "*" : ""}
-                  </span>
-                  <span>
-                    {stats.runs} ({stats.balls})
-                  </span>
+            <div className="bg-neutral-900/80 backdrop-blur-md border border-neutral-700 p-4 sm:p-6 rounded-2xl shadow-lg">
+                <div className="text-center mb-4">
+                    <p className="text-amber-500 font-bold tracking-widest uppercase text-sm">
+                        {inning === 1 ? "1st Innings" : "2nd Innings"}
+                    </p>
                 </div>
-              ))
-            ) : (
-              <p>No batting data yet</p>
-            )}
-          </div>
-
-          {/* Bowler Summary */}
-          <div className="mt-6">
-            <h2 className="text-2xl font-bold mb-2">Bowling</h2>
-            {Object.keys(bowlerStats).length > 0 ? (
-              
-              Object.entries(bowlerStats)
-              .filter(([name])=> name === bowler)
-              .map(([name, stats]) => (
-                <div key={name} className="flex justify-between text-lg">
-                  <span>{name}</span>
-                  <span>
-                    {stats.wickets}-{stats.runs} 
-                  </span>
+                <div className="flex justify-between items-center">
+                    <div className="text-left w-1/3"><p className="text-sm text-neutral-400 truncate">{battingTeam}</p><p className="text-3xl sm:text-5xl font-bold text-white">{score}</p></div>
+                    <div className="text-center w-1/3"><p className="text-lg sm:text-2xl font-bold text-amber-500">Overs</p><p className="text-lg sm:text-2xl">{overs} <span className="text-base text-neutral-400">({totalOvers})</span></p></div>
+                    <div className="text-right w-1/3"><p className="text-sm text-neutral-400 truncate">{bowlingTeam}</p>{inning === 2 && target && <p className="text-lg sm:text-2xl font-bold">Target <span className="text-amber-500">{target}</span></p>}</div>
                 </div>
-              ))
-            ) : (
-              <p>No bowling data yet</p>
-            )}
-          </div>
-        </div>
-            )}
+                <div className="border-t border-neutral-700 mt-4 pt-4 flex justify-around">
+                    <StatBox label="CRR" value={crr} />
+                    {inning === 2 && <StatBox label="RRR" value={rrr} />}
+                </div>
+            </div>
 
-      </div>
-
-    )
-      : (
-        <div className="flex flex-col items-center justify-center text-4xl font-bold mt-12 text-indigo-700">
-          <h2>{`Team1: ${battingTeam}`}</h2>
-          <h2>{`Team2: ${bowlingTeam}`}</h2>
-          <h3>Match not yet started</h3>
-          <h2 className="text-amber-500 text-2xl mt-7">
-            {`Team ${tossWinner} choose to ${decision} first`}
-          </h2>
-        </div>
-      )}
-      </div>
-        ):(
-        
-        <div className="flex flex-col gap-4 items-center mt-7 text-indigo-700">
-          <h1 className="font-bold text-4xl">Match Completed</h1>
-
-          <h2 className=" text-xl">{`${matchData.team1} vs ${matchData.team2}`}</h2>
-
-          <button className="font-bold bg-amber-500 p-3 text-white rounded-xl" onClick={watchSummary}>Watch Summary</button>
-
-        </div>
-        )}
-
-      {/* Innings Over / Result */}
-      {iningsOver && (
-        <div className="flex flex-col items-center mt-9 text-indigo-700">
-          <h3 className="font-bold text-2xl">Innings Over</h3>
-          {winner && <h2 className="mt-3">Winner: {winner}</h2>}
-        </div>
-      )}
-
-      {matchResult && (
-      <div className="flex flex-col items-center mt-9 text-green-700 text-2xl font-bold">
-        <h2>🏆 {matchResult}</h2>
-      </div>
-    )}
-
-{showSummary && (
-  <div
-    className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/30 z-50"
-    onClick={() => setShowSummary(false)}
+            <div className="mt-6 text-center bg-neutral-900/50 p-4 rounded-lg min-h-[70px] flex items-center justify-center">
+                <div>
+                    {isFreeHit && <p className="font-bold text-sky-400 animate-pulse text-xl mb-2">FREE HIT!</p>}
+                    <p
+    className={`cursor-pointer py-3 px-4 font-semibold transition-all duration-200 border-2 rounded-lg
+      ${
+        matchState.value === "W"
+          ? "bg-red-600 border-white text-white animate-bounce"     
+          : matchState.value === 4
+          ? "bg-blue-600 border-blue-700 text-white" 
+          : matchState.value === 6
+          ? "bg-green-600 border-green-700 text-neutral-900  animate-pulse" 
+          : matchState.value === "wide" 
+          ? "bg-amber-500 border-amber-600 text-black" 
+          : matchState.value === "no" 
+          ? "bg-amber-500 border-amber-600 text-black animate-bounce"
+          :matchState.value === "new"
+          ? "bg-neutral-800 border-neutral-600 text-gray-200"
+          : "bg-neutral-800 border-neutral-600 text-gray-200" 
+      }
+      hover:scale-105
+    `}
   >
-    <div
-      className="flex flex-col w-[95%] sm:w-[85%] max-w-5xl bg-white border-2  
-      backdrop-blur-lg shadow-xl p-4 sm:p-6 text-center max-h-[90vh] overflow-y-auto"
-      onClick={(e) => e.stopPropagation()}
-    >
-      {/* Title */}
-      <h2 className="text-2xl sm:text-3xl font-bold text-green-700 drop-shadow mb-4">
-        Match Summary
-      </h2>
+    {matchState.commentary}
+  </p>
+                </div>
+            </div>
+            
+            <div className="mt-6 flex items-center justify-center flex-wrap gap-2">
+                {timeline.slice(-6).map((ball, index) => <TimelineBall key={index} ball={ball} />)}
+            </div>
 
-      {/* Grid for innings (stack on mobile, side by side on larger screens) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-        {/* First Innings */}
-        {firstSummary && (
-          <div className="border rounded-xl p-3 sm:p-4 shadow-md bg-white/90">
-            <h3 className="text-lg sm:text-xl font-bold text-indigo-700 mb-2">
-              1st Innings: {firstSummary.battingTeam}
-            </h3>
-            <p className="font-semibold text-sm sm:text-base mb-1">
-              {firstSummary.runs}/{firstSummary.wickets || 0} 
-              ({calculateOver(firstSummary.balls)} Over)
-            </p>
-            <p className="text-xs sm:text-sm text-gray-600 mb-2">
-              Bowling: {firstSummary.bowlingTeam}
-            </p>
-
-            {/* Batting Table */}
-            {firstSummary.batsman && Object.keys(firstSummary.batsman).length > 0 && (
-              <div className="overflow-x-auto mb-3">
-                <h4 className="text-left font-semibold text-sm sm:text-base">Batting</h4>
-                <table className="w-full text-xs sm:text-sm border mt-1">
-                  <thead>
-                    <tr className="bg-gray-200">
-                      <th className="p-1 text-left">Batsman</th>
-                      <th className="p-1">Runs</th>
-                      <th className="p-1">Balls</th>
-                      <th className="p-1">Strike rate</th>
-                      <th className="p-1">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {Object.entries(firstSummary.batsman).map(([_, stats]) => (
-                      <tr key={stats.name} className="border-b">
-                        <td className="p-1 text-left">{stats.name}</td>
-                        <td className="p-1">{stats.runs}</td>
-                        <td className="p-1">{stats.balls}</td>
-                        <td className="p-1">{calculateStrikeRate(stats.runs, stats.balls)}</td>
-                        <td className="p-1">{stats.out ? "Out ❌" : "Not Out ✅"}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Batting Scorecard */}
+                <div className="bg-neutral-900/50 p-4 rounded-lg">
+                    <h3 className="font-bold text-lg mb-2 text-amber-500 border-b border-neutral-700 pb-2">Batting</h3>
+                     <div className="overflow-x-auto min-h-[60px]">
+                        <table className="w-full text-sm sm:text-base">
+                            <thead>
+                                <tr className="border-b border-neutral-700">
+                                    <th className="text-left p-2 font-semibold text-neutral-400">Batter</th>
+                                    <th className="text-center p-2 font-semibold text-neutral-400">R</th>
+                                    <th className="text-center p-2 font-semibold text-neutral-400">B</th>
+                                    <th className="text-center p-2 font-semibold text-neutral-400">SR</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {Object.entries(batsmanStats)
+                                    .filter(([, stats]) => !stats.out)
+                                    .map(([name, stats]) => (
+                                        <tr key={name} className={`border-b border-neutral-800 last:border-b-0 ${name === striker ? "bg-amber-600/20" : ""}`}>
+                                            <td className="p-2 font-semibold">{name}{name === striker ? " *" : ""}</td>
+                                            <td className="p-2 text-center font-bold">{stats.runs}</td>
+                                            <td className="p-2 text-center">{stats.balls}</td>
+                                            <td className="p-2 text-center">{calculateStrikeRate(stats.runs, stats.balls)}</td>
+                                        </tr>
+                                    ))
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {/* Bowling Scorecard */}
+                <div className="bg-neutral-900/50 p-4 rounded-lg">
+                    <h3 className="font-bold text-lg mb-2 text-amber-500 border-b border-neutral-700 pb-2">Bowling</h3>
+                    <div className="overflow-x-auto min-h-[60px]">
+                        <table className="w-full text-sm sm:text-base">
+                            <thead>
+                                <tr className="border-b border-neutral-700">
+                                    <th className="text-left p-2 font-semibold text-neutral-400">Bowler</th>
+                                    <th className="text-center p-2 font-semibold text-neutral-400">O</th>
+                                    <th className="text-center p-2 font-semibold text-neutral-400">R</th>
+                                    <th className="text-center p-2 font-semibold text-neutral-400">W</th>
+                                    <th className="text-center p-2 font-semibold text-neutral-400">Econ</th>
+                                </tr>
+                            </thead>
+                             <tbody>
+                                {Object.entries(bowlerStats)
+                                    .map(([name, stats]) => (
+                                        <tr key={name} className={`border-b border-neutral-800 last:border-b-0 ${name === bowler ? "bg-amber-600/20" : ""}`}>
+                                            <td className="p-2 font-semibold">{name}{name === bowler ? " *" : ""}</td>
+                                            <td className="p-2 text-center">{renderOver(stats.balls)}</td>
+                                            <td className="p-2 text-center">{stats.runs}</td>
+                                            <td className="p-2 text-center font-bold">{stats.wickets}</td>
+                                            <td className="p-2 text-center">{calculateEconomy(stats.runs, stats.balls)}</td>
+                                        </tr>
+                                    ))
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            {matchCompleted && (
+              <div className="mt-6 text-center">
+                <p className="text-green-400 font-bold text-xl sm:text-2xl">{matchResult}</p>
+                <button onClick={() => fetchSummary(false)} className="mt-3 bg-amber-600 hover:bg-amber-700 text-white px-4 sm:px-6 py-2 rounded-lg font-semibold shadow-md">View Full Summary</button>
               </div>
             )}
-
-            {/* Bowling Table */}
-            {firstSummary.bowler && Object.keys(firstSummary.bowler).length > 0 && (
-              <div className="overflow-x-auto">
-                <h4 className="text-left font-semibold text-sm sm:text-base">Bowling</h4>
-                <table className="w-full text-xs sm:text-sm border mt-1">
-                  <thead>
-                    <tr className="bg-gray-200">
-                      <th className="p-1 text-left">Bowler</th>
-                      <th className="p-1">Wkts</th>
-                      <th className="p-1">Runs</th>
-                      <th className="p-1">Overs</th>
-                      <th className="p-1">Economy</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {Object.entries(firstSummary.bowler).map(([_, stats]) => (
-                      <tr key={stats.name} className="border-b">
-                        <td className="p-1 text-left">{stats.name}</td>
-                        <td className="p-1">{stats.wickets}</td>
-                        <td className="p-1">{stats.runs}</td>
-                        <td className="p-1">{calculateOver(stats.balls) || "0"}</td>
-                        <td className="p-1">{calculateEconomy(stats.runs, calculateOver(stats.balls))}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Second Innings */}
-        {secondSummary && (
-          <div className="border rounded-xl p-3 sm:p-4 shadow-md bg-white/90">
-            <h3 className="text-lg sm:text-xl font-bold text-indigo-700 mb-2">
-              2nd Innings: {secondSummary.battingTeam}
-            </h3>
-            <p className="font-semibold text-sm sm:text-base mb-1">
-              {secondSummary.runs}/{secondSummary.wickets || 0} 
-              ({calculateOver(secondSummary.balls)} Over)
-            </p>
-            <p className="text-xs sm:text-sm text-gray-600 mb-2">
-              Bowling: {secondSummary.bowlingTeam}
-            </p>
-
-            {/* Batting Table */}
-            {secondSummary.batsman && Object.keys(secondSummary.batsman).length > 0 && (
-              <div className="overflow-x-auto mb-3">
-                <h4 className="text-left font-semibold text-sm sm:text-base">Batting</h4>
-                <table className="w-full text-xs sm:text-sm border mt-1">
-                  <thead>
-                    <tr className="bg-gray-200">
-                      <th className="p-1 text-left">Batsman</th>
-                      <th className="p-1">Runs</th>
-                      <th className="p-1">Balls</th>
-                      <th className="p-1">Strike rate</th>
-                      <th className="p-1">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {Object.entries(secondSummary.batsman).map(([_, stats]) => (
-                      <tr key={stats.name} className="border-b">
-                        <td className="p-1 text-left">{stats.name}</td>
-                        <td className="p-1">{stats.runs}</td>
-                        <td className="p-1">{stats.balls}</td>
-                        <td className="p-1">{calculateStrikeRate(stats.runs, stats.balls)}</td>
-                        <td className="p-1">{stats.out ? "Out ❌" : "Not Out ✅"}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            {/* Bowling Table */}
-            {secondSummary.bowler && Object.keys(secondSummary.bowler).length > 0 && (
-              <div className="overflow-x-auto">
-                <h4 className="text-left font-semibold text-sm sm:text-base">Bowling</h4>
-                <table className="w-full text-xs sm:text-sm border mt-1">
-                  <thead>
-                    <tr className="bg-gray-200">
-                      <th className="p-1 text-left">Bowler</th>
-                      <th className="p-1">Wkts</th>
-                      <th className="p-1">Runs</th>
-                      <th className="p-1">Overs</th>
-                      <th className="p-1">Economy</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {Object.entries(secondSummary.bowler).map(([_, stats]) => (
-                      <tr key={stats.name} className="border-b">
-                        <td className="p-1 text-left">{stats.name}</td>
-                        <td className="p-1">{stats.wickets}</td>
-                        <td className="p-1">{stats.runs}</td>
-                        <td className="p-1">{calculateOver(stats.balls) || "0"}</td>
-                        <td className="p-1">{calculateEconomy(stats.runs, calculateOver(stats.balls))}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        )}
-        <div>
-          <button onClick={()=>setShowSummary(false)} className="p-[3px] relative">
-  <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg" />
-  <div className="px-8 py-2  bg-black rounded-[6px]  relative group transition duration-200 text-white hover:bg-transparent">
-    Close
-  </div>
-</button>
-        </div>
-      </div>
-
-      {/* Match Result */}
-      <div className="mt-4 sm:mt-6  pt-3 sm:pt-4">
-        {secondSummary?.matchWinner && (
-          <h3 className="text-lg sm:text-xl font-bold text-red-600">
-            Winner: {secondSummary.matchWinner}
-          </h3>
-        )}
-        {secondSummary?.matchResult && (
-          <p className="text-gray-700 text-sm sm:text-base font-medium">
-            {secondSummary.matchResult}
-          </p>
-        )}
-      </div>
-    </div>
-  </div>
-)}
-
-
-
-
-
-
+         </div>
+      </main>
     </div>
   );
 };
 
-export default LiveFirstInnings;
+export default LiveMatchPage;
+
