@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import LiveTime from "../LiveTime.jsx"
 import Cricket1 from "../../assets/Cricket1.jpeg"
 import axios from "axios"
+import { Backend_URL } from "../../Utilities/Constant.js";
 
 export default function CreateMatchPage() {
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ export default function CreateMatchPage() {
 const handleSubmit = async (e) => {
   e.preventDefault();
   try {
-    const res = await axios.post("http://localhost:9000/user/create", input);
+    const res = await axios.post(`${Backend_URL}user/create`, input);
 
     if (!res || !res.data?._id) {
       setAlert("Oops! Server is Busy");

@@ -42,7 +42,7 @@ io.on('connection', (socket) => {
     })
 
     socket.on("scoreUpdate", ({ matchId, data }) => {
-    console.log("Score update for match:", matchId, data);
+    // console.log("Score update for match:", matchId, data);
     io.to(matchId).emit("scoreUpdate", { matchId, ...data });
   });
 

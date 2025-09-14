@@ -4,6 +4,7 @@ import axios from 'axios';
 import LiveTime from "../../LiveTime.jsx"
 import { Github, Linkedin, Mail, Zap } from "lucide-react";
 import Cricket1 from "../../../assets/Cricket1.jpeg"
+import { Backend_URL } from "../../../Utilities/Constant.js";
 
 const Toss = () => {
   const { id } = useParams();
@@ -21,7 +22,7 @@ const Toss = () => {
     
     const getMatch = async ()=>{
       try {
-        const res = await axios.get(`http://localhost:9000/user/one/${id}`)
+        const res = await axios.get(`${Backend_URL}user/one/${id}`)
         console.log(res.data.result)
         setMatchData(res.data.result)
       } catch (error) {
@@ -63,8 +64,7 @@ const Toss = () => {
     };
 
     try {
-      const res = await axios.post(
-        `http://localhost:9000/user/addtoss/${id}`,
+      const res = await axios.post(`${Backend_URL}user/addtoss/${id}`,
         tossDetails
       );
       console.log("Toss Data:::", res.data);

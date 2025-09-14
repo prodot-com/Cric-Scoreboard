@@ -3,6 +3,7 @@ import mobileVersion from "../assets/MobileView.png";
 import { Star, BarChart, Zap, Heart, Github, Linkedin, Mail} from "lucide-react";
 import LiveTime from "./LiveTime";
 import { useNavigate } from "react-router-dom";
+import { LivePage_URL } from "../Utilities/Constant.js";
 
 const Home = () => {
 
@@ -180,7 +181,7 @@ const Home = () => {
         </button>
 
         <a
-  href="http://localhost:5174/"
+  href= {LivePage_URL}
   target="_blank"   // remove this if you want it in the same tab
   rel="noopener noreferrer"
 >
