@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router'
 const AdminPage = () => {
   const socketRef = useRef(null)
   const navigate = useNavigate();
-  const { id } = useParams()
+  const { id } = useParams();
 
   const [input, setInput] = useState({
     batsman1: '',
@@ -63,6 +63,8 @@ const AdminPage = () => {
   const [timeLine, setTimeLine] = useState([])
   const [commentry, setCommentry] = useState('🏏 Match is about to begin')
   const [toltalBallsInMatch, setToltalBallsInMatch] = useState(0)
+  const [RRR, setRRR] = useState(0)
+  const [CRR, setCRR] = useState(0)
 
   // ===== SOCKET =====
   useEffect(() => {
@@ -413,7 +415,6 @@ const startSecondInnings = async () => {
 };
 
 
-
   const handleSetOpeners = () => {
   if (!openingBatsman1 || !openingBatsman2 || !openingBowler) {
     alert("Please enter all players");
@@ -574,6 +575,30 @@ const secChangeRun = (value) => {
     return newBalls;
   });
 };
+const calculateCurrentRunRate = (runs, balls) => {
+  if (balls === 0) return 0; // avoid division by zero
+  return ((runs / balls) * 6).toFixed(2); // 2 decimal places
+};
+
+const calculateStrikeRate = (runs, balls)=>{
+    return ((runs/balls)*100).toFixed(2)
+  }
+
+  const calculateEconomy = (runs, over)=>{
+    return (runs/over).toFixed(1)
+  }
+
+  const calculateOver = (inputBalls)=>{
+    const over = Math.floor(inputBalls/6);
+    const balls = inputBalls % 6;
+    return `${over}.${balls}`
+  }
+
+  useEffect(()=>{
+    setCRR(calculateCurrentRunRate(currentRun, totalBalls))
+    const difference = target - currentRun
+    setRRR(calculateCurrentRunRate(difference, totalBalls))
+  },[totalBalls, currentRun])
 
 
   useEffect(() => {
@@ -816,7 +841,7 @@ const secChangeRun = (value) => {
         {!secondInningsStarts ? (
           // ================== FIRST INNINGS ==================
           !iningsOver ? (
-            <div>
+            <div className='max-h-screen'>
               <div className='text-center'>
                 <div className='flex'>
                   <ArrowLeft onClick={()=>navigate(`/toss/${id}`)} className="w-6 cursor-pointer h-6 sm:w-7 sm:h-7 hover:scale-130 transition-transform duration-100 delay-50"/>
@@ -830,11 +855,11 @@ const secChangeRun = (value) => {
                 <p className="mt-4 text-2xl font-bold text-white bg-black/30 rounded-lg px-4 py-2 inline-block">
                   {battingTeam}: {currentRun}/{currentWicket} <span className="text-lg text-neutral-400">({Overs})</span>
                 </p>
-                {/* {isFreeHit && <p className="text-sky-400 font-bold mt-2 animate-pulse text-xl">Free Hit!</p>} */}
+                
               </div>
 
               {/* Run Buttons */}
-              <div className="grid grid-cols-5 sm:grid-cols-9 gap-2 sm:gap-3 mt-8 mb-7 max-w-2xl mx-auto">
+              <div className="grid grid-cols-5 sm:grid-cols-9 gap-2 sm:gap-3 mt-8 mb-5 max-w-2xl mx-auto">
                 {[0, 1, 2, 3, 4, 6].map((v) => (
                   <button key={v} onClick={() => changeRun(v)} className="cursor-pointer py-3 font-semibold text-white transition-all duration-200 border-2 rounded-lg bg-white/10 border-neutral-600 hover:bg-amber-500 hover:border-amber-500 hover:scale-105">
                     {v}
@@ -843,6 +868,12 @@ const secChangeRun = (value) => {
                 <button onClick={() => changeRun("W")} className="cursor-pointer py-3 font-semibold text-white transition-all duration-200 border-2 rounded-lg bg-red-800/50 border-red-700 hover:bg-red-700 hover:border-red-600 hover:scale-105">W</button>
                 <button onClick={() => changeRun("wide")} className="cursor-pointer py-3 font-semibold text-white transition-all duration-200 border-2 rounded-lg bg-sky-800/50 border-sky-700 hover:bg-sky-700 hover:border-sky-600 hover:scale-105">WD</button>
                 <button onClick={() => changeRun("no")} className="cursor-pointer py-3 font-semibold text-white transition-all duration-200 border-2 rounded-lg bg-sky-800/50 border-sky-700 hover:bg-sky-700 hover:border-sky-600 hover:scale-105">NB</button>
+              </div>
+
+              <div className='flex justify-center text-center'>
+                <p className='px-3 py-3 font-semibold text-white transition-all duration-200 border-2 rounded-lg bg-white/10 border-neutral-600'>
+                  CRR: {CRR}
+                </p>
               </div>
 
 
@@ -874,9 +905,9 @@ const secChangeRun = (value) => {
 
 
 
-<div className="flex justify-center mt-7">
+<div className="flex justify-center mt-5">
   {timeLine.length === 0 ?(<div className='py-1.5 px-3 font-semibold text-white transition-all duration-200 border-2 rounded-lg
-                 bg-white/10 border-neutral-600 hover:bg-amber-500 hover:border-amber-500'>
+                 bg-white/10 border-neutral-600'>
     <h1>Timeline will appear here</h1>
   </div>):
   (<div className="flex gap-2 ">
@@ -901,7 +932,7 @@ const secChangeRun = (value) => {
 
 
               {/* Stats Tables */}
-              <div className="grid gap-8 mt-10 md:grid-cols-2">
+              <div className="grid gap-8 mt-5 md:grid-cols-2">
                 <div>
                   <h3 className="text-xl font-bold text-neutral-300 mb-2">Batting Scoreboard</h3>
                   <div className="overflow-x-auto bg-black/30 backdrop-blur-sm border border-neutral-700 rounded-lg p-1">
@@ -911,6 +942,7 @@ const secChangeRun = (value) => {
                           <th className="p-3 font-semibold uppercase text-amber-500 text-sm">Batsman</th>
                           <th className="p-3 font-semibold uppercase text-amber-500 text-sm text-center">Runs</th>
                           <th className="p-3 font-semibold uppercase text-amber-500 text-sm text-center">Balls</th>
+                          <th className="p-3 font-semibold uppercase text-amber-500 text-sm text-center">Strike-Rate</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -919,6 +951,9 @@ const secChangeRun = (value) => {
                             <td className="p-3 font-bold">{b}{b === striker ? " *" : ""}</td>
                             <td className="p-3 font-bold text-center">{batsmanStats[b].runs}</td>
                             <td className="p-3 text-center">{batsmanStats[b].balls}</td>
+                            <td className="p-3 text-center">{batsmanStats[b].balls > 0
+              ? calculateStrikeRate(batsmanStats[b].runs, batsmanStats[b].balls)
+              : "0.00"}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -935,6 +970,7 @@ const secChangeRun = (value) => {
                           <th className="p-3 font-semibold uppercase text-amber-500 text-sm text-center">Runs</th>
                           <th className="p-3 font-semibold uppercase text-amber-500 text-sm text-center">Balls</th>
                           <th className="p-3 font-semibold uppercase text-amber-500 text-sm text-center">Wkts</th>
+                          <th className="p-3 font-semibold uppercase text-amber-500 text-sm text-center">Eco.</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -944,6 +980,9 @@ const secChangeRun = (value) => {
                             <td className="p-3 text-center">{bowlerStats[b].runs}</td>
                             <td className="p-3 text-center">{bowlerStats[b].balls}</td>
                             <td className="p-3 font-bold text-center">{bowlerStats[b].wickets}</td>
+                            <td className="p-3 font-bold text-center">{bowlerStats[b].balls > 0
+              ? calculateEconomy(bowlerStats[b].runs, calculateOver(bowlerStats[b].balls))
+              : "0.00"}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1041,7 +1080,16 @@ const secChangeRun = (value) => {
                       <button onClick={() => secChangeRun("no")} className="py-3 font-semibold text-white transition-all duration-200 border-2 rounded-lg bg-sky-800/50 border-sky-700 hover:bg-sky-700 hover:border-sky-600 hover:scale-105">NB</button>
                     </div>
 
-                                <div className="flex justify-center mt-6 m-3">
+                    <div className='flex justify-center text-center mt-3 gap-3'>
+                <p className='px-3 py-3 font-semibold text-white transition-all duration-200 border-2 rounded-lg bg-white/10 border-neutral-600'>
+                  CRR: {CRR}
+                </p>
+                <p className='px-3 py-3 font-semibold text-white transition-all duration-200 border-2 rounded-lg bg-white/10 border-neutral-600'>
+                  RRR: {RRR}
+                </p>
+              </div>
+
+                                <div className="flex justify-center mt-3 m-3">
   <p
     className={`cursor-pointer py-3 px-4 font-semibold transition-all duration-200 border-2 rounded-lg
       ${
@@ -1067,7 +1115,7 @@ const secChangeRun = (value) => {
 
 
 
-<div className="flex justify-center mt-7">
+<div className="flex justify-center mt-4">
   {timeLine.length === 0 ?(<div className='py-1.5 px-3 font-semibold text-white transition-all duration-200 border-2 rounded-lg
                  bg-white/10 border-neutral-600 hover:bg-amber-500 hover:border-amber-500'>
     <h1>Timeline will appear here</h1>
@@ -1092,7 +1140,7 @@ const secChangeRun = (value) => {
 
 
                     {/* Stats Tables */}
-                    <div className="grid gap-8 mt-10 md:grid-cols-2">
+                    <div className="grid gap-8 mt-5 md:grid-cols-2">
                        <div>
                         <h3 className="text-xl font-bold text-neutral-300 mb-2">Batting Scoreboard</h3>
                         <div className="overflow-x-auto bg-black/30 backdrop-blur-sm border border-neutral-700 rounded-lg p-1">
@@ -1102,6 +1150,7 @@ const secChangeRun = (value) => {
                                 <th className="p-3 font-semibold uppercase text-amber-500 text-sm">Batsman</th>
                                 <th className="p-3 font-semibold uppercase text-amber-500 text-sm text-center">Runs</th>
                                 <th className="p-3 font-semibold uppercase text-amber-500 text-sm text-center">Balls</th>
+                                <th className="p-3 font-semibold uppercase text-amber-500 text-sm text-center">Strike-Rate</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -1110,6 +1159,9 @@ const secChangeRun = (value) => {
                                   <td className="p-3 font-bold">{b}{b === striker ? " *" : ""}</td>
                                   <td className="p-3 font-bold text-center">{batsmanStats[b].runs}</td>
                                   <td className="p-3 text-center">{batsmanStats[b].balls}</td>
+                                  <td className="p-3 text-center">{batsmanStats[b].balls > 0
+              ? calculateStrikeRate(batsmanStats[b].runs, batsmanStats[b].balls)
+              : "0.00"}</td>
                                 </tr>
                               ))}
                             </tbody>
@@ -1126,6 +1178,7 @@ const secChangeRun = (value) => {
                                 <th className="p-3 font-semibold uppercase text-amber-500 text-sm text-center">Runs</th>
                                 <th className="p-3 font-semibold uppercase text-amber-500 text-sm text-center">Balls</th>
                                 <th className="p-3 font-semibold uppercase text-amber-500 text-sm text-center">Wkts</th>
+                                <th className="p-3 font-semibold uppercase text-amber-500 text-sm text-center">Eco.</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -1135,6 +1188,9 @@ const secChangeRun = (value) => {
                                   <td className="p-3 text-center">{bowlerStats[b].runs}</td>
                                   <td className="p-3 text-center">{bowlerStats[b].balls}</td>
                                   <td className="p-3 font-bold text-center">{bowlerStats[b].wickets}</td>
+                                  <td className="p-3 font-bold text-center">{bowlerStats[b].balls > 0
+              ? calculateEconomy(bowlerStats[b].runs, calculateOver(bowlerStats[b].balls))
+              : "0.00"}</td>
                                 </tr>
                               ))}
                             </tbody>
