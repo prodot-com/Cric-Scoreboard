@@ -5,7 +5,6 @@ import { BrowserRouter, Routes, Route , Link} from 'react-router-dom'
 import Toss from './Component/TossPage/UpperSection/Toss'
 import AdminPage from './Component/AdminPage/AdminPage'
 import SecondInnings from './Component/SecondInnings/SecondInnings'
-import { CricContext, CricProvider, useCric } from './Context/CricContext'
 import Home from './Component/Home.jsx'
 
 
@@ -19,7 +18,7 @@ const App = () => {
 
 
   return (
-    <CricProvider value={{matchDetails, addMatchDetails}}>
+   
       <BrowserRouter>
     <Routes>
         <Route path='/' element={<Home/>}/>
@@ -28,10 +27,9 @@ const App = () => {
         <Route path='/toss/:id' element={<Toss/>}/>
         <Route path='/admin/:id' element={<AdminPage/>}/>
         <Route path='/second-innings/:id' element={<SecondInnings/>}/>
-        {/* <Route path='/live-first' element={<LiveFirstInnings/>}/> */}
     </Routes>
     </BrowserRouter>
-    </CricProvider>
+    
   )
 }
 
