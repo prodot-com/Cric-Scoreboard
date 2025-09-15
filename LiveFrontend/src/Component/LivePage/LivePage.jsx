@@ -224,27 +224,58 @@ const LiveMatchPage = () => {
     const { battingTeam, bowlingTeam, score, overs, totalOvers, inning, target, crr, rrr, striker, bowler, batsmanStats, bowlerStats, commentary, timeline, matchCompleted, bowlingStarted } = matchState;
 
     return (
-        <div className='font-mono bg-neutral-950 text-white min-h-screen w-full flex flex-col'>
+        <div className='font-mono bg-neutral-950 text-white min-h-screen w-full flex flex-col items-center'>
             {showSummary && <MatchSummaryModal first={firstSummary} second={secondSummary} onClose={() => setShowSummary(false)} />}
 
-            <header className="fixed top-0 sm:top-5 left-0 right-0 flex justify-center z-40 pointer-events-none">
-                <div className="border-b sm:border-2 border-amber-600 bg-neutral-900/80 w-full sm:w-[95%] sm:max-w-[1330px] flex justify-between items-center px-4 sm:px-10 py-4 sm:rounded-2xl backdrop-blur-md shadow-2xl pointer-events-auto">
-                    <h1 onClick={() => routeChange('/')} className="text-xl sm:text-3xl font-bold text-white cursor-pointer hover:text-amber-500 transition-colors">CricScoreBoard</h1>
-                    <div className="flex items-center space-x-2 sm:space-x-4">
-                        <button onClick={() => routeChange('/matches')} className="flex items-center space-x-2 text-neutral-300 hover:text-amber-500 transition-colors">
-                            <ArrowLeft className="w-5 h-5" />
-                            <span className="hidden sm:inline">All Matches</span>
-                        </button>
-                        <div className="flex items-center space-x-3 sm:space-x-6">
-                            <a href="https://github.com/prodot-com/Cric-Scoreboard" target="_blank" rel="noopener noreferrer" className="hover:text-amber-500 transition-colors"><Github className="w-5 h-5 sm:w-6 sm:h-6" /></a>
-                            <a href="https://www.linkedin.com/in/ghoshprobal/" target="_blank" rel="noopener noreferrer" className="hover:text-amber-500 transition-colors"><Linkedin className="w-5 h-5 sm:w-6 sm:h-6" /></a>
-                            <a href="https://mail.google.com/mail/?view=cm&fs=1&to=xprobal52@gmail.com" target="_blank" rel="noopener noreferrer" className="hover:text-amber-500 transition-colors"><Mail className="w-5 h-5 sm:w-6 sm:h-6" /></a>
-                        </div>
-                    </div>
-                </div>
-            </header>
+<div className="mt-5 bg-neutral-900/70 backdrop-blur-lg border border-neutral-800 
+        sm:max-w-[1330px] fixed max-w-[350px] sm:max-h-[77px]
+        flex flex-col sm:flex-row justify-between items-center w-full px-6 sm:px-10 py-4 
+        rounded-2xl z-50 shadow-lg shadow-amber-600/30">
+        <h1
+          onClick={() => window.location.reload()}
+          className="text-2xl sm:text-3xl font-bold text-white cursor-pointer hover:text-amber-500 transition"
+        >
+          CricScoreBoard
+        </h1>
 
-            <main className='w-full relative pt-24 sm:pt-32 pb-10 px-4 flex-grow'>
+        <div className="flex flex-col sm:flex-row items-center gap-4 mt-3 sm:mt-0">
+          <div className="flex items-center space-x-6">
+            {/* GitHub */}
+            <a
+              href="https://github.com/prodot-com/Cric-Scoreboard"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-amber-600 transition"
+            >
+              <Github className="w-6 h-6" />
+            </a>
+
+            {/* LinkedIn */}
+            <a
+              href="https://www.linkedin.com/in/ghoshprobal/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-amber-600 transition"
+            >
+              <Linkedin className="w-6 h-6" />
+            </a>
+
+            {/* Mail */}
+            <a
+              href="https://mail.google.com/mail/?view=cm&fs=1&to=xprobal52@gmail.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-amber-600 transition"
+            >
+              <Mail className="w-6 h-6" />
+            </a>
+          </div>
+
+         
+        </div>
+      </div>
+
+            <main className='w-full relative pt-40 sm:pt-32 pb-10 px-4 flex-grow'>
                 <div className="absolute inset-0 z-0 opacity-80" style={{ backgroundImage: `radial-gradient(circle at 50% 0%, rgba(217, 119, 6, 0.3) 0%, transparent 50%), radial-gradient(circle at 10% 20%, rgba(217, 119, 6, 0.15) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(217, 119, 6, 0.15) 0%, transparent 40%)` }} />
                 
                 <div className='relative z-10 max-w-5xl mx-auto'>

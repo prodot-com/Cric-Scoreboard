@@ -90,7 +90,7 @@ const Home = () => {
               onClick={() =>
                 document.getElementById("about").scrollIntoView({ behavior: "smooth" })
               }
-              className="px-6 py-3 bg-amber-600 text-white rounded-lg text-lg font-semibold shadow-md hover:bg-amber-500 transition"
+              className="px-6 py-3 cursor-pointer bg-amber-600 text-white rounded-lg text-lg font-semibold shadow-md hover:bg-amber-500 transition"
             >
               Get Started
             </button>
@@ -99,7 +99,7 @@ const Home = () => {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <button className="px-6 py-3 border border-neutral-500 hover:bg-neutral-800 rounded-lg text-lg font-semibold transition">
+              <button className="cursor-pointer px-6 py-3 border border-neutral-500 hover:bg-neutral-800 rounded-lg text-lg font-semibold transition">
                 View Live Scores
               </button>
             </a>
@@ -145,13 +145,13 @@ const Home = () => {
           {/* CTA */}
           <div className="flex flex-col sm:flex-row gap-4 mt-10">
             <button
-              className="px-6 py-3 bg-amber-600 hover:bg-amber-500 rounded-lg text-lg font-semibold shadow-lg transition"
+              className="cursor-pointer px-6 py-3 bg-amber-600 hover:bg-amber-500 rounded-lg text-lg font-semibold shadow-lg transition"
               onClick={() => navigate("/creation")}
             >
               Start a Match
             </button>
             <a href={LivePage_URL} target="_blank" rel="noopener noreferrer">
-              <button className="px-6 py-3 border border-neutral-500 hover:bg-neutral-800 rounded-lg text-lg font-semibold transition">
+              <button className="cursor-pointer px-6 py-3 border border-neutral-500 hover:bg-neutral-800 rounded-lg text-lg font-semibold transition">
                 View Live Scores
               </button>
             </a>
@@ -159,11 +159,11 @@ const Home = () => {
         </div>
 
         {/* Image Preview */}
-        <div className="flex flex-col sm:flex-row justify-center gap-6 mt-6 lg:mt-0">
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-6 mt-6 lg:mt-0">
           <img
             src={Hero1}
             alt="Cricket Preview"
-            className="w-[280px] sm:w-[350px] h-auto object-contain drop-shadow-2xl rounded-xl hover:scale-105 transition"
+            className="w-[300px] sm:w-[350px] h-auto object-contain drop-shadow-2xl rounded-xl hover:scale-105 transition"
           />
           <img
             src={Hero3}
@@ -209,8 +209,8 @@ const Home = () => {
         <p className="text-base sm:text-lg max-w-2xl text-neutral-300 mb-8">
           Get real-time updates, smart analytics, and live match summaries — all in one place.
         </p>
-        <a href="http://localhost:5174/" target="_blank" rel="noopener noreferrer">
-          <button className="px-8 py-3 bg-amber-600 hover:bg-amber-500 rounded-lg text-lg font-semibold shadow-lg transition">
+        <a href={LivePage_URL} target="_blank" rel="noopener noreferrer">
+          <button className="cursor-pointer px-8 py-3 bg-amber-600 hover:bg-amber-500 rounded-lg text-lg font-semibold shadow-lg transition">
             Start Watching
           </button>
         </a>
