@@ -106,7 +106,7 @@ const MatchSummaryModal = ({ first, second, onClose }) => {
 
     return (
         <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/70 z-50 p-4" onClick={onClose}>
-            <div className="mt-50 sm:mt-25 w-full max-w-5xl bg-neutral-800/80 border-2 border-amber-600 rounded-2xl p-4 sm:p-6 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="mt-65 sm:mt-25 w-full max-w-5xl bg-neutral-800/80 border-2 border-amber-600 rounded-2xl p-4 sm:p-6 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-2xl sm:text-3xl font-bold text-amber-500">Match Summary</h2>
                     <button onClick={onClose} className="text-neutral-400 hover:text-white transition-colors"><X size={28} /></button>
