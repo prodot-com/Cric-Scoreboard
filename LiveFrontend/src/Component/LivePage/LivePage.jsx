@@ -7,7 +7,6 @@ import { Github, Linkedin, Mail, ArrowLeft, X, Loader2 } from 'lucide-react';
 
 const socket = io(Backend_URL);
 
-// --- Reusable UI Components ---
 
 const Loader = ({ message = "Loading Match Data..." }) => (
     <div className="flex flex-col justify-center items-center h-full min-h-[300px] text-center">
@@ -138,7 +137,7 @@ const LiveMatchPage = () => {
         totalOvers: 0, value: "new",
     });
     
-    // States for loading indicators
+  
     const [pageLoading, setPageLoading] = useState(true);
     const [summaryLoading, setSummaryLoading] = useState(false);
 
@@ -271,7 +270,7 @@ const LiveMatchPage = () => {
             </a>
           </div>
 
-         
+    
         </div>
       </div>
 

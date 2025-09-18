@@ -4,25 +4,7 @@ import axios from 'axios';
 import { Github, Linkedin, Mail, PlusCircle, Clock, Loader2, Trophy, BarChartHorizontalBig } from 'lucide-react';
 import { Backend_URL } from '../../Utilities/Constant';
 
-// --- Reusable UI Components ---
 
-const LiveTime = () => {
-  const [time, setTime] = useState(new Date());
-
-  useEffect(() => {
-    const timerId = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(timerId);
-  }, []);
-
-  return (
-    <div className="hidden sm:flex items-center space-x-2 text-neutral-400">
-        <Clock className="w-5 h-5" />
-        <span>
-            {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-        </span>
-    </div>
-  );
-};
 
 const Loader = ({ message = "Loading Matches..." }) => (
     <div className="flex flex-col justify-center items-center h-full min-h-[300px] text-center">
@@ -178,9 +160,6 @@ const Matches = () => {
             </a>
           </div>
 
-          <div className="hidden sm:block font-bold px-2 py-1 text-[20px] text-neutral-400">
-            <LiveTime />
-          </div>
         </div>
       </div>
 
