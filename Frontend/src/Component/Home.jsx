@@ -1,72 +1,73 @@
-import React from "react";
-import Hero1 from "../assets/Hero1.png";
-import Hero3 from "../assets/Hero3.jpg";
+import React, { useState, useEffect } from "react";
 import { Star, BarChart, Zap, Github, Linkedin, Mail } from "lucide-react";
-import LiveTime from "./LiveTime";
 import { useNavigate } from "react-router-dom";
-import { LivePage_URL } from "../Utilities/Constant.js";
+import { LivePage_URL } from "../Utilities/Constant";
+
+
+const LiveTime = () => {
+  const [time, setTime] = useState('');
+
+  useEffect(() => {
+    const timerId = setInterval(() => {
+      const options = {
+        timeZone: 'Asia/Kolkata',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      };
+      const kolkataTime = new Date().toLocaleTimeString('en-US', options);
+      setTime(kolkataTime);
+    }, 1000);
+
+    return () => clearInterval(timerId);
+  }, []);
+
+  return (
+    <div>
+      {time} IST
+    </div>
+  );
+};
+
 
 const Home = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="font-mono min-h-screen bg-black text-white flex flex-col items-center">
+    <div className="flex min-h-screen flex-col items-center bg-black font-mono text-white">
       {/* Navbar */}
-      <div className="mt-5 bg-neutral-900/70 backdrop-blur-lg border border-neutral-800 
-        sm:max-w-[1330px] fixed max-w-[350px] sm:max-h-[77px]
-        flex flex-col sm:flex-row justify-between items-center w-full px-6 sm:px-10 py-4 
-        rounded-2xl z-50 shadow-lg shadow-amber-600/30">
+      <div className="fixed z-50 mt-8 flex w-full max-w-[350px] flex-col items-center justify-between rounded-2xl border border-neutral-800 bg-neutral-900/70 px-6 py-4 shadow-lg shadow-amber-600/30 backdrop-blur-lg sm:max-h-[77px] sm:max-w-[1330px] sm:flex-row sm:px-10 sm:py-7">
         <h1
           onClick={() => window.location.reload()}
-          className="text-2xl sm:text-3xl font-bold text-white cursor-pointer hover:text-amber-500 transition"
+          className="cursor-pointer text-2xl font-bold text-white transition hover:text-amber-500 sm:text-3xl"
         >
           CricScoreBoard
         </h1>
 
-        <div className="flex flex-col sm:flex-row items-center gap-4 mt-3 sm:mt-0">
+        <div className="mt-3 flex flex-col items-center gap-4 sm:mt-0 sm:flex-row">
           <div className="flex items-center space-x-6">
-            {/* GitHub */}
-            <a
-              href="https://github.com/prodot-com/Cric-Scoreboard"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-amber-600 transition"
-            >
-              <Github className="w-6 h-6" />
+            {/* Social Links */}
+            <a href="https://github.com/prodot-com/Cric-Scoreboard" target="_blank" rel="noopener noreferrer" className="transition hover:text-amber-600">
+              <Github className="h-6 w-6" />
             </a>
-
-            {/* LinkedIn */}
-            <a
-              href="https://www.linkedin.com/in/ghoshprobal/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-amber-600 transition"
-            >
-              <Linkedin className="w-6 h-6" />
+            <a href="https://www.linkedin.com/in/ghoshprobal/" target="_blank" rel="noopener noreferrer" className="transition hover:text-amber-600">
+              <Linkedin className="h-6 w-6" />
             </a>
-
-            {/* Mail */}
-            <a
-              href="https://mail.google.com/mail/?view=cm&fs=1&to=xprobal52@gmail.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-amber-600 transition"
-            >
-              <Mail className="w-6 h-6" />
+            <a href="https://mail.google.com/mail/?view=cm&fs=1&to=xprobal52@gmail.com" target="_blank" rel="noopener noreferrer" className="transition hover:text-amber-600">
+              <Mail className="h-6 w-6" />
             </a>
           </div>
-
-          <div className="hidden sm:block font-bold px-2 py-1 text-[20px] text-neutral-400">
+          <div className="hidden px-2 py-1 text-lg font-bold text-neutral-400 sm:block">
             <LiveTime />
           </div>
         </div>
       </div>
 
       {/* Hero Section */}
-      <div className="mt-[155px] sm:mt-24 min-h-[600px] sm:min-h-screen w-full relative flex flex-col justify-center items-center px-4 sm:px-6">
+      <div className="relative mt-[155px] flex min-h-[600px] w-full flex-col items-center justify-center px-4 sm:mt-24 sm:min-h-screen sm:px-6">
         {/* Glow Background */}
         <div
-          className="absolute inset-0 z-0 opacity-80 animate-pulseMe"
+          className="animate-pulseMe absolute inset-0 z-0 opacity-80"
           style={{
             backgroundImage: `
               radial-gradient(circle at 50% 100%, rgba(255, 69, 0, 0.6) 0%, transparent 60%),
@@ -77,29 +78,22 @@ const Home = () => {
         />
         {/* Content */}
         <div className="relative z-10 text-center">
-          <h1 className="font-bold leading-tight text-5xl sm:text-7xl max-w-full sm:max-w-4xl tracking-tight
-            bg-clip-text text-transparent bg-gradient-to-b from-white to-amber-500">
-            Experience Live Cricket Like Never Before
+          <h1 className="max-w-full bg-gradient-to-b from-white to-amber-500 bg-clip-text text-5xl font-bold leading-tight tracking-tight text-transparent sm:max-w-4xl sm:text-7xl">
+            Your Match, Your Scoreboard
           </h1>
-          <p className="mt-6 text-base sm:text-xl text-neutral-300 max-w-full sm:max-w-2xl mx-auto">
-            Track every ball, every run, and every wicket in real-time with powerful analytics and live updates.
+          <p className="mx-auto mt-6 max-w-full text-base text-neutral-300 sm:max-w-2xl sm:text-xl">
+            Create a match, update scores ball-by-ball, and share a live link with your friends. It's that simple.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 mt-8 justify-center">
+          <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
             <button
-              onClick={() =>
-                document.getElementById("about").scrollIntoView({ behavior: "smooth" })
-              }
-              className="px-6 py-3 cursor-pointer bg-amber-600 text-white rounded-lg text-lg font-semibold shadow-md hover:bg-amber-500 transition"
+              onClick={() => navigate("/creation")}
+              className="cursor-pointer rounded-lg bg-amber-600 px-6 py-3 text-lg font-semibold text-white shadow-md transition hover:bg-amber-500"
             >
-              Get Started
+              Create a Match
             </button>
-            <a
-              href={LivePage_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <button className="cursor-pointer px-6 py-3 border border-neutral-500 hover:bg-neutral-800 rounded-lg text-lg font-semibold transition">
+            <a href={LivePage_URL} target="_blank" rel="noopener noreferrer">
+              <button className="w-full cursor-pointer rounded-lg border border-neutral-500 px-6 py-3 text-lg font-semibold transition hover:bg-neutral-800">
                 View Live Scores
               </button>
             </a>
@@ -110,90 +104,90 @@ const Home = () => {
       {/* About Section */}
       <div
         id="about"
-        className="p-6 sm:p-12 max-w-[1430px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center"
+        className="mx-auto grid max-w-[1430px] grid-cols-1 items-center gap-12 p-6 sm:p-12 lg:grid-cols-2"
       >
         {/* Text Content */}
         <div>
-          <h2 className="text-3xl sm:text-5xl font-bold text-white">
-            About Our App
+          <h2 className="text-3xl font-bold text-white sm:text-5xl">
+            How It Works
           </h2>
-          <p className="mt-6 text-base sm:text-lg text-neutral-300 leading-relaxed">
-            CricScoreBoard is built to bring cricket closer to fans.{" "}
-            <span className="text-amber-500 font-semibold">Admins</span> can create matches and update scores ball by ball, while{" "}
-            <span className="text-amber-500 font-semibold">fans</span> enjoy real-time updates and match summaries.
+          <p className="mt-6 text-base leading-relaxed text-neutral-300 sm:text-lg">
+            CricScoreBoard is built for every cricket lover. An{" "}
+            <span className="font-semibold text-amber-500">admin</span> can
+            create a match in seconds and update scores live. Anyone with the link
+            can then <span className="font-semibold text-amber-500">watch</span>{" "}
+            the match with real-time updates and full summaries.
           </p>
 
           {/* Features */}
           <div className="mt-10 space-y-8">
             <Feature
-              icon={<Zap className="text-amber-600 w-6 h-6" />}
-              title="Ball-by-Ball Scoring"
-              desc="Admins can update every run, wicket, and extra live in real-time."
+              icon={<Zap className="h-6 w-6 text-amber-600" />}
+              title="Instant Match Creation"
+              desc="Set up your match with team names and overs, and get a shareable link instantly."
             />
             <Feature
-              icon={<BarChart className="text-amber-600 w-6 h-6" />}
-              title="Live Scoreboard"
-              desc="Fans get stadium-like experience with instant scoreboard updates."
+              icon={<BarChart className="h-6 w-6 text-amber-600" />}
+              title="Live Ball-by-Ball Updates"
+              desc="As an admin, score the match live. Viewers see every update in real-time."
             />
             <Feature
-              icon={<Star className="text-amber-600 w-6 h-6" />}
-              title="Match Summaries"
-              desc="Detailed stats, team performance breakdowns, and match results."
+              icon={<Star className="h-6 w-6 text-amber-600" />}
+              title="Complete Match Summaries"
+              desc="Once the match is over, everyone can view detailed stats and results."
             />
           </div>
 
           {/* CTA */}
-          <div className="flex flex-col sm:flex-row gap-4 mt-10">
+          <div className="mt-10 flex flex-col gap-4 sm:flex-row">
             <button
-              className="cursor-pointer px-6 py-3 bg-amber-600 hover:bg-amber-500 rounded-lg text-lg font-semibold shadow-lg transition"
+              className="cursor-pointer rounded-lg bg-amber-600 px-6 py-3 text-lg font-semibold shadow-lg transition hover:bg-amber-500"
               onClick={() => navigate("/creation")}
             >
               Start a Match
             </button>
-            <a href={LivePage_URL} target="_blank" rel="noopener noreferrer">
-              <button className="cursor-pointer px-6 py-3 border border-neutral-500 hover:bg-neutral-800 rounded-lg text-lg font-semibold transition">
-                View Live Scores
-              </button>
-            </a>
           </div>
         </div>
 
         {/* Image Preview */}
-        <div className="flex flex-col sm:flex-row justify-center items-center gap-6 mt-6 lg:mt-0">
+        <div className="mt-6 flex flex-col items-center justify-center gap-6 sm:flex-row lg:mt-0">
           <img
-            src={Hero1}
+            src="https://placehold.co/350x500/171717/d97706?text=Live+View"
             alt="Cricket Preview"
-            className="w-[300px] sm:w-[350px] h-auto object-contain drop-shadow-2xl rounded-xl hover:scale-105 transition"
+            className="h-auto w-[300px] rounded-xl object-cover drop-shadow-2xl transition hover:scale-105 sm:w-[350px]"
           />
           <img
-            src={Hero3}
+            src="https://placehold.co/300x500/171717/d97706?text=Admin+Panel"
             alt="Cricket Preview"
-            className="sm:max-h-[500px] w-[280px] sm:w-[300px] h-auto object-contain drop-shadow-2xl rounded-xl hover:scale-105 transition"
+            className="h-auto w-[280px] rounded-xl object-cover drop-shadow-2xl transition hover:scale-105 sm:max-h-[500px] sm:w-[300px]"
           />
         </div>
       </div>
 
       {/* Trust Section */}
-      <div className="bg-neutral-900 rounded-2xl max-w-[330px] sm:max-w-[1430px] w-full py-16 sm:py-20 mx-auto shadow-lg shadow-amber-600/40 relative">
-        <div className="text-center mb-12 relative z-10">
-          <h2 className="text-3xl sm:text-4xl font-bold">
+      <div className="relative mx-auto my-12 w-full max-w-[330px] rounded-2xl bg-neutral-900 py-16 shadow-lg shadow-amber-600/40 sm:max-w-[1430px] sm:py-20">
+        <div className="relative z-10 mb-12 text-center">
+          <h2 className="text-3xl font-bold sm:text-4xl">
             Why Trust <span className="text-amber-600">CricScoreBoard</span>
           </h2>
-          <p className="mt-4 text-base sm:text-lg text-neutral-400">
-            Powering live matches, delivering accurate stats, and connecting fans worldwide.
+          <p className="mt-4 text-base text-neutral-400 sm:text-lg">
+            Powering live matches, delivering accurate stats, and connecting
+            fans worldwide.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 max-w-4xl mx-auto text-center relative z-10">
+        <div className="relative z-10 mx-auto grid max-w-4xl grid-cols-1 gap-10 text-center sm:grid-cols-2">
           <div className="group flex flex-col items-center">
-            <Zap className="text-amber-600 w-12 h-12 group-hover:scale-110 transition" />
-            <h3 className="text-neutral-300 mt-2 text-lg">Low Latency Updates</h3>
+            <Zap className="h-12 w-12 text-amber-600 transition group-hover:scale-110" />
+            <h3 className="mt-2 text-lg text-neutral-300">
+              Low Latency Updates
+            </h3>
           </div>
           <div className="group">
-            <h3 className="text-4xl sm:text-5xl font-extrabold text-amber-600 group-hover:scale-110 transition">
+            <h3 className="text-4xl font-extrabold text-amber-600 transition group-hover:scale-110 sm:text-5xl">
               99.9%
             </h3>
-            <p className="text-neutral-300 mt-2">Accurate Data Delivery</p>
+            <p className="mt-2 text-neutral-300">Accurate Data Delivery</p>
           </div>
         </div>
 
@@ -202,24 +196,25 @@ const Home = () => {
       </div>
 
       {/* Final CTA */}
-      <div className="flex flex-col items-center justify-center py-20 px-6 text-center bg-gradient-to-r from-amber-600/10 via-black to-amber-600/10 w-full">
-        <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-          Ready to Experience Live Cricket?
+      <div className="flex w-full flex-col items-center justify-center bg-gradient-to-r from-amber-600/10 via-black to-amber-600/10 px-6 py-20 text-center">
+        <h2 className="mb-4 text-3xl font-bold sm:text-4xl">
+          Ready to Start Scoring?
         </h2>
-        <p className="text-base sm:text-lg max-w-2xl text-neutral-300 mb-8">
-          Get real-time updates, smart analytics, and live match summaries — all in one place.
+        <p className="mb-8 max-w-2xl text-base text-neutral-300 sm:text-lg">
+          Create your first match and share the excitement of live cricket. It's free and easy to get started.
         </p>
-        <a href={LivePage_URL} target="_blank" rel="noopener noreferrer">
-          <button className="cursor-pointer px-8 py-3 bg-amber-600 hover:bg-amber-500 rounded-lg text-lg font-semibold shadow-lg transition">
-            Start Watching
-          </button>
-        </a>
+        <button
+            className="cursor-pointer rounded-lg bg-amber-600 px-8 py-3 text-lg font-semibold shadow-lg transition hover:bg-amber-500"
+            onClick={() => navigate("/creation")}
+        >
+            Create Your Match Now
+        </button>
       </div>
 
       {/* Footer */}
-      <footer className="mt-auto py-6 text-center text-gray-400 text-sm flex flex-col sm:flex-row items-center justify-center gap-2">
+      <footer className="mt-auto flex flex-col items-center justify-center gap-2 py-6 text-center text-sm text-gray-400 sm:flex-row">
         <span className="text-[13px] sm:text-[15px]">
-          ©2025 CricScoreBoard | Built with 🏏
+          ©2024 CricScoreBoard | Built with 🏏
         </span>
       </footer>
     </div>
@@ -228,15 +223,16 @@ const Home = () => {
 
 // Reusable Feature Card
 const Feature = ({ icon, title, desc }) => (
-  <div className="flex flex-col sm:flex-row items-start gap-4 group">
-    <div className="p-3 rounded-full bg-amber-500/10 group-hover:bg-amber-500/20 transition">
+  <div className="group flex flex-col items-start gap-4 sm:flex-row">
+    <div className="rounded-full bg-amber-500/10 p-3 transition group-hover:bg-amber-500/20">
       {icon}
     </div>
     <div>
-      <h3 className="text-lg sm:text-xl font-semibold text-white">{title}</h3>
-      <p className="text-neutral-400 text-sm sm:text-base">{desc}</p>
+      <h3 className="text-lg font-semibold text-white sm:text-xl">{title}</h3>
+      <p className="text-sm text-neutral-400 sm:text-base">{desc}</p>
     </div>
   </div>
 );
 
 export default Home;
+
