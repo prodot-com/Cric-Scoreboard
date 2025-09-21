@@ -116,7 +116,7 @@ const Home = () => {
           CricScoreBoard
         </h1>
 
-        <div className="flex flex-col items-center gap-4 sm:mt-0 sm:flex-row">
+        <div className="flex flex-col items-center gap-4 mb-3 sm:mb-0 sm:mt-0 sm:flex-row">
           <div className="flex items-center space-x-6">
             {/* Social Links */}
             <a
