@@ -164,7 +164,7 @@ const Home = () => {
           className={`relative z-10 text-center ${heroFade.className}`}
         >
           <h1 className="max-w-full bg-gradient-to-b from-white to-amber-500 bg-clip-text text-5xl leading-tight font-bold tracking-tight text-transparent sm:max-w-4xl sm:text-7xl">
-            Your Match, Your Scoreboard
+            Your Match,Your Scoreboard
           </h1>
           <p className="mx-auto mt-6 max-w-full text-base text-neutral-300 sm:max-w-2xl sm:text-xl">
             Create a match, update scores ball-by-ball, and share a live link
