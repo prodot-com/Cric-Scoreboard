@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
-import LiveTime from "../../LiveTime.jsx";
+import LiveTime from '../LiveTime.jsx';
 import { Github, Linkedin, Mail, ShieldCheck, Sword, ArrowRight, AlertTriangle, X } from "lucide-react";
-import Cricket3 from "../../../assets/Cricket3.jpeg";
-import { Backend_URL } from "../../../Utilities/Constant.js";
+import Cricket3 from "../../assets/Cricket3.jpeg";
+import { Backend_URL } from "../../Utilities/Constant.js";
 
 // Reusable Loader Component
 const Loader = ({ message }) => (
