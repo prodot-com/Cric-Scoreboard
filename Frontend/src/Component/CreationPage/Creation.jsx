@@ -167,7 +167,7 @@ export default function CreateMatchPage() {
                 { label: "Your Name", key: "name", placeholder: "Alex Carey" },
                 { label: "Team 1 Name", key: "team1", placeholder: "Royal Challengers" },
                 { label: "Team 2 Name", key: "team2", placeholder: "Knight Riders" },
-                { label: "Total Overs", key: "over", type: "number", placeholder: "20" },
+                { label: "Total Overs(Per Innings)", key: "over", type: "number", placeholder: "20" },
               ].map((field) => (
                 <div key={field.key}>
                   <label className="block text-neutral-300 font-medium mb-2 text-sm sm:text-base tracking-wide">

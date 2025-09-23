@@ -74,7 +74,7 @@ const AdminPage = () => {
     };
   }, [id]);
 
-  // ===== FETCH MATCH DATA =====
+  
   useEffect(() => {
     const getMatch = async () => {
       setLoading(true);
@@ -85,7 +85,6 @@ const AdminPage = () => {
         setToltalBallsInMatch(res.data.result.over * 6);
       } catch (error) {
         console.log(error);
-        // Optionally, add error handling for the user
       } finally {
         setLoading(false);
       }
@@ -93,7 +92,7 @@ const AdminPage = () => {
     getMatch();
   }, [id]);
 
-  // ===== Initialise innings after match data load =====
+
   useEffect(() => {
     if (!matchData || !matchData.team1) return;
     setTotalOver(matchData.over);
@@ -108,7 +107,7 @@ const AdminPage = () => {
     setBowlingTeam(bowling);
   }, [matchData]);
 
-  // ===== FORM SUBMISSION FOR OPENERS =====
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!input.batsman1 || !input.batsman2 || !input.bowler) {
@@ -363,67 +362,85 @@ const AdminPage = () => {
   }, [currentRun, isFirstInnings, target]);
 
   // ===== SECOND INNINGS RUN HANDLER - LOGIC UNCHANGED =====
-  const secChangeRun = (value) => {
-    if (!bowler || !striker) return alert("Select batsmen and bowler first!");
-    setBowlingStarted(true);
-    setValue(value);
-    updateTimeline(value);
-    updateCommentry(value, striker, bowler);
+const secChangeRun = (value) => {
+  if (!bowler || !striker) return alert("Select batsmen and bowler first!");
 
-    if (value === "W") {
-      if (isFreeHit) {
-        setTotalBalls(b => b + 1);
-        updateBatsman(striker, b => ({ balls: b.balls + 1 }));
-        updateBowler(bowler, bw => ({ balls: bw.balls + 1 }));
-        setIsFreeHit(false);
-        return;
-      }
-      setCurrentWicket(w => {
-        const newW = w + 1;
-        if (newW === 10) {
-          setIningsOver(true);
-          setBowlingStarted(false);
-          setMatchResult(`${bowlingTeam} won by ${target - 1 - currentRun} runs`);
-          setMatchWinner(bowlingTeam);
-        }
-        return newW;
-      });
-      setTotalBalls(prev => {
-        const newBalls = prev + 1;
-        updateBatsman(striker, b => ({ balls: b.balls + 1, out: true }));
-        updateBowler(bowler, bw => ({ balls: bw.balls + 1, wickets: bw.wickets + 1 }));
-        if (newBalls % 6 === 0) {
-          setTimeout(() => setShowBatsmanModal(true), 500);
-          const temp = striker;
-          setStriker(nonStriker);
-          setNonStriker(temp);
-          setTimeout(() => setShowBowlerModal(true), 1200);
-        } else {
-          setTimeout(() => setShowBatsmanModal(true), 500);
-        }
-        return newBalls;
-      });
-      return;
+  setBowlingStarted(true);
+  setValue(value);
+  updateTimeline(value);
+  updateCommentry(value, striker, bowler);
+
+  // Handle Wicket
+if (value === "W") {
+  if (isFreeHit) {
+    setTotalBalls(b => b + 1);
+    updateBatsman(striker, b => ({ balls: b.balls + 1 }));
+    updateBowler(bowler, bw => ({ balls: bw.balls + 1 }));
+    setIsFreeHit(false);
+    return;
+  }
+
+  setCurrentWicket(w => {
+    const newW = w + 1;
+
+    if (newW === 10) {
+      // All out → directly end match
+      setIningsOver(true);
+      setBowlingStarted(false);
+      setMatchResult(`${bowlingTeam} won by ${target - 1 - currentRun} runs`);
+      setMatchWinner(bowlingTeam);
+
+      // Update final ball + stats
+      setTotalBalls(b => b + 1);
+      updateBatsman(striker, b => ({ balls: b.balls + 1, out: true }));
+      updateBowler(bowler, bw => ({ balls: bw.balls + 1, wickets: bw.wickets + 1 }));
+
+      return newW;
     }
 
-    if (value === "wide" || value === "no") {
-      setCurrentRun(r => {
-        const newR = r + 1;
-        if (newR >= target) {
-          setIningsOver(true);
-          setBowlingStarted(false);
-          setMatchResult(`${battingTeam} won by ${10 - currentWicket} wickets`);
-          setMatchWinner(battingTeam);
-        }
-        return newR;
-      });
-      updateBowler(bowler, bw => ({ runs: bw.runs + 1 }));
-      if (value === "no") setIsFreeHit(true);
-      return;
+    return newW;
+  });
+
+  // Normal wicket flow only if match not over
+  setTotalBalls(prev => {
+    // 🚨 protect against false modal triggers
+    if (currentWicket + 1 >= 10 || iningsOver) {
+      return prev; // do nothing, innings ended
     }
 
+    const newBalls = prev + 1;
+    updateBatsman(striker, b => ({ balls: b.balls + 1, out: true }));
+    updateBowler(bowler, bw => ({ balls: bw.balls + 1, wickets: bw.wickets + 1 }));
+
+    if (newBalls % 6 === 0) {
+      setTimeout(() => {
+        if (!iningsOver) setShowBatsmanModal(true);
+      }, 500);
+
+      const temp = striker;
+      setStriker(nonStriker);
+      setNonStriker(temp);
+
+      setTimeout(() => {
+        if (!iningsOver) setShowBowlerModal(true);
+      }, 1200);
+    } else {
+      setTimeout(() => {
+        if (!iningsOver) setShowBatsmanModal(true);
+      }, 500);
+    }
+    return newBalls;
+  });
+
+  return;
+}
+
+
+
+  // Handle Wide/No ball
+  if (value === "wide" || value === "no") {
     setCurrentRun(r => {
-      const newR = r + value;
+      const newR = r + 1;
       if (newR >= target) {
         setIningsOver(true);
         setBowlingStarted(false);
@@ -432,40 +449,62 @@ const AdminPage = () => {
       }
       return newR;
     });
-    updateBatsman(striker, b => ({ runs: b.runs + value, balls: b.balls + 1 }));
-    updateBowler(bowler, bw => ({ runs: bw.runs + value, balls: bw.balls + 1 }));
-    setTotalBalls(prev => {
-      const newBalls = prev + 1;
-      if (newBalls === matchData.over * 6) {
-        setTimeout(() => {
-          setIningsOver(true);
-          setBowlingStarted(false);
-          if (currentRun >= target) {
-            setMatchResult(`${battingTeam} won by ${10 - currentWicket} wickets`);
-            setMatchWinner(battingTeam);
-          } else if (currentRun < target - 1) {
-            setMatchResult(`${bowlingTeam} won by ${target - currentRun - 1} runs`);
-            setMatchWinner(bowlingTeam);
-          } else {
-            setMatchResult("Match tied");
-          }
-        }, 1000);
-        return newBalls;
-      }
-      if (newBalls % 6 === 0) {
-        const temp = striker;
-        setStriker(nonStriker);
-        setNonStriker(temp);
-        setShowBowlerModal(true);
-      } else if (value % 2 === 1) {
-        const temp = striker;
-        setStriker(nonStriker);
-        setNonStriker(temp);
-      }
-      setIsFreeHit(false);
+    updateBowler(bowler, bw => ({ runs: bw.runs + 1 }));
+    if (value === "no") setIsFreeHit(true);
+    return;
+  }
+
+  // Handle Runs
+  setCurrentRun(r => {
+    const newR = r + value;
+    if (newR >= target) {
+      setIningsOver(true);
+      setBowlingStarted(false);
+      setMatchResult(`${battingTeam} won by ${10 - currentWicket} wickets`);
+      setMatchWinner(battingTeam);
+    }
+    return newR;
+  });
+
+  updateBatsman(striker, b => ({ runs: b.runs + value, balls: b.balls + 1 }));
+  updateBowler(bowler, bw => ({ runs: bw.runs + value, balls: bw.balls + 1 }));
+
+  setTotalBalls(prev => {
+    const newBalls = prev + 1;
+
+    if (newBalls === matchData.over * 6) {
+      setTimeout(() => {
+        setIningsOver(true);
+        setBowlingStarted(false);
+        if (currentRun >= target) {
+          setMatchResult(`${battingTeam} won by ${10 - currentWicket} wickets`);
+          setMatchWinner(battingTeam);
+        } else if (currentRun < target - 1) {
+          setMatchResult(`${bowlingTeam} won by ${target - currentRun - 1} runs`);
+          setMatchWinner(bowlingTeam);
+        } else {
+          setMatchResult("Match tied");
+        }
+      }, 1000);
       return newBalls;
-    });
-  };
+    }
+
+    if (newBalls % 6 === 0) {
+      const temp = striker;
+      setStriker(nonStriker);
+      setNonStriker(temp);
+      setShowBowlerModal(true);
+    } else if (value % 2 === 1) {
+      const temp = striker;
+      setStriker(nonStriker);
+      setNonStriker(temp);
+    }
+
+    setIsFreeHit(false);
+    return newBalls;
+  });
+};
+
 
   // ===== UTILITY FUNCTIONS (UNCHANGED) =====
   const calculateCurrentRunRate = (runs, balls) => {
