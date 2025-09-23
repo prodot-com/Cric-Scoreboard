@@ -194,14 +194,10 @@ const Home = () => {
           <h2 className="text-3xl font-bold text-white sm:text-5xl">
             How It Works
           </h2>
-          <p className="mt-6 text-base leading-relaxed text-neutral-300 sm:text-lg">
-            CricScoreBoard is built for every cricket lover. An{" "}
-            <span className="font-semibold text-amber-500">admin</span> can
-            create a match in seconds and update scores live. Anyone with the
-            link can then{" "}
-            <span className="font-semibold text-amber-500">watch</span> the
-            match with real-time updates and full summaries.
-          </p>
+         <p className="mt-6 text-base leading-relaxed text-neutral-300 sm:text-lg">
+  Experience cricket like never before with <span className="font-semibold text-amber-500">CricScoreBoard</span>. Designed for clubs, leagues, and casual players alike, our platform empowers you to bring professional-level scoring to any match. 
+  The admin dashboard offers intuitive controls for live updates, while spectators enjoy a rich, real-time viewing experience via a simple shareable link.
+</p>
           <div className="mt-10 space-y-8">
             <Feature
               icon={<Zap className="h-6 w-6 text-amber-500" />}
@@ -287,7 +283,7 @@ const Home = () => {
 
       {/* Footer */}
       <footer className="w-full border-t border-neutral-800 py-6 text-center text-sm text-gray-500">
-        ©{new Date().getFullYear()} CricScoreBoard | Built with 🏏
+        ©{new Date().getFullYear()} CricScoreBoard | Built with 🧡 by Probal
       </footer>
     </div>
   );
