@@ -207,87 +207,200 @@ const AdminPage = () => {
   };
 
   // ===== MAIN RUN HANDLER (FIRST INNINGS) - LOGIC UNCHANGED =====
-  const changeRun = (value) => {
-    if (!bowler || !striker) return alert("Select batsmen and bowler first!");
-    setBowlingStarted(true);
-    setValue(value);
-    updateTimeline(value);
-    updateCommentry(value, striker, bowler);
+// const changeRun = (value) => {
+//   if (!bowler || !striker) return alert("Select batsmen and bowler first!");
 
-    if (value === "W") {
-      if (isFreeHit) {
-        setTotalBalls((b) => b + 1);
-        updateBatsman(striker, (b) => ({ balls: b.balls + 1 }));
-        updateBowler(bowler, (bw) => ({ balls: bw.balls + 1 }));
-        setIsFreeHit(false);
-        return;
-      }
-      setCurrentWicket((w) => {
-        const newW = w + 1;
-        if (newW === 10) {
-          setTimeout(() => {
-            setIningsOver(true);
-            setBowlingStarted(false);
-          }, 1000);
-        }
-        return newW;
-      });
-      setTotalBalls((b) => {
-        const newBalls = b + 1;
-        updateBatsman(striker, (b) => ({ balls: b.balls + 1, out: true }));
-        updateBowler(bowler, (bw) => ({ balls: bw.balls + 1, wickets: bw.wickets + 1 }));
-        if (newBalls % 6 === 0) {
-          setTimeout(() => setShowBatsmanModal(true), 500);
-          const temp = striker;
-          setStriker(nonStriker);
-          setNonStriker(temp);
-          setTimeout(() => setShowBowlerModal(true), 1200);
-        } else {
-          setTimeout(() => setShowBatsmanModal(true), 500);
-        }
-        return newBalls;
-      });
+//   setBowlingStarted(true);
+//   setValue(value);
+//   updateTimeline(value);
+//   updateCommentry(value, striker, bowler);
+
+//   // 🏏 Handle Wicket
+// if (value === "W") {
+//   if (isFreeHit) {
+//     console.log("Wicket on Free Hit");
+//     setTotalBalls(b => b + 1);
+//     updateBatsman(striker, b => ({ balls: b.balls + 1 }));
+//     updateBowler(bowler, bw => ({ balls: bw.balls + 1 }));
+//     setIsFreeHit(false);
+//     return;
+//   }
+
+//   // increment wicket first
+//   const newWicket = currentWicket + 1;
+//   setCurrentWicket(newWicket);
+
+//   // ✅ Always update ball + stats ONCE
+//   setTotalBalls(prev => prev + 1);
+//   updateBatsman(striker, b => ({ balls: b.balls + 1, out: true }));
+//   updateBowler(bowler, bw => ({ balls: bw.balls + 1, wickets: bw.wickets + 1 }));
+
+//   if (newWicket >= 10) {
+//     // All out
+//     console.log("All out");
+//     setIningsOver(true);
+//     setBowlingStarted(false);
+//     setMatchResult(`${bowlingTeam} won by ${target - 1 - currentRun} runs`);
+//     setMatchWinner(bowlingTeam);
+//     return;
+//   }
+
+//   // ✅ Normal wicket flow
+//   if ((totalBalls + 1) % 6 === 0) {
+//     setTimeout(() => { if (!iningsOver) setShowBatsmanModal(true); }, 500);
+//     const temp = striker;
+//     setStriker(nonStriker);
+//     setNonStriker(temp);
+//     setTimeout(() => { if (!iningsOver) setShowBowlerModal(true); }, 1200);
+//   } else {
+//     setTimeout(() => { if (!iningsOver) setShowBatsmanModal(true); }, 500);
+//   }
+
+//   return;
+// }
+
+
+//   // 🏏 Handle Wide / No Ball
+//   if (value === "wide" || value === "no") {
+//     setCurrentRun(r => r + 1);
+//     updateBowler(bowler, bw => ({ runs: bw.runs + 1 })); // ✅ runs only, no balls
+//     if (value === "no") setIsFreeHit(true);
+//     return;
+//   }
+
+//   // 🏏 Handle Runs
+//   setCurrentRun(r => r + value);
+//   updateBatsman(striker, b => ({
+//     runs: b.runs + value,
+//     balls: b.balls + 1,
+//   }));
+//   updateBowler(bowler, bw => ({
+//     runs: bw.runs + value,
+//     balls: bw.balls + 1,
+//   }));
+
+//   setTotalBalls(prev => {
+//     const newBalls = prev + 1;
+
+//     if (newBalls === matchData.over * 6) {
+//       setTimeout(() => {
+//         setIningsOver(true);
+//         setBowlingStarted(false);
+//       }, 1000);
+//       return newBalls;
+//     }
+
+//     if (newBalls % 6 === 0) {
+//       const temp = striker;
+//       setStriker(nonStriker);
+//       setNonStriker(temp);
+//       setShowBowlerModal(true);
+//     } else if (value % 2 === 1) {
+//       const temp = striker;
+//       setStriker(nonStriker);
+//       setNonStriker(temp);
+//     }
+
+//     return newBalls;
+//   });
+// };
+
+const changeRun = (value) => {
+  if (!bowler || !striker) return alert("Select batsmen and bowler first!");
+
+  setBowlingStarted(true);
+  setValue(value);
+  updateTimeline(value);
+  updateCommentry(value, striker, bowler);
+
+  // 🏏 Handle Wicket
+  if (value === "W") {
+    if (isFreeHit) {
+      console.log("Wicket on Free Hit");
+      setTotalBalls(b => b + 1);
+      updateBatsman(striker, b => ({ balls: b.balls + 1 }));
+      updateBowler(bowler, bw => ({ balls: bw.balls + 1 }));
+      setIsFreeHit(false);
       return;
     }
 
-    if (value === "wide" || value === "no") {
-      setCurrentRun((r) => r + 1);
-      updateBowler(bowler, (bw) => ({ runs: bw.runs + 1 }));
-      setIsFreeHit(true);
+    const newWicket = currentWicket + 1;
+    setCurrentWicket(newWicket);
+
+    // ✅ Ball and player stats are updated once, which is correct.
+    setTotalBalls(prev => prev + 1);
+    updateBatsman(striker, b => ({ balls: b.balls + 1, out: true }));
+    updateBowler(bowler, bw => ({ balls: bw.balls + 1, wickets: bw.wickets + 1 }));
+
+    // 🚨 FIX 1: "All Out" logic for the FIRST INNINGS.
+    if (newWicket >= 10) {
+      console.log("All out");
+      setIningsOver(true);
+      setBowlingStarted(false);
+      // setMatchResult(...) and setMatchWinner(...) are REMOVED
+      // because the innings just ends, a winner is not decided yet.
       return;
     }
 
-    setCurrentRun((r) => r + value);
-    updateBatsman(striker, (b) => ({
-      runs: b.runs + value,
-      balls: b.balls + 1,
-    }));
-    updateBowler(bowler, (bw) => ({
-      runs: bw.runs + value,
-      balls: bw.balls + 1,
-    }));
-    setTotalBalls((prev) => {
-      const newBalls = prev + 1;
-      if (newBalls === matchData.over * 6) {
-        setTimeout(() => {
-          setIningsOver(true);
-          setBowlingStarted(false);
-        }, 1000);
-        return newBalls;
-      }
-      if (newBalls % 6 === 0) {
-        const temp = striker;
-        setStriker(nonStriker);
-        setNonStriker(temp);
-        setShowBowlerModal(true);
-      } else if (value % 2 === 1) {
-        const temp = striker;
-        setStriker(nonStriker);
-        setNonStriker(temp);
-      }
+    // 🚨 FIX 2: Strike rotation on end-of-over wicket.
+    if ((totalBalls + 1) % 6 === 0) {
+      // On the last ball of an over, the new batsman will take strike.
+      // We do NOT swap the existing non-striker.
+      setTimeout(() => { if (!iningsOver) setShowBatsmanModal(true); }, 500);
+      setTimeout(() => { if (!iningsOver) setShowBowlerModal(true); }, 1200);
+    } else {
+      // Wicket mid-over, new batsman comes in.
+      setTimeout(() => { if (!iningsOver) setShowBatsmanModal(true); }, 500);
+    }
+
+    return; // Stop execution for wicket
+  }
+
+  // 🏏 Handle Wide / No Ball (Your logic here is already correct)
+  if (value === "wide" || value === "no") {
+    setCurrentRun(r => r + 1);
+    updateBowler(bowler, bw => ({ runs: bw.runs + 1 }));
+    if (value === "no") setIsFreeHit(true);
+    return;
+  }
+
+  // 🏏 Handle Runs (Your logic here is already correct)
+  setCurrentRun(r => r + value);
+  updateBatsman(striker, b => ({
+    runs: b.runs + value,
+    balls: b.balls + 1,
+  }));
+  updateBowler(bowler, bw => ({
+    runs: bw.runs + value,
+    balls: bw.balls + 1,
+  }));
+
+  setTotalBalls(prev => {
+    const newBalls = prev + 1;
+
+    if (newBalls === matchData.over * 6) {
+      setTimeout(() => {
+        setIningsOver(true);
+        setBowlingStarted(false);
+      }, 1000);
       return newBalls;
-    });
-  };
+    }
+
+    if (newBalls % 6 === 0) {
+      const temp = striker;
+      setStriker(nonStriker);
+      setNonStriker(temp);
+      setShowBowlerModal(true);
+    } else if (value % 2 === 1) {
+      const temp = striker;
+      setStriker(nonStriker);
+      setNonStriker(temp);
+    }
+
+    return newBalls;
+  });
+};
+
 
   // ===== START 2nd INNINGS =====
   const startSecondInnings = async () => {
@@ -362,6 +475,129 @@ const AdminPage = () => {
   }, [currentRun, isFirstInnings, target]);
 
   // ===== SECOND INNINGS RUN HANDLER - LOGIC UNCHANGED =====
+// const secChangeRun = (value) => {
+//   if (!bowler || !striker) return alert("Select batsmen and bowler first!");
+
+//   setBowlingStarted(true);
+//   setValue(value);
+//   updateTimeline(value);
+//   updateCommentry(value, striker, bowler);
+
+//   // Handle Wicket
+// if (value === "W") {
+//   if (isFreeHit) {
+//     console.log("Wicket on Free Hit");
+//     setTotalBalls(b => b + 1);
+//     updateBatsman(striker, b => ({ balls: b.balls + 1 }));
+//     updateBowler(bowler, bw => ({ balls: bw.balls + 1 }));
+//     setIsFreeHit(false);
+//     return;
+//   }
+
+//   const newWicket = currentWicket + 1;
+//   setCurrentWicket(newWicket);
+
+//   // ✅ Update stats & balls only once
+//   setTotalBalls(prev => prev + 1);
+//   updateBatsman(striker, b => ({ balls: b.balls + 1, out: true }));
+//   updateBowler(bowler, bw => ({ balls: bw.balls + 1, wickets: bw.wickets + 1 }));
+
+//   if (newWicket >= 10) {
+//     // All out → end match
+//     console.log("All out");
+//     setIningsOver(true);
+//     setBowlingStarted(false);
+//     setMatchResult(`${bowlingTeam} won by ${target - 1 - currentRun} runs`);
+//     setMatchWinner(bowlingTeam);
+//     return;
+//   }
+
+//   // ✅ Modal handling
+//   if ((totalBalls + 1) % 6 === 0) {
+//     setTimeout(() => { if (!iningsOver) setShowBatsmanModal(true); }, 500);
+//     const temp = striker;
+//     setStriker(nonStriker);
+//     setNonStriker(temp);
+//     setTimeout(() => { if (!iningsOver) setShowBowlerModal(true); }, 1200);
+//   } else {
+//     setTimeout(() => { if (!iningsOver) setShowBatsmanModal(true); }, 500);
+//   }
+
+//   return;
+// }
+
+
+
+
+
+//   // Handle Wide/No ball
+//   if (value === "wide" || value === "no") {
+//     setCurrentRun(r => {
+//       const newR = r + 1;
+//       if (newR >= target) {
+//         setIningsOver(true);
+//         setBowlingStarted(false);
+//         setMatchResult(`${battingTeam} won by ${10 - currentWicket} wickets`);
+//         setMatchWinner(battingTeam);
+//       }
+//       return newR;
+//     });
+//     updateBowler(bowler, bw => ({ runs: bw.runs + 1 }));
+//     if (value === "no") setIsFreeHit(true);
+//     return;
+//   }
+
+//   // Handle Runs
+//   setCurrentRun(r => {
+//     const newR = r + value;
+//     if (newR >= target) {
+//       setIningsOver(true);
+//       setBowlingStarted(false);
+//       setMatchResult(`${battingTeam} won by ${10 - currentWicket} wickets`);
+//       setMatchWinner(battingTeam);
+//     }
+//     return newR;
+//   });
+
+//   updateBatsman(striker, b => ({ runs: b.runs + value, balls: b.balls + 1 }));
+//   updateBowler(bowler, bw => ({ runs: bw.runs + value, balls: bw.balls + 1 }));
+
+//   setTotalBalls(prev => {
+//     const newBalls = prev + 1;
+
+//     if (newBalls === matchData.over * 6) {
+//       setTimeout(() => {
+//         setIningsOver(true);
+//         setBowlingStarted(false);
+//         if (currentRun >= target) {
+//           setMatchResult(`${battingTeam} won by ${10 - currentWicket} wickets`);
+//           setMatchWinner(battingTeam);
+//         } else if (currentRun < target - 1) {
+//           setMatchResult(`${bowlingTeam} won by ${target - currentRun - 1} runs`);
+//           setMatchWinner(bowlingTeam);
+//         } else {
+//           setMatchResult("Match tied");
+//         }
+//       }, 1000);
+//       return newBalls;
+//     }
+
+//     if (newBalls % 6 === 0) {
+//       const temp = striker;
+//       setStriker(nonStriker);
+//       setNonStriker(temp);
+//       setShowBowlerModal(true);
+//     } else if (value % 2 === 1) {
+//       const temp = striker;
+//       setStriker(nonStriker);
+//       setNonStriker(temp);
+//     }
+
+//     setIsFreeHit(false);
+//     return newBalls;
+//   });
+// };
+
 const secChangeRun = (value) => {
   if (!bowler || !striker) return alert("Select batsmen and bowler first!");
 
@@ -371,71 +607,47 @@ const secChangeRun = (value) => {
   updateCommentry(value, striker, bowler);
 
   // Handle Wicket
-if (value === "W") {
-  if (isFreeHit) {
-    setTotalBalls(b => b + 1);
-    updateBatsman(striker, b => ({ balls: b.balls + 1 }));
-    updateBowler(bowler, bw => ({ balls: bw.balls + 1 }));
-    setIsFreeHit(false);
-    return;
-  }
+  if (value === "W") {
+    // A legal delivery is bowled, so the free hit is over.
+    if (isFreeHit) setIsFreeHit(false);
 
-  setCurrentWicket(w => {
-    const newW = w + 1;
+    if (isFreeHit) {
+      console.log("Wicket on Free Hit");
+      setTotalBalls(b => b + 1);
+      updateBatsman(striker, b => ({ balls: b.balls + 1 }));
+      updateBowler(bowler, bw => ({ balls: bw.balls + 1 }));
+      return;
+    }
 
-    if (newW === 10) {
-      // All out → directly end match
+    const newWicket = currentWicket + 1;
+    setCurrentWicket(newWicket);
+
+    // ✅ Update stats & balls only once
+    setTotalBalls(prev => prev + 1);
+    updateBatsman(striker, b => ({ balls: b.balls + 1, out: true }));
+    updateBowler(bowler, bw => ({ balls: bw.balls + 1, wickets: bw.wickets + 1 }));
+
+    if (newWicket >= 10) {
+      console.log("All out");
       setIningsOver(true);
       setBowlingStarted(false);
       setMatchResult(`${bowlingTeam} won by ${target - 1 - currentRun} runs`);
       setMatchWinner(bowlingTeam);
-
-      // Update final ball + stats
-      setTotalBalls(b => b + 1);
-      updateBatsman(striker, b => ({ balls: b.balls + 1, out: true }));
-      updateBowler(bowler, bw => ({ balls: bw.balls + 1, wickets: bw.wickets + 1 }));
-
-      return newW;
+      return;
     }
 
-    return newW;
-  });
-
-  // Normal wicket flow only if match not over
-  setTotalBalls(prev => {
-    // 🚨 protect against false modal triggers
-    if (currentWicket + 1 >= 10 || iningsOver) {
-      return prev; // do nothing, innings ended
-    }
-
-    const newBalls = prev + 1;
-    updateBatsman(striker, b => ({ balls: b.balls + 1, out: true }));
-    updateBowler(bowler, bw => ({ balls: bw.balls + 1, wickets: bw.wickets + 1 }));
-
-    if (newBalls % 6 === 0) {
-      setTimeout(() => {
-        if (!iningsOver) setShowBatsmanModal(true);
-      }, 500);
-
-      const temp = striker;
-      setStriker(nonStriker);
-      setNonStriker(temp);
-
-      setTimeout(() => {
-        if (!iningsOver) setShowBowlerModal(true);
-      }, 1200);
+    // 🚨 FIX 1: Correct strike rotation on end-of-over wicket.
+    if ((totalBalls + 1) % 6 === 0) {
+      // On the last ball of an over, the new batsman takes strike.
+      // We do NOT swap the existing non-striker.
+      setTimeout(() => { if (!iningsOver) setShowBatsmanModal(true); }, 500);
+      setTimeout(() => { if (!iningsOver) setShowBowlerModal(true); }, 1200);
     } else {
-      setTimeout(() => {
-        if (!iningsOver) setShowBatsmanModal(true);
-      }, 500);
+      setTimeout(() => { if (!iningsOver) setShowBatsmanModal(true); }, 500);
     }
-    return newBalls;
-  });
 
-  return;
-}
-
-
+    return; // This return is crucial to prevent the double-count bug.
+  }
 
   // Handle Wide/No ball
   if (value === "wide" || value === "no") {
@@ -455,6 +667,9 @@ if (value === "W") {
   }
 
   // Handle Runs
+  // A legal delivery is bowled, so the free hit is over.
+  if (isFreeHit) setIsFreeHit(false);
+
   setCurrentRun(r => {
     const newR = r + value;
     if (newR >= target) {
@@ -467,24 +682,28 @@ if (value === "W") {
   });
 
   updateBatsman(striker, b => ({ runs: b.runs + value, balls: b.balls + 1 }));
-  updateBowler(bowler, bw => ({ runs: bw.runs + value, balls: bw.balls + 1 }));
+  updateBowler(bowler, bw => ({ runs: bw.runs + value, balls: b.balls + 1 }));
 
   setTotalBalls(prev => {
     const newBalls = prev + 1;
 
-    if (newBalls === matchData.over * 6) {
+    // 🚨 FIX 2: Correct match result calculation on the FINAL ball.
+    if (newBalls === matchData.over * 6 && !iningsOver) {
       setTimeout(() => {
+        // We calculate the final score here to avoid using "stale" state.
+        const finalRunTotal = currentRun + value;
+
         setIningsOver(true);
         setBowlingStarted(false);
-        if (currentRun >= target) {
-          setMatchResult(`${battingTeam} won by ${10 - currentWicket} wickets`);
-          setMatchWinner(battingTeam);
-        } else if (currentRun < target - 1) {
-          setMatchResult(`${bowlingTeam} won by ${target - currentRun - 1} runs`);
+
+        // Now, we compare the ACCURATE final score to the target.
+        if (finalRunTotal < target - 1) {
+          setMatchResult(`${bowlingTeam} won by ${target - 1 - finalRunTotal} runs`);
           setMatchWinner(bowlingTeam);
-        } else {
+        } else if (finalRunTotal === target - 1) {
           setMatchResult("Match tied");
         }
+        // No need for a "win" condition here, as it's already handled by setCurrentRun
       }, 1000);
       return newBalls;
     }
@@ -496,11 +715,11 @@ if (value === "W") {
       setShowBowlerModal(true);
     } else if (value % 2 === 1) {
       const temp = striker;
+      setNonStriker(striker);
       setStriker(nonStriker);
-      setNonStriker(temp);
     }
 
-    setIsFreeHit(false);
+    // 🚨 FIX 3: Removed `setIsFreeHit(false)` from here as it was in the wrong place.
     return newBalls;
   });
 };
